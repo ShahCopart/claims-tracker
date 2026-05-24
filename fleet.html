@@ -470,16 +470,18 @@ function calcLease(p,balloon){
 function renderNotes(){
   const l=document.getElementById('nlist');if(!l)return;
   if(!notes.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0">No notes yet</div>';return}
-  l.innerHTML=notes.map((n,i)=>`<div class="note-item">
-    <div class="note-meta">
-      <span style="font-weight:500;color:var(--text)">${n.user_name}</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span>${new Date(n.created_at).toLocaleString()}</span>
-        <button class="btn btn-secondary btn-xs" onclick="copyNote(${i})" style="padding:1px 6px">📋</button>
-      </div>
-    </div>
-    <div class="note-text">${n.content}</div>
-  </div>`).join('');
+  l.innerHTML=notes.map((n,i)=>{
+    const idx=i;
+    return '<div class="note-item">'
+      +'<div class="note-meta">'
+      +'<span style="font-weight:500;color:var(--text)">'+n.user_name+'</span>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span>'+new Date(n.created_at).toLocaleString()+'</span>'
+      +'<button class="btn btn-secondary btn-xs" onclick="copyNote('+idx+')" style="padding:1px 6px">📋</button>'
+      +'</div></div>'
+      +'<div class="note-text">'+n.content+'</div>'
+      +'</div>';
+  }).join('');
 }
 function addDateToNote(){
   const ta=document.getElementById('nnote');if(!ta)return;
