@@ -291,7 +291,7 @@ function renderList(stage,m){
   <div class="tbl-wrap"><div class="tbl-scroll">
     <table><thead><tr>
       <th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th>
-      <th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th><th>Terminated Date</th><th>Shop Status</th><th>Last Worked</th><th>Flags</th>
+      <th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th><th>Terminated Date</th><th>Est. Completion</th><th>Shop Status</th><th>Last Worked</th><th>Flags</th>
     </tr></thead>
     <tbody id="tbl-body">${mkRows(rows)}</tbody></table>
   </div></div>`;
@@ -302,7 +302,7 @@ function mkRows(rows){
     <td style="font-family:monospace;font-weight:600">${t.vin||'-'}</td>
     <td>${t.year_make_model||'-'}</td><td>${t.cab_color||'-'}</td><td>${t.bed||'-'}</td>
     <td>${t.yard||'-'}</td><td>${t.state||'-'}</td><td>${t.mileage||'-'}</td>
-    <td>${t.repo_agent||'-'}</td><td>${t.terminated_date||'-'}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${t.date_last_worked||'-'}</td><td>${flags(t)}</td>
+    <td>${t.repo_agent||'-'}</td><td>${t.terminated_date||'-'}</td><td style="color:#22c55e">${t.est_completion_date||'-'}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${t.date_last_worked||'-'}</td><td>${flags(t)}</td>
   </tr>`).join('');
 }
 function doSearch(stage){
@@ -362,8 +362,9 @@ function buildForm(t){
   <div class="g4">
     <div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>${sho}</select></div>
     <div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="${t.repo_agent||''}" placeholder="e.g. Transit Pros"></div>
-    <div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-repo" value="${t.repo_date||''}"></div>
+    <div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="${t.terminated_date||''}"></div>
     <div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="${t.recovery_date||''}"></div>
+    <div class="fg"><label class="fl">Est. Completion Date</label><input class="fi" type="date" id="f-estcomp" value="${t.est_completion_date||''}"><div style="font-size:10px;color:var(--text3);margin-top:3px">Shop / Mobile Mechanic / Vendor</div></div>
     <div class="fg"><label class="fl">Intake Date</label><input class="fi" type="date" id="f-intake" value="${t.intake_date||''}"></div>
     <div class="fg"><label class="fl">Ready Date</label><input class="fi" type="date" id="f-ready" value="${t.ready_date||''}"></div>
     <div class="fg"><label class="fl">Assigned Date</label><input class="fi" type="date" id="f-assign" value="${t.assigned_date||''}"></div>
@@ -506,9 +507,9 @@ async function saveTruck(){
     stage:document.getElementById('f-stage')?.value,
     shop_status:document.getElementById('f-shopst')?.value||null,
     repo_agent:document.getElementById('f-repoagent')?.value.trim()||null,
-    repo_date:document.getElementById('f-repo')?.value||null,
-    terminated_date:document.getElementById('f-repo')?.value||null,
+    terminated_date:document.getElementById('f-termdate')?.value||null,
     recovery_date:document.getElementById('f-recov')?.value||null,
+    est_completion_date:document.getElementById('f-estcomp')?.value||null,
     intake_date:document.getElementById('f-intake')?.value||null,
     ready_date:document.getElementById('f-ready')?.value||null,
     assigned_date:document.getElementById('f-assign')?.value||null,
