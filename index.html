@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insurance Claims Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #242424;
+    --border: #333;
+    --text: #f0f0f0;
+    --text2: #999;
+    --accent: #1a73e8;
+    --accent2: #0d47a1;
+    --red: #c62828;
+    --green: #2e7d32;
+    --amber: #f57f17;
+    --teal: #00695c;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  
+  /* Header */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .header-title { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .header-title svg { width: 24px; height: 24px; }
+  .header-actions { display: flex; gap: 8px; }
+  
+  /* Buttons */
+  .btn { padding: 7px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #2e2e2e; }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-danger:hover { background: #b71c1c; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-icon { padding: 6px; display: flex; align-items: center; justify-content: center; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg2); padding: 0 24px; }
+  .tab { padding: 12px 16px; cursor: pointer; font-size: 13px; color: var(--text2); border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+  .tab-badge { background: var(--accent); color: white; border-radius: 10px; padding: 1px 6px; font-size: 11px; margin-left: 6px; }
+
+  /* Main layout */
+  .main { padding: 20px 24px; }
+
+  /* Dashboard cards */
+  .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .dash-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .dash-card-label { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .dash-card-value { font-size: 28px; font-weight: 600; }
+  .dash-card-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+  .dash-red .dash-card-value { color: #ef5350; }
+  .dash-amber .dash-card-value { color: #ffa726; }
+  .dash-blue .dash-card-value { color: #42a5f5; }
+  .dash-green .dash-card-value { color: #66bb6a; }
+
+  /* Filters */
+  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .search-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; color: var(--text); font-size: 13px; width: 240px; }
+  .search-box:focus { outline: none; border-color: var(--accent); }
+  .filter-select { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; cursor: pointer; }
+  .filter-select:focus { outline: none; border-color: var(--accent); }
+
+  /* Table */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg3); padding: 10px 12px; text-align: left; font-weight: 500; color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+  th:hover { color: var(--text); }
+  td { padding: 10px 12px; border-bottom: 1px solid #1e1e1e; vertical-align: middle; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #1e1e1e; }
+  .td-notes { max-width: 200px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; color: var(--text2); font-size: 12px; }
+  .td-notes:hover { color: var(--accent); }
+
+  /* Status badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .badge-open { background: #1a3a5c; color: #64b5f6; }
+  .badge-progress { background: #1a3a1a; color: #81c784; }
+  .badge-pending { background: #3a2a00; color: #ffb74d; }
+  .badge-urgent { background: #4a1a1a; color: #ef9a9a; }
+  .badge-follow { background: #2a1a3a; color: #ce93d8; }
+  .badge-approved { background: #0a3a2a; color: #4db6ac; }
+  .badge-denied { background: #3a1a1a; color: #ef5350; }
+  .badge-done { background: #1a3a1a; color: #a5d6a7; }
+  .badge-default { background: var(--bg3); color: var(--text2); }
+
+  /* Priority */
+  .priority-high { color: #ef5350; font-weight: 600; }
+  .priority-medium { color: #ffa726; }
+  .priority-normal { color: var(--text2); }
+  .priority-low { color: #42a5f5; }
+
+  /* Days overdue */
+  .days-overdue { color: #ef5350; font-weight: 600; }
+  .days-due-today { color: #ffa726; font-weight: 600; }
+  .days-ok { color: #66bb6a; }
+
+  /* Modal */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg2); z-index: 1; }
+  .modal-header h2 { font-size: 16px; font-weight: 600; }
+  .modal-body { padding: 20px; }
+  .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+  .close-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px; }
+  .close-btn:hover { color: var(--text); }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text2); }
+  .form-input, .form-select, .form-textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: 13px; width: 100%; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+  /* Notes modal */
+  .notes-modal { width: 700px; }
+  .notes-textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; color: var(--text); font-size: 14px; width: 100%; min-height: 400px; resize: vertical; font-family: inherit; line-height: 1.6; }
+  .notes-textarea:focus { outline: none; border-color: var(--accent); }
+  .notes-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+
+  /* Dashboard breakdown */
+  .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .breakdown-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .breakdown-header { background: var(--bg3); padding: 10px 14px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); }
+  .breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 14px; border-bottom: 1px solid #1e1e1e; font-size: 13px; }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-count { font-weight: 600; color: var(--accent); }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .empty svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+
+  /* Action buttons in table */
+  .row-actions { display: flex; gap: 4px; }
+
+  /* Overdue indicator */
+  .overdue-row td { background: rgba(198, 40, 40, 0.05) !important; }
+
+  /* Completed tab */
+  .completed-badge { background: #1a3a1a; color: #a5d6a7; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+
+  @media (max-width: 768px) {
+    .dashboard-grid { grid-template-columns: 1fr 1fr; }
+    .breakdown-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    Insurance Claims Tracker
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="exportData()">Export JSON</button>
+    <button class="btn btn-primary btn-sm" onclick="openAddClaim()">+ Add Claim</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('claims', this)">Claims <span class="tab-badge" id="claims-count">0</span></div>
+  <div class="tab" onclick="switchTab('completed', this)">Completed <span class="tab-badge" id="completed-count">0</span></div>
+  <div class="tab" onclick="switchTab('dashboard', this)">Dashboard</div>
+</div>
+
+<div class="main">
+  <!-- CLAIMS TAB -->
+  <div id="tab-claims">
+    <div class="filters">
+      <input class="search-box" type="text" placeholder="Search VIN, claim#, insurance..." id="search-input" oninput="renderClaims()">
+      <select class="filter-select" id="filter-status" onchange="renderClaims()">
+        <option value="">All Statuses</option>
+        <option>Open</option><option>In Progress</option><option>Pending</option>
+        <option>Under Review</option><option>Urgent Review</option><option>Approved</option>
+        <option>Denied</option><option>On Hold</option><option>Follow Up</option>
+        <option>Follow Up with GM</option><option>Follow Up with Maintenance</option>
+        <option>Following Up with Insurance</option><option>Follow Up on Documents</option>
+        <option>Follow Up with Leasing CO</option><option>Pending Total Loss</option>
+        <option>Pending Completion</option><option>Pending Check</option>
+        <option>Pending Rejection</option><option>Pending Estimate</option>
+        <option>Pending Pay Off</option><option>Pending Pictures</option>
+        <option>Pending Legal</option><option>Pending Complete</option>
+        <option>Shah Working On</option>
+      </select>
+      <select class="filter-select" id="filter-priority" onchange="renderClaims()">
+        <option value="">All Priorities</option>
+        <option>High</option><option>Medium</option><option>Normal</option><option>Low</option>
+      </select>
+      <select class="filter-select" id="filter-location" onchange="renderClaims()">
+        <option value="">All Locations</option>
+        <option>Copart Yard</option><option>Body Shop</option><option>Tow Yard</option>
+        <option>Other Auction</option><option>Other Location</option><option>Vendor Driving</option>
+        <option>Forni Yard</option><option>In Vendors Possession</option><option>Already Leased</option>
+        <option>In Leasing</option><option>Vendor Fixing</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('dateOfLoss')">Date of Loss</th>
+              <th onclick="sortBy('status')">Status</th>
+              <th onclick="sortBy('vin')">VIN</th>
+              <th onclick="sortBy('yearMakeModel')">Vehicle</th>
+              <th onclick="sortBy('yard')">Yard</th>
+              <th onclick="sortBy('state')">State</th>
+              <th onclick="sortBy('truckLocation')">Location</th>
+              <th onclick="sortBy('priority')">Priority</th>
+              <th onclick="sortBy('dueDate')">Due Date</th>
+              <th onclick="sortBy('daysUntilDue')">Days</th>
+              <th onclick="sortBy('claimNumber')">Claim #</th>
+              <th onclick="sortBy('insurance')">Insurance</th>
+              <th>Shah Notes</th>
+              <th>Chris Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="claims-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETED TAB -->
+  <div id="tab-completed" style="display:none">
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date of Loss</th>
+              <th>VIN</th>
+              <th>Vehicle</th>
+              <th>Claim #</th>
+              <th>Insurance</th>
+              <th>Completed On</th>
+              <th>Shah Notes</th>
+              <th>Chris Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="completed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div id="tab-dashboard" style="display:none">
+    <div class="dashboard-grid">
+      <div class="dash-card dash-red">
+        <div class="dash-card-label">⚠ Overdue Tasks</div>
+        <div class="dash-card-value" id="d-overdue">0</div>
+        <div class="dash-card-sub">Past due date</div>
+      </div>
+      <div class="dash-card dash-amber">
+        <div class="dash-card-label">📅 Due Today</div>
+        <div class="dash-card-value" id="d-today">0</div>
+        <div class="dash-card-sub">Due today</div>
+      </div>
+      <div class="dash-card dash-blue">
+        <div class="dash-card-label">📋 Open Claims</div>
+        <div class="dash-card-value" id="d-open">0</div>
+        <div class="dash-card-sub">Active claims</div>
+      </div>
+      <div class="dash-card dash-green">
+        <div class="dash-card-label">✅ Completed</div>
+        <div class="dash-card-value" id="d-completed">0</div>
+        <div class="dash-card-sub">Closed claims</div>
+      </div>
+    </div>
+
+    <div class="breakdown-grid">
+      <div class="breakdown-card">
+        <div class="breakdown-header">Breakdown by Status</div>
+        <div id="status-breakdown"></div>
+      </div>
+      <div class="breakdown-card">
+        <div class="breakdown-header">Breakdown by Truck Location</div>
+        <div id="location-breakdown"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT CLAIM MODAL -->
+<div class="modal-backdrop" id="claim-modal" style="display:none" onclick="closeOnBackdrop(event,'claim-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add New Claim</h2>
+      <button class="close-btn" onclick="closeModal('claim-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Date of Loss</label><input class="form-input" type="date" id="f-dateOfLoss"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-select" id="f-status">
+            <option>Open</option><option>In Progress</option><option>Pending</option>
+            <option>Under Review</option><option>Urgent Review</option><option>Approved</option>
+            <option>Denied</option><option>On Hold</option><option>Follow Up</option>
+            <option>Follow Up with GM</option><option>Follow Up with Maintenance</option>
+            <option>Following Up with Insurance</option><option>Follow Up on Documents</option>
+            <option>Follow Up with Leasing CO</option><option>Pending Total Loss</option>
+            <option>Pending Completion</option><option>Pending Check</option>
+            <option>Pending Rejection</option><option>Pending Estimate</option>
+            <option>Pending Pay Off</option><option>Pending Pictures</option>
+            <option>Pending Legal</option><option>Pending Complete</option>
+            <option>Shah Working On</option><option>Complete</option><option>Done</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">VIN</label><input class="form-input" type="text" id="f-vin" placeholder="Enter VIN"></div>
+        <div class="form-group"><label class="form-label">Year Make Model</label><input class="form-input" type="text" id="f-yearMakeModel" placeholder="2024 International MV607"></div>
+        <div class="form-group"><label class="form-label">Yard</label>
+          <select class="form-select" id="f-yard"><option value="">Select Yard</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">State</label>
+          <select class="form-select" id="f-state">
+            <option value="">Select State</option>
+            <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+            <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+            <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+            <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+            <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+            <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+            <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+            <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+            <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+            <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+            <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+            <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+            <option>Wisconsin</option><option>Wyoming</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Truck Location</label>
+          <select class="form-select" id="f-truckLocation">
+            <option value="">Select Location</option>
+            <option>Copart Yard</option><option>Body Shop</option><option>Tow Yard</option>
+            <option>Other Auction</option><option>Other Location</option><option>Vendor Driving</option>
+            <option>Forni Yard</option><option>In Vendors Possession</option><option>Already Leased</option>
+            <option>In Leasing</option><option>Vendor Fixing</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Waiting On / From</label>
+          <select class="form-select" id="f-waitingOn">
+            <option value="">Select</option>
+            <option>Insurance Company</option><option>Claim Adjustor</option><option>Vendor</option><option>Copart</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Also Notify</label>
+          <select class="form-select" id="f-alsoNotify">
+            <option value="">Select</option>
+            <option>Lauren</option><option>Brian</option><option>Chris</option><option>Trey</option>
+            <option>Maria F</option><option>Kierra</option><option>Maria O</option><option>Mike</option>
+            <option>Simon</option><option>Khurram</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Priority</label>
+          <select class="form-select" id="f-priority">
+            <option>Normal</option><option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" type="date" id="f-dueDate"></div>
+        <div class="form-group"><label class="form-label">TIB</label><input class="form-input" type="text" id="f-tib"></div>
+        <div class="form-group"><label class="form-label">Vendor ID</label><input class="form-input" type="text" id="f-vendorId"></div>
+        <div class="form-group"><label class="form-label">Claim #</label><input class="form-input" type="text" id="f-claimNumber"></div>
+        <div class="form-group"><label class="form-label">Insurance</label><input class="form-input" type="text" id="f-insurance"></div>
+        <div class="form-group"><label class="form-label">Leasing Bank</label><input class="form-input" type="text" id="f-leasingBank"></div>
+        <div class="form-group"><label class="form-label">Pay Deferred</label>
+          <select class="form-select" id="f-payDeferred"><option>No</option><option>Yes</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Photos</label><input class="form-input" type="text" id="f-photos"></div>
+        <div class="form-group"><label class="form-label">MISC</label><input class="form-input" type="text" id="f-misc"></div>
+        <div class="form-group full"><label class="form-label">Problem</label><textarea class="form-textarea" id="f-problem" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('claim-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClaim()">Save Claim</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES MODAL -->
+<div class="modal-backdrop" id="notes-modal" style="display:none" onclick="closeOnBackdrop(event,'notes-modal')">
+  <div class="modal notes-modal">
+    <div class="modal-header">
+      <h2 id="notes-modal-title">Notes</h2>
+      <button class="close-btn" onclick="closeModal('notes-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="notes-actions">
+        <button class="btn btn-secondary btn-sm" onclick="addDateEntry()">+ Add Date Entry</button>
+        <button class="btn btn-secondary btn-sm" onclick="copyNotes()">Copy All</button>
+      </div>
+      <textarea class="notes-textarea" id="notes-textarea"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('notes-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNotes()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+let claims = JSON.parse(localStorage.getItem('claims') || '[]');
+let completed = JSON.parse(localStorage.getItem('completed') || '[]');
+let currentTab = 'claims';
+let editingId = null;
+let notesClaimId = null;
+let notesField = null;
+let sortField = null;
+let sortAsc = true;
+
+// Populate yard dropdown
+const yardSelect = document.getElementById('f-yard');
+for (let i = 1; i <= 400; i++) {
+  const o = document.createElement('option');
+  o.value = o.textContent = 'Yard ' + i;
+  yardSelect.appendChild(o);
+}
+
+// ===== HELPERS =====
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+
+function today() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const parts = d.split('-');
+  if (parts.length !== 3) return d;
+  return parts[1] + '/' + parts[2] + '/' + parts[0];
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const due = new Date(dateStr + 'T00:00:00');
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  return Math.round((due - now) / 86400000);
+}
+
+function statusBadge(s) {
+  if (!s) return '';
+  const lower = s.toLowerCase();
+  let cls = 'badge-default';
+  if (lower === 'open') cls = 'badge-open';
+  else if (lower === 'in progress') cls = 'badge-progress';
+  else if (lower.includes('pending') || lower === 'on hold') cls = 'badge-pending';
+  else if (lower.includes('urgent') || lower === 'denied') cls = 'badge-urgent';
+  else if (lower.includes('follow')) cls = 'badge-follow';
+  else if (lower === 'approved') cls = 'badge-approved';
+  else if (lower === 'done' || lower === 'complete') cls = 'badge-done';
+  else if (lower === 'shah working on') cls = 'badge-follow';
+  return `<span class="badge ${cls}">${s}</span>`;
+}
+
+function priorityClass(p) {
+  if (!p) return '';
+  if (p === 'High') return 'priority-high';
+  if (p === 'Medium') return 'priority-medium';
+  if (p === 'Normal') return 'priority-normal';
+  if (p === 'Low') return 'priority-low';
+  return '';
+}
+
+function daysDisplay(days) {
+  if (days === null) return '';
+  if (days < 0) return `<span class="days-overdue">${days}</span>`;
+  if (days === 0) return `<span class="days-due-today">Today</span>`;
+  return `<span class="days-ok">${days}</span>`;
+}
+
+function truncate(str, n) {
+  if (!str) return '';
+  return str.length > n ? str.substr(0, n) + '…' : str;
+}
+
+function save() {
+  localStorage.setItem('claims', JSON.stringify(claims));
+  localStorage.setItem('completed', JSON.stringify(completed));
+}
+
+// ===== TABS =====
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-claims').style.display = tab === 'claims' ? '' : 'none';
+  document.getElementById('tab-completed').style.display = tab === 'completed' ? '' : 'none';
+  document.getElementById('tab-dashboard').style.display = tab === 'dashboard' ? '' : 'none';
+  currentTab = tab;
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'completed') renderCompleted();
+}
+
+// ===== RENDER CLAIMS =====
+function renderClaims() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const filterStatus = document.getElementById('filter-status').value;
+  const filterPriority = document.getElementById('filter-priority').value;
+  const filterLocation = document.getElementById('filter-location').value;
+
+  let data = [...claims];
+
+  if (search) data = data.filter(c =>
+    (c.vin||'').toLowerCase().includes(search) ||
+    (c.claimNumber||'').toLowerCase().includes(search) ||
+    (c.insurance||'').toLowerCase().includes(search) ||
+    (c.yearMakeModel||'').toLowerCase().includes(search) ||
+    (c.tib||'').toLowerCase().includes(search)
+  );
+  if (filterStatus) data = data.filter(c => c.status === filterStatus);
+  if (filterPriority) data = data.filter(c => c.priority === filterPriority);
+  if (filterLocation) data = data.filter(c => c.truckLocation === filterLocation);
+
+  if (sortField) {
+    data.sort((a, b) => {
+      let av = a[sortField] || '', bv = b[sortField] || '';
+      if (sortField === 'daysUntilDue') { av = daysUntil(a.dueDate); bv = daysUntil(b.dueDate); av = av===null?9999:av; bv = bv===null?9999:bv; }
+      if (typeof av === 'string') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+      return sortAsc ? av - bv : bv - av;
+    });
+  }
+
+  const tbody = document.getElementById('claims-tbody');
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="15" class="empty">No claims found</td></tr>`;
+    document.getElementById('claims-count').textContent = 0;
+    return;
+  }
+
+  document.getElementById('claims-count').textContent = claims.length;
+
+  tbody.innerHTML = data.map(c => {
+    const days = daysUntil(c.dueDate);
+    const isOverdue = days !== null && days < 0;
+    const shahPreview = truncate(getLatestNote(c.shahNotes), 40);
+    const chrisPreview = truncate(getLatestNote(c.chrisNotes), 40);
+    return `<tr class="${isOverdue ? 'overdue-row' : ''}">
+      <td>${formatDate(c.dateOfLoss)}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td style="font-family:monospace;font-size:12px">${c.vin||''}</td>
+      <td>${c.yearMakeModel||''}</td>
+      <td>${c.yard||''}</td>
+      <td>${c.state||''}</td>
+      <td>${c.truckLocation||''}</td>
+      <td class="${priorityClass(c.priority)}">${c.priority||''}</td>
+      <td>${formatDate(c.dueDate)}</td>
+      <td>${daysDisplay(days)}</td>
+      <td>${c.claimNumber||''}</td>
+      <td>${c.insurance||''}</td>
+      <td class="td-notes" onclick="openNotes('${c.id}','shahNotes')" title="Click to edit Shah Notes">${shahPreview||'<span style="color:#444">click to add</span>'}</td>
+      <td class="td-notes" onclick="openNotes('${c.id}','chrisNotes')" title="Click to edit Chris Notes">${chrisPreview||'<span style="color:#444">click to add</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="editClaim('${c.id}')" title="Edit">✏️</button>
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="sendEmail('${c.id}')" title="Email">📧</button>
+          <button class="btn btn-secondary btn-sm btn-icon" onclick="markComplete('${c.id}')" title="Mark Complete">✅</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteClaim('${c.id}')" title="Delete">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== RENDER COMPLETED =====
+function renderCompleted() {
+  const tbody = document.getElementById('completed-tbody');
+  document.getElementById('completed-count').textContent = completed.length;
+  if (completed.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">No completed claims</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = completed.map(c => {
+    const shahPreview = truncate(getLatestNote(c.shahNotes), 40);
+    const chrisPreview = truncate(getLatestNote(c.chrisNotes), 40);
+    return `<tr>
+      <td>${formatDate(c.dateOfLoss)}</td>
+      <td style="font-family:monospace;font-size:12px">${c.vin||''}</td>
+      <td>${c.yearMakeModel||''}</td>
+      <td>${c.claimNumber||''}</td>
+      <td>${c.insurance||''}</td>
+      <td>${formatDate(c.completedOn)}</td>
+      <td class="td-notes" onclick="openNotesCompleted('${c.id}','shahNotes')">${shahPreview||'<span style="color:#444">—</span>'}</td>
+      <td class="td-notes" onclick="openNotesCompleted('${c.id}','chrisNotes')">${chrisPreview||'<span style="color:#444">—</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn btn-secondary btn-sm" onclick="restoreClaim('${c.id}')">Restore</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== RENDER DASHBOARD =====
+function renderDashboard() {
+  const todayStr = today();
+  let overdue = 0, dueToday = 0;
+  claims.forEach(c => {
+    if (c.dueDate && c.status !== 'Done' && c.status !== 'Complete') {
+      const d = daysUntil(c.dueDate);
+      if (d < 0) overdue++;
+      if (d === 0) dueToday++;
+    }
+  });
+  document.getElementById('d-overdue').textContent = overdue;
+  document.getElementById('d-today').textContent = dueToday;
+  document.getElementById('d-open').textContent = claims.length;
+  document.getElementById('d-completed').textContent = completed.length;
+
+  const statuses = ['Open','In Progress','Pending','Under Review','Urgent Review','Approved','Denied',
+    'Pending Total Loss','Pending Completion','Pending Check','Pending Rejection','On Hold',
+    'Pending Estimate','Pending Pay Off','Pending Pictures','Follow Up','Follow Up with Maintenance',
+    'Following Up with Insurance','Follow Up with GM','Follow Up on Documents','Follow Up with Leasing CO',
+    'Pending Legal','Pending Complete','Shah Working On'];
+
+  const statusCounts = {};
+  claims.forEach(c => { statusCounts[c.status] = (statusCounts[c.status]||0) + 1; });
+
+  document.getElementById('status-breakdown').innerHTML = statuses
+    .filter(s => statusCounts[s] > 0)
+    .map(s => `<div class="breakdown-row"><span>${s}</span><span class="breakdown-count">${statusCounts[s]}</span></div>`)
+    .join('') || '<div class="breakdown-row"><span style="color:var(--text2)">No data</span></div>';
+
+  const locations = ['Copart Yard','Body Shop','Tow Yard','Other Auction','Other Location',
+    'Vendor Driving','Forni Yard','In Vendors Possession','Already Leased','In Leasing','Vendor Fixing'];
+
+  const locCounts = {};
+  claims.forEach(c => { if (c.truckLocation) locCounts[c.truckLocation] = (locCounts[c.truckLocation]||0) + 1; });
+
+  document.getElementById('location-breakdown').innerHTML = locations
+    .filter(l => locCounts[l] > 0)
+    .map(l => `<div class="breakdown-row"><span>${l}</span><span class="breakdown-count">${locCounts[l]}</span></div>`)
+    .join('') || '<div class="breakdown-row"><span style="color:var(--text2)">No data</span></div>';
+}
+
+// ===== SORT =====
+function sortBy(field) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = true; }
+  renderClaims();
+}
+
+// ===== FILTERS =====
+function clearFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-priority').value = '';
+  document.getElementById('filter-location').value = '';
+  renderClaims();
+}
+
+// ===== MODALS =====
+function openAddClaim() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add New Claim';
+  clearForm();
+  document.getElementById('claim-modal').style.display = 'flex';
+}
+
+function editClaim(id) {
+  const c = claims.find(x => x.id === id);
+  if (!c) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Edit Claim';
+  document.getElementById('f-dateOfLoss').value = c.dateOfLoss || '';
+  document.getElementById('f-status').value = c.status || 'Open';
+  document.getElementById('f-vin').value = c.vin || '';
+  document.getElementById('f-yearMakeModel').value = c.yearMakeModel || '';
+  document.getElementById('f-yard').value = c.yard || '';
+  document.getElementById('f-state').value = c.state || '';
+  document.getElementById('f-truckLocation').value = c.truckLocation || '';
+  document.getElementById('f-waitingOn').value = c.waitingOn || '';
+  document.getElementById('f-alsoNotify').value = c.alsoNotify || '';
+  document.getElementById('f-priority').value = c.priority || 'Normal';
+  document.getElementById('f-dueDate').value = c.dueDate || '';
+  document.getElementById('f-tib').value = c.tib || '';
+  document.getElementById('f-vendorId').value = c.vendorId || '';
+  document.getElementById('f-claimNumber').value = c.claimNumber || '';
+  document.getElementById('f-insurance').value = c.insurance || '';
+  document.getElementById('f-leasingBank').value = c.leasingBank || '';
+  document.getElementById('f-payDeferred').value = c.payDeferred || 'No';
+  document.getElementById('f-photos').value = c.photos || '';
+  document.getElementById('f-misc').value = c.misc || '';
+  document.getElementById('f-problem').value = c.problem || '';
+  document.getElementById('claim-modal').style.display = 'flex';
+}
+
+function clearForm() {
+  ['f-dateOfLoss','f-vin','f-yearMakeModel','f-tib','f-vendorId','f-claimNumber',
+   'f-insurance','f-leasingBank','f-photos','f-misc','f-problem','f-dueDate'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-status').value = 'Open';
+  document.getElementById('f-priority').value = 'Normal';
+  document.getElementById('f-payDeferred').value = 'No';
+  document.getElementById('f-yard').value = '';
+  document.getElementById('f-state').value = '';
+  document.getElementById('f-truckLocation').value = '';
+  document.getElementById('f-waitingOn').value = '';
+  document.getElementById('f-alsoNotify').value = '';
+}
+
+function saveClaim() {
+  const c = {
+    id: editingId || genId(),
+    dateOfLoss: document.getElementById('f-dateOfLoss').value,
+    status: document.getElementById('f-status').value,
+    vin: document.getElementById('f-vin').value,
+    yearMakeModel: document.getElementById('f-yearMakeModel').value,
+    yard: document.getElementById('f-yard').value,
+    state: document.getElementById('f-state').value,
+    truckLocation: document.getElementById('f-truckLocation').value,
+    waitingOn: document.getElementById('f-waitingOn').value,
+    alsoNotify: document.getElementById('f-alsoNotify').value,
+    priority: document.getElementById('f-priority').value,
+    dueDate: document.getElementById('f-dueDate').value,
+    tib: document.getElementById('f-tib').value,
+    vendorId: document.getElementById('f-vendorId').value,
+    claimNumber: document.getElementById('f-claimNumber').value,
+    insurance: document.getElementById('f-insurance').value,
+    leasingBank: document.getElementById('f-leasingBank').value,
+    payDeferred: document.getElementById('f-payDeferred').value,
+    photos: document.getElementById('f-photos').value,
+    misc: document.getElementById('f-misc').value,
+    problem: document.getElementById('f-problem').value,
+    dateLastWorked: today(),
+  };
+
+  if (editingId) {
+    const idx = claims.findIndex(x => x.id === editingId);
+    const existing = claims[idx];
+    c.shahNotes = existing.shahNotes || '';
+    c.chrisNotes = existing.chrisNotes || '';
+    c.notes = existing.notes || '';
+    claims[idx] = c;
+
+    // Auto-move to completed if Done or Complete
+    if (c.status === 'Done' || c.status === 'Complete') {
+      c.completedOn = today();
+      completed.push(c);
+      claims.splice(idx, 1);
+    }
+  } else {
+    c.shahNotes = '';
+    c.chrisNotes = '';
+    c.notes = '';
+    claims.push(c);
+  }
+
+  save();
+  closeModal('claim-modal');
+  renderClaims();
+  updateCounts();
+}
+
+function deleteClaim(id) {
+  if (!confirm('Delete this claim?')) return;
+  claims = claims.filter(x => x.id !== id);
+  save();
+  renderClaims();
+  updateCounts();
+}
+
+function markComplete(id) {
+  const idx = claims.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const c = claims[idx];
+  c.status = 'Done';
+  c.completedOn = today();
+  completed.push(c);
+  claims.splice(idx, 1);
+  save();
+  renderClaims();
+  updateCounts();
+}
+
+function restoreClaim(id) {
+  const idx = completed.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const c = completed[idx];
+  c.status = 'Open';
+  delete c.completedOn;
+  claims.push(c);
+  completed.splice(idx, 1);
+  save();
+  renderCompleted();
+  updateCounts();
+}
+
+// ===== NOTES =====
+function getLatestNote(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  let lastEntry = '', current = '';
+  lines.forEach(line => {
+    line = line.trim();
+    if (line.length >= 10 && line[2] === '/' && line[5] === '/') {
+      if (current) lastEntry = current;
+      current = line;
+    } else if (current && line) {
+      current += ' ' + line;
+    }
+  });
+  if (current) lastEntry = current;
+  return lastEntry || text.split('\n')[0];
+}
+
+function openNotes(id, field) {
+  notesClaimId = id;
+  notesField = field;
+  const c = claims.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('notes-modal-title').textContent = field === 'shahNotes' ? 'Shah Notes' : field === 'chrisNotes' ? 'Chris Notes' : 'Notes';
+  document.getElementById('notes-textarea').value = c[field] || '';
+  document.getElementById('notes-modal').style.display = 'flex';
+}
+
+function openNotesCompleted(id, field) {
+  notesClaimId = id;
+  notesField = field;
+  const c = completed.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('notes-modal-title').textContent = field === 'shahNotes' ? 'Shah Notes' : 'Chris Notes';
+  document.getElementById('notes-textarea').value = c[field] || '';
+  document.getElementById('notes-modal').style.display = 'flex';
+}
+
+function addDateEntry() {
+  const ta = document.getElementById('notes-textarea');
+  const dateStr = new Date().toLocaleDateString('en-US', {month:'2-digit',day:'2-digit',year:'numeric'});
+  ta.value = (ta.value ? ta.value + '\n' : '') + dateStr + ' - ';
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
+function copyNotes() {
+  const text = document.getElementById('notes-textarea').value;
+  if (!text) return alert('Nothing to copy');
+  navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+}
+
+function saveNotes() {
+  const text = document.getElementById('notes-textarea').value;
+  let arr = claims;
+  let idx = arr.findIndex(x => x.id === notesClaimId);
+  if (idx === -1) { arr = completed; idx = arr.findIndex(x => x.id === notesClaimId); }
+  if (idx === -1) return;
+  arr[idx][notesField] = text;
+  save();
+  closeModal('notes-modal');
+  if (currentTab === 'claims') renderClaims();
+  else renderCompleted();
+}
+
+// ===== EMAIL =====
+function sendEmail(id) {
+  const c = claims.find(x => x.id === id);
+  if (!c) return;
+  const emails = {
+    lauren: 'lauren.gadd@copart.com', brian: 'brian.gates@copart.com',
+    chris: 'christcisco.komari@copart.com', trey: 'trey.ferguson@copart.com',
+    'maria f': 'maria.flores@copart.com', kierra: 'kierra.tolbert@copart.com',
+    'maria o': 'maria.ortiz@copart.com', mike: 'michael.london@copart.com',
+    simon: 'simon.smock@copart.com', khurram: 'khurram.shah@copart.com'
+  };
+  const to = emails[(c.alsoNotify||'').toLowerCase()] || '';
+  const subject = ['Claim Follow Up', c.claimNumber ? 'Claim #' + c.claimNumber : '', c.vin ? 'VIN: ' + c.vin : '', c.yearMakeModel].filter(Boolean).join(' | ');
+  const shahRecent = getLatestNote(c.shahNotes);
+  const chrisRecent = getLatestNote(c.chrisNotes);
+  let notesSection = '';
+  if (shahRecent) notesSection += '\nShah Notes (Most Recent):\n' + shahRecent + '\n';
+  if (chrisRecent) notesSection += '\nChris Notes (Most Recent):\n' + chrisRecent + '\n';
+  const body = `Hi ${c.alsoNotify || ''},\n\nI wanted to follow up on the claim below:\n\nClaim #: ${c.claimNumber||''}\nVIN: ${c.vin||''}\nVehicle: ${c.yearMakeModel||''}\nProblem: ${c.problem||''}\nDue: ${formatDate(c.dueDate)||'no due date set'}\n\nPlease let me know if you have any updates or need anything from me.\n\nThanks,\nKhurram${notesSection ? '\n\n----------------------------------------\n' + notesSection : ''}`;
+  window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// ===== EXPORT =====
+function exportData() {
+  const data = { claims, completed, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'claims-export-' + today() + '.json';
+  a.click();
+}
+
+// ===== UTILS =====
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeOnBackdrop(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+function updateCounts() {
+  document.getElementById('claims-count').textContent = claims.length;
+  document.getElementById('completed-count').textContent = completed.length;
+}
+
+// ===== INIT =====
+renderClaims();
+updateCounts();
+</script>
+</body>
+</html>
+```
