@@ -291,21 +291,18 @@ function renderList(stage,m){
   <div class="tbl-wrap"><div class="tbl-scroll">
     <table><thead><tr>
       <th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th>
-      <th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th><th>Terminated Date</th><th>Shop Status</th>
-      <th>Term Date</th><th>Last Worked</th><th>Flags</th>
+      <th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th><th>Terminated Date</th><th>Shop Status</th><th>Last Worked</th><th>Flags</th>
     </tr></thead>
     <tbody id="tbl-body">${mkRows(rows)}</tbody></table>
   </div></div>`;
 }
 function mkRows(rows){
-  if(!rows.length)return`<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--text2)">No trucks in this stage</td></tr>`;
+  if(!rows.length)return`<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text2)">No trucks in this stage</td></tr>`;
   return rows.map(t=>`<tr onclick="openDetail('${t.id}')">
     <td style="font-family:monospace;font-weight:600">${t.vin||'-'}</td>
     <td>${t.year_make_model||'-'}</td><td>${t.cab_color||'-'}</td><td>${t.bed||'-'}</td>
     <td>${t.yard||'-'}</td><td>${t.state||'-'}</td><td>${t.mileage||'-'}</td>
-    <td>${t.repo_agent||'-'}</td><td>${t.terminated_date||'-'}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td>
-    <td>${t.term_date||'-'}</td><td>${t.date_last_worked||'-'}</td>
-    <td>${flags(t)}</td>
+    <td>${t.repo_agent||'-'}</td><td>${t.terminated_date||'-'}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${t.date_last_worked||'-'}</td><td>${flags(t)}</td>
   </tr>`).join('');
 }
 function doSearch(stage){
