@@ -223,12 +223,25 @@ const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'
 async function doLogin(){
   const name=document.getElementById('ln').value.trim();
   const email=document.getElementById('le').value.trim().toLowerCase();
-  if(!name||!email){document.getElementById('lerr').textContent='Enter name and email';return}
-  let{data:u}=await db.from('users').select('*').eq('email',email).maybeSingle();
-  if(!u){const r=await db.from('users').insert({name,email}).select().single();u=r.data}
-  me=u||{name,email};
-  localStorage.setItem('ft_user',JSON.stringify(me));
-  bootApp();
+  const err=document.getElementById('lerr');
+  if(!name||!email){err.textContent='Enter name and email';return}
+  err.textContent='Signing in...';
+  try{
+    let{data:u,error:e}=await db.from('users').select('*').eq('email',email).maybeSingle();
+    if(e)throw e;
+    if(!u){
+      const r=await db.from('users').insert({name,email}).select().single();
+      if(r.error)throw r.error;
+      u=r.data;
+    }
+    me=u||{name,email};
+    localStorage.setItem('ft_user',JSON.stringify(me));
+    err.textContent='';
+    bootApp();
+  }catch(ex){
+    err.textContent='Error: '+(ex.message||JSON.stringify(ex));
+    console.error(ex);
+  }
 }
 function doLogout(){localStorage.removeItem('ft_user');me=null;document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none'}
 async function bootApp(){
