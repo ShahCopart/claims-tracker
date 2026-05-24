@@ -491,8 +491,7 @@ function addDateToNote(){
 }
 function copyNote(idx){
   const n=notes[idx];if(!n)return;
-  const text=`${n.user_name} - ${new Date(n.created_at).toLocaleString()}
-${n.content}`;
+  const text=n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content;
   navigator.clipboard.writeText(text).then(()=>toast('Copied!','ok')).catch(()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
   });
