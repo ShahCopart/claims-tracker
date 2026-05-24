@@ -486,8 +486,7 @@ function renderNotes(){
 function addDateToNote(){
   const ta=document.getElementById('nnote');if(!ta)return;
   const d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
-  ta.value=(ta.value?ta.value+'
-':'')+d+' - ';
+  ta.value=(ta.value?ta.value+'\n':'')+d+' - ';
   ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
 }
 function copyNote(idx){
