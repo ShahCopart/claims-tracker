@@ -196,6 +196,7 @@ tbody tr:last-child td{border-bottom:none}
         <option>Ready to Assign</option><option>In Leasing</option>
         <option>Hold 4 Cars</option><option>Total Loss</option><option>Reassignment Closed</option>
       </select>
+      <button class="btn btn-secondary btn-sm" onclick="emailTruck()">📧 Email</button>
       <button class="btn btn-danger btn-sm" onclick="delTruck()">🗑 Delete</button>
     </div>
     <div style="display:flex;gap:8px">
@@ -303,7 +304,7 @@ function mkRows(rows){
     <td style="font-family:monospace;font-weight:600">${t.vin||'-'}</td>
     <td>${t.year_make_model||'-'}</td><td>${t.cab_color||'-'}</td><td>${t.bed||'-'}</td>
     <td>${t.yard||'-'}</td><td>${t.state||'-'}</td><td>${t.mileage||'-'}</td>
-    <td>${t.repo_agent||'-'}</td><td>${fmtDate(t.terminated_date)}</td><td style="color:#22c55e">${fmtDate(t.est_completion_date)}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${fmtDate(t.date_last_worked)}</td><td>${flags(t)}</td>
+    <td>${t.repo_agent||'-'}</td><td>${fmtDate(t.terminated_date)}</td><td style="color:#22c55e">${fmtDate(t.est_completion_date)}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${fmtDate(t.date_last_worked)}</td><td>${flags(t)}${t.photo_link?`<a href='${t.photo_link}' target='_blank' style='color:var(--accent);margin-left:4px;font-size:11px' onclick='event.stopPropagation()'>📷</a>`:''}</td>
   </tr>`).join('');
 }
 function doSearch(stage){
@@ -353,6 +354,7 @@ function buildForm(t){
     <div class="fg"><label class="fl">Year Make Model</label><input class="fi" id="f-ymm" value="${t.year_make_model||''}"></div>
     <div class="fg"><label class="fl">Cab & Color</label><input class="fi" id="f-cab" value="${t.cab_color||''}"></div>
     <div class="fg"><label class="fl">Bed</label><input class="fi" id="f-bed" value="${t.bed||''}"></div>
+    <div class="fg s4"><label class="fl">📷 Photo Folder Link (OneDrive/Google Drive)</label><input class="fi" id="f-photolink" value="${t.photo_link||''}" placeholder="Paste OneDrive or Google Drive folder link here..."><div style="font-size:10px;color:var(--text3);margin-top:3px">Paste the shared folder link where truck photos are stored</div></div>
     <div class="fg"><label class="fl">Mileage</label><input class="fi" id="f-mil" value="${t.mileage||''}"></div>
     <div class="fg"><label class="fl">Yard</label><select class="fsel2" id="f-yard"><option value="">Select</option>${yo}</select></div>
     <div class="fg"><label class="fl">State</label><select class="fsel2" id="f-state"><option value="">Select</option>${so}</select></div>
@@ -502,6 +504,7 @@ async function saveTruck(){
     cab_color:document.getElementById('f-cab')?.value.trim(),
     bed:document.getElementById('f-bed')?.value.trim(),
     mileage:document.getElementById('f-mil')?.value.trim(),
+    photo_link:document.getElementById('f-photolink')?.value.trim()||null,
     yard:document.getElementById('f-yard')?.value,
     state:document.getElementById('f-state')?.value,
     stage:document.getElementById('f-stage')?.value,
@@ -848,6 +851,63 @@ function clickStage(stage){
   const i=idx.indexOf(stage);
   if(i>=0)doTab(stage,tabs[i]);
 }
+function emailTruck(){
+  const t=trucks.find(x=>x.id===truckId);if(!t)return;
+  const emails={
+    lauren:'lauren.gadd@copart.com',brian:'brian.gates@copart.com',
+    chris:'christcisco.komari@copart.com',trey:'trey.ferguson@copart.com',
+    'maria f':'maria.flores@copart.com',kierra:'kierra.tolbert@copart.com',
+    'maria o':'maria.ortiz@copart.com',mike:'michael.london@copart.com',
+    simon:'simon.smock@copart.com',khurram:'khurram.shah@copart.com'
+  };
+  const stage=document.getElementById('f-stage')?.value||t.stage||'';
+  const vin=document.getElementById('f-vin')?.value||t.vin||'';
+  const ymm=document.getElementById('f-ymm')?.value||t.year_make_model||'';
+  const shopSt=document.getElementById('f-shopst')?.value||t.shop_status||'';
+  const estComp=document.getElementById('f-estcomp')?.value||t.est_completion_date||'';
+  const repoAgent=document.getElementById('f-repoagent')?.value||t.repo_agent||'';
+  const photoLink=document.getElementById('f-photolink')?.value||t.photo_link||'';
+  
+  const subject=`Fleet Update | VIN: ${vin} | ${ymm} | ${stage}`;
+  let body=`Hello,
+
+Please see the update below for the following truck:
+
+VIN: ${vin}
+Vehicle: ${ymm}
+Current Stage: ${stage}
+Yard: ${document.getElementById('f-yard')?.value||t.yard||''}
+State: ${document.getElementById('f-state')?.value||t.state||''}
+Mileage: ${document.getElementById('f-mil')?.value||t.mileage||''}`;
+  if(repoAgent)body+=`
+Repo Agent: ${repoAgent}`;
+  if(shopSt)body+=`
+Shop Status: ${shopSt}`;
+  if(estComp)body+=`
+Est. Completion: ${estComp}`;
+  if(photoLink)body+=`
+
+Photo Folder: ${photoLink}`;
+  
+  // Get latest notes
+  if(notes.length>0){
+    const latest=notes[0];
+    body+=`
+
+----------------------------------------
+Latest Note (${new Date(latest.created_at).toLocaleDateString()}):
+${latest.content}`;
+  }
+  
+  body+=`
+
+Thanks,
+${me.name}`;
+  
+  const mailtoLink=`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href=mailtoLink;
+}
+
 function toast(msg,type){
   const t=document.createElement('div');
   t.className=`toast ${type==='ok'?'tok-ok':'tok-err'}`;
