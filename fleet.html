@@ -414,7 +414,13 @@ function buildForm(t){
     </div>
   </div></div>
 
-  <div class="sec"><div class="sec-title">Notes</div>
+  <div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">
+    <span>Notes</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-secondary btn-xs" onclick="addDateToNote()">+ Date Entry</button>
+      <button class="btn btn-secondary btn-xs" onclick="copyAllNotes()">📋 Copy All Notes</button>
+    </div>
+  </div>
   <div class="notes-list" id="nlist"></div>
   <div class="note-row">
     <textarea class="note-input" id="nnote" rows="2" placeholder="Add a note..."></textarea>
@@ -451,10 +457,43 @@ function calcLease(p,balloon){
 function renderNotes(){
   const l=document.getElementById('nlist');if(!l)return;
   if(!notes.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0">No notes yet</div>';return}
-  l.innerHTML=notes.map(n=>`<div class="note-item">
-    <div class="note-meta"><span style="font-weight:500;color:var(--text)">${n.user_name}</span><span>${new Date(n.created_at).toLocaleString()}</span></div>
+  l.innerHTML=notes.map((n,i)=>`<div class="note-item">
+    <div class="note-meta">
+      <span style="font-weight:500;color:var(--text)">${n.user_name}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span>${new Date(n.created_at).toLocaleString()}</span>
+        <button class="btn btn-secondary btn-xs" onclick="copyNote(${i})" style="padding:1px 6px">📋</button>
+      </div>
+    </div>
     <div class="note-text">${n.content}</div>
   </div>`).join('');
+}
+function addDateToNote(){
+  const ta=document.getElementById('nnote');if(!ta)return;
+  const d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  ta.value=(ta.value?ta.value+'
+':'')+d+' - ';
+  ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+}
+function copyNote(idx){
+  const n=notes[idx];if(!n)return;
+  const text=`${n.user_name} - ${new Date(n.created_at).toLocaleString()}
+${n.content}`;
+  navigator.clipboard.writeText(text).then(()=>toast('Copied!','ok')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
+  });
+}
+function copyAllNotes(){
+  if(!notes.length){toast('No notes to copy','err');return}
+  const text=notes.map(n=>`${n.user_name} - ${new Date(n.created_at).toLocaleString()}
+${n.content}`).join('
+
+---
+
+');
+  navigator.clipboard.writeText(text).then(()=>toast('All notes copied!','ok')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('All notes copied!','ok');
+  });
 }
 async function addNote(){
   const c=document.getElementById('nnote')?.value.trim();if(!c||!truckId)return;
