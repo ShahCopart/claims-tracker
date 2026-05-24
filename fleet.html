@@ -498,12 +498,7 @@ function copyNote(idx){
 }
 function copyAllNotes(){
   if(!notes.length){toast('No notes to copy','err');return}
-  const text=notes.map(n=>`${n.user_name} - ${new Date(n.created_at).toLocaleString()}
-${n.content}`).join('
-
----
-
-');
+  const text=notes.map(n=>n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content).join('\n\n---\n\n');
   navigator.clipboard.writeText(text).then(()=>toast('All notes copied!','ok')).catch(()=>{
     const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('All notes copied!','ok');
   });
