@@ -296,13 +296,14 @@ function renderList(stage,m){
     <tbody id="tbl-body">${mkRows(rows)}</tbody></table>
   </div></div>`;
 }
+function fmtDate(d){if(!d)return'-';const p=d.split('-');return p.length===3?p[1]+'/'+p[2]+'/'+p[0]:d;}
 function mkRows(rows){
   if(!rows.length)return`<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text2)">No trucks in this stage</td></tr>`;
   return rows.map(t=>`<tr onclick="openDetail('${t.id}')">
     <td style="font-family:monospace;font-weight:600">${t.vin||'-'}</td>
     <td>${t.year_make_model||'-'}</td><td>${t.cab_color||'-'}</td><td>${t.bed||'-'}</td>
     <td>${t.yard||'-'}</td><td>${t.state||'-'}</td><td>${t.mileage||'-'}</td>
-    <td>${t.repo_agent||'-'}</td><td>${t.terminated_date||'-'}</td><td style="color:#22c55e">${t.est_completion_date||'-'}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${t.date_last_worked||'-'}</td><td>${flags(t)}</td>
+    <td>${t.repo_agent||'-'}</td><td>${fmtDate(t.terminated_date)}</td><td style="color:#22c55e">${fmtDate(t.est_completion_date)}</td><td style="color:var(--amber);font-size:11px">${t.shop_status||'-'}</td><td>${fmtDate(t.date_last_worked)}</td><td>${flags(t)}</td>
   </tr>`).join('');
 }
 function doSearch(stage){
@@ -368,7 +369,6 @@ function buildForm(t){
     <div class="fg"><label class="fl">Intake Date</label><input class="fi" type="date" id="f-intake" value="${t.intake_date||''}"></div>
     <div class="fg"><label class="fl">Ready Date</label><input class="fi" type="date" id="f-ready" value="${t.ready_date||''}"></div>
     <div class="fg"><label class="fl">Assigned Date</label><input class="fi" type="date" id="f-assign" value="${t.assigned_date||''}"></div>
-    <div class="fg"><label class="fl">Term Date</label><input class="fi" type="date" id="f-term" value="${t.term_date||''}"></div>
     <div class="fg"><label class="fl">Date Last Worked</label><input class="fi" type="date" id="f-lw" value="${t.date_last_worked||''}"></div>
   </div></div>
 
@@ -513,7 +513,6 @@ async function saveTruck(){
     intake_date:document.getElementById('f-intake')?.value||null,
     ready_date:document.getElementById('f-ready')?.value||null,
     assigned_date:document.getElementById('f-assign')?.value||null,
-    term_date:document.getElementById('f-term')?.value||null,
     date_last_worked:new Date().toISOString().split('T')[0],
     leasing_company:document.getElementById('f-lco')?.value.trim(),
     applicant_name:document.getElementById('f-app')?.value.trim(),
