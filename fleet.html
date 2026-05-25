@@ -438,8 +438,14 @@ function buildForm(t){
     '<div class="fg"><label class="fl">Yard (type to search)</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"></div>'+
     '<div class="fg"><label class="fl">State (type to search)</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>'+
     '<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>'+
-    '<div class="fg s2"><label class="fl">📷 Photo Folder Link</label><input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste OneDrive or Google Drive folder link..."></div>'+
-    '<div class="fg s2"><label class="fl">📁 Invoice Folder Link (OneDrive)</label><input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste OneDrive invoices folder link..."></div>'+
+    '<div class="fg s2">'+
+    '<label class="fl">📷 Photo Folder Link '+(t.photo_link?'<a href="'+t.photo_link+'" target="_blank" class="btn btn-secondary btn-xs">Open</a>':'')+'</label>'+
+    '<input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste OneDrive or Google Drive folder link...">'+
+    '</div>'+
+    '<div class="fg s2">'+
+    '<label class="fl">📁 Invoice Folder Link (OneDrive) '+(t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-xs">Open</a>':'')+'</label>'+
+    '<input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste OneDrive invoices folder link...">'+
+    '</div>'+
     '</div></div>'+
 
     '<div class="sec"><div class="sec-title">Status & Dates</div><div class="g4">'+
@@ -476,7 +482,10 @@ function buildForm(t){
     '<span>Inspection Checklist</span>'+
     (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Inspections Folder</a>':'')+ 
     '</div>'+
-    '<div class="fg" style="margin-bottom:10px"><label class="fl">📁 Inspections Folder Link (OneDrive)</label><input class="fi" id="f-insplink" value="'+(t.inspections_link||'')+'" placeholder="Paste OneDrive inspections folder link (AEI, Copart, etc.)..."></div>'+
+    '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
+    '<div style="flex:1"><label class="fl">📁 Inspections Folder Link (OneDrive)</label><input class="fi" id="f-insplink" value="'+(t.inspections_link||'')+'" placeholder="Paste OneDrive link..."></div>'+
+    (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-sm" style="white-space:nowrap">📁 Open Folder</a>':'')+ 
+    '</div>'+
     '<div class="checklist">'+
     checkItems.map(function(arr){
       return '<label class="ci'+(t[arr[1]]?' on':'')+'" id="ci-'+arr[0]+'">'+
@@ -514,7 +523,10 @@ function buildForm(t){
     '<div style="display:flex;align-items:center;gap:8px">'+
     (t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Expenses Folder</a>':'')+ 
     '</div></div>'+
-    '<div class="fg" style="margin-bottom:10px"><label class="fl">📁 Expenses Folder Link (OneDrive)</label><input class="fi" id="f-explink" value="'+(t.expenses_link||'')+'" placeholder="Paste OneDrive expenses folder link..."></div>'+
+    '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
+    '<div style="flex:1"><label class="fl">📁 Expenses Folder Link (OneDrive)</label><input class="fi" id="f-explink" value="'+(t.expenses_link||'')+'" placeholder="Paste OneDrive link..."></div>'+
+    (t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-sm" style="white-space:nowrap">📁 Open Folder</a>':'')+ 
+    '</div>'+
     '<div id="elist"></div>'+
     '<div class="exp-row">'+
     '<input style="width:130px" type="date" id="ned" class="fi" value="'+new Date().toISOString().split('T')[0]+'">'+
