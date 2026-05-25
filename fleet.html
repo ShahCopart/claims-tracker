@@ -723,7 +723,7 @@ function renderDash(m){
   var overdue=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';}).length;
   m.innerHTML='<div class="dash-grid">'+
     '<div class="dc"><div class="dc-lbl">Total in System</div><div class="dc-num" style="color:#3b82f6">'+trucks.length+'</div></div>'+
-    '<div class="dc"><div class="dc-lbl">Active Pipeline</div><div class="dc-num" style="color:#22c55e">'+active+'</div></div>'+
+    '<div class="dc" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+trucks.filter(function(t){return getDaysSinceWorked(t)>=7&&t.stage!=='Reassignment Closed';}).length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
     '<div class="dc" style="cursor:pointer" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between">Needs Attention <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">2+ days no activity</div></div>'+
     '<div class="dc"><div class="dc-lbl">Active Claims</div><div class="dc-num" style="color:#a78bfa">'+claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length+'</div></div>'+
