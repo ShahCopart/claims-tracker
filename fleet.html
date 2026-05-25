@@ -239,7 +239,12 @@ async function bootApp(){
   document.getElementById('ubadge').textContent='👤 '+me.name;
   document.getElementById('main').innerHTML='<div style="padding:40px;color:var(--text2);display:flex;align-items:center"><div class="spin"></div>Loading...</div>';
   await loadData();
-  doTab('dashboard',document.querySelector('.ntab'));
+  // Restore last tab if available
+  var lastTab=localStorage.getItem('ft_last_tab')||'dashboard';
+  var tabs=document.querySelectorAll('.ntab');
+  var idx=['dashboard','Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Hold 4 Cars','Total Loss','Reassignment Closed','claims','report'];
+  var ti=idx.indexOf(lastTab);
+  doTab(lastTab,tabs[ti>=0?ti:0]);
 }
 
 async function loadData(){
@@ -260,7 +265,7 @@ function updateBadges(){
 function doTab(key,el){
   document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});
   if(el)el.classList.add('active');
-  tab=key;window._lastTab=key;renderTab();
+  tab=key;window._lastTab=key;localStorage.setItem('ft_last_tab',key);renderTab();
 }
 function switchTab(key,el){doTab(key,el);}
 
@@ -296,7 +301,7 @@ function flags(t){
 }
 
 function renderList(stage,m){
-  var rows=trucks.filter(function(t){return t.stage===stage;});
+  var rows=trucks.filter(function(t){return (t.stage||'').trim()===(stage||'').trim();});
   var shOpts=SHOP_ST.map(function(s){return '<option>'+s+'</option>';}).join('');
   m.innerHTML=
     '<div class="filters">'+
@@ -355,11 +360,11 @@ function mkRows(rows){
 }
 
 function doSearch(){
-  var stage=window._curStage||tab;
+  var stage=tab;
   var q=(document.getElementById('srch')?document.getElementById('srch').value:'').toLowerCase();
   var sh=document.getElementById('shpf')?document.getElementById('shpf').value:'';
   var fl=document.getElementById('flgf')?document.getElementById('flgf').value:'';
-  var rows=trucks.filter(function(t){return t.stage===stage;});
+  var rows=trucks.filter(function(t){return (t.stage||'').trim()===(stage||'').trim();});
   if(q)rows=rows.filter(function(t){return (t.vin||'').toLowerCase().includes(q)||(t.year_make_model||'').toLowerCase().includes(q)||(t.yard||'').toLowerCase().includes(q);});
   if(sh)rows=rows.filter(function(t){return t.shop_status===sh;});
   if(fl)rows=rows.filter(function(t){return t[fl];});
