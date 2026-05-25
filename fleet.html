@@ -615,6 +615,17 @@ async function saveTruck(){
     if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});
   }
   if(res.data){
+    var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
+    var autoNotes=[];
+    if(prevTruck.shop_status!==data.shop_status&&data.shop_status)
+      autoNotes.push('[SHOP STATUS] Changed to: '+data.shop_status);
+    if(prevTruck.stage!==data.stage&&data.stage)
+      autoNotes.push('[STAGE] Changed to: '+data.stage);
+    if(autoNotes.length>0){
+      await db.from('notes').insert(autoNotes.map(function(content){return {truck_id:truckId,user_name:me.name,content:content};}));
+      var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
+      notes=nr.data||[];
+    }
     var i=trucks.findIndex(function(t){return t.id===truckId;});
     if(i>=0)trucks[i]=res.data;else trucks.unshift(res.data);
     updateBadges();
@@ -623,6 +634,7 @@ async function saveTruck(){
     document.getElementById('d-sbadge').textContent=res.data.stage||'';
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[res.data.stage]||'s-intake');
     document.getElementById('d-flags').innerHTML=flags(res.data);
+    renderNotes();
     toast('Saved!','ok');
   }else toast('Error saving','err');
 }
@@ -642,6 +654,10 @@ async function moveStage(){
     document.getElementById('d-move').value='';
     var h=await db.from('stage_history').select('*').eq('truck_id',truckId).order('entered_at',{ascending:true});
     hist=h.data||[];renderHist();updateBadges();toast('Moved to '+ns,'ok');
+    // Auto-note for stage change
+    await db.from('notes').insert({truck_id:truckId,user_name:me.name,content:'[STAGE CHANGE] Moved to: '+ns});
+    var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
+    notes=nr.data||[];renderNotes();
   }
 }
 
