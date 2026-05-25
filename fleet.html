@@ -346,7 +346,12 @@ function mkRows(rows){
   });
   return rows.map(function(t){
     var pi=t.photo_link?'<a href="'+t.photo_link+'" target="_blank" style="color:var(--accent);margin-left:4px;font-size:11px" onclick="event.stopPropagation()">📷</a>':'';
-    return '<tr onclick="openDetail(\''+t.id+'\')">'+
+    var ov=isOverdue(t);
+    var days=getDaysSinceWorked(t);
+    var daysStr=days===999?'-':days===0?'Today':days+'d ago';
+    var daysColor=ov?'#ef4444':days===1?'#f59e0b':'#22c55e';
+    var rowStyle=ov?'background:rgba(220,38,38,0.08);border-left:3px solid #ef4444':'';
+    return '<tr onclick="openDetail(\''+t.id+'\'" style="'+rowStyle+'">'+
       '<td style="font-family:monospace;font-weight:600">'+(t.vin||'-')+'</td>'+
       '<td>'+(t.year_make_model||'-')+'</td><td>'+(t.cab_color||'-')+'</td><td>'+(t.bed||'-')+'</td>'+
       '<td>'+(t.yard||'-')+'</td><td>'+(t.state||'-')+'</td><td>'+(t.mileage||'-')+'</td>'+
