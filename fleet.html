@@ -80,7 +80,7 @@ tbody tr:last-child td{border-bottom:none}
 .note-input:focus{outline:none;border-color:var(--accent)}
 .exp-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
 .exp-row input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12px}
-.exp-total{text-align:right;font-size:13px;font-weight:600;color:var(--accent);padding:6px 0;border-top:1px solid var(--border)}
+.exp-total{padding:4px 0}
 .stage-sel{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px}
 .dash-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .dc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
@@ -105,19 +105,16 @@ tbody tr:last-child td{border-bottom:none}
 .s-shop{background:#3b2a1a;color:#fcd34d}.s-insp{background:#1a3b3b;color:#67e8f9}
 .s-ready{background:#1a3b1a;color:#86efac}.s-leas{background:#2a3b1a;color:#bef264}
 .s-hold{background:#3b3b1a;color:#fde68a}.s-tl{background:#3b1a2a;color:#f9a8d4}
-.s-closed{background:#2a2a2a;color:#9ca3af}.s-lm{background:#1a2a3b;color:#7dd3fc}
-.s-va{background:#2a1a3b;color:#d8b4fe}
+.s-closed{background:#2a2a2a;color:#9ca3af}.s-lm{background:#1a2a3b;color:#7dd3fc}.s-va{background:#2a1a3b;color:#d8b4fe}
 .overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:400;display:flex;align-items:center;justify-content:center}
 .overlay-box{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:92vw;max-width:960px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column}
 .ov-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg2);z-index:1}
 .ov-body{padding:20px;flex:1}
 .ov-ftr{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;bottom:0;background:var(--bg2)}
 .pwd-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:24px;width:320px}
-.pwd-modal h3{font-size:15px;font-weight:600;margin-bottom:16px}
 </style>
 </head>
 <body>
-
 <div class="login-wrap" id="login-screen">
   <div class="login-box">
     <div class="login-logo">🚛 Fleet Tracker</div>
@@ -128,7 +125,6 @@ tbody tr:last-child td{border-bottom:none}
     <div class="login-err" id="lerr"></div>
   </div>
 </div>
-
 <div class="app" id="app">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
@@ -163,7 +159,6 @@ tbody tr:last-child td{border-bottom:none}
   </div>
   <div class="main" id="main"></div>
 </div>
-
 <div class="detail-screen" id="dscreen">
   <div class="detail-header">
     <div>
@@ -198,42 +193,28 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 </div>
-
 <datalist id="yard-list"></datalist>
 <datalist id="state-list"></datalist>
-
 <script>
 const SB_URL='https://grillezennazhgruvtav.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyaWxsZXplbm5hemhncnV2dGF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzAxMzMsImV4cCI6MjA5NTIwNjEzM30.CVbSaQ04mI8L7RUF8KEFGqQKskumFVGyJczP1RjwKkE';
 const db=supabase.createClient(SB_URL,SB_KEY);
 const ADMIN_EMAIL='khurram.shah@copart.com';
 const ADMIN_PASSWORD='Copart2024!';
-
-// Populate datalists
 var ydl=document.getElementById('yard-list');
 for(var yi=1;yi<=400;yi++){var yo=document.createElement('option');yo.value='Yard '+yi;ydl.appendChild(yo);}
 ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].forEach(function(s){var o=document.createElement('option');o.value=s;document.getElementById('state-list').appendChild(o);});
-
 var me=null,tab='dashboard',truckId=null,isAdmin=false;
 var trucks=[],claims=[],notes=[],exps=[],hist=[];
-
 const STAGES=['Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Leased Trucks Maintenance','Vendor Assist','Hold 4 Cars','Total Loss','Reassignment Closed'];
 const AUTO_DATE_STAGES=['Intake','Manager Review','Final Inspection'];
 const SHOP_ST=['Under Review','Dispatched to Shop','Arrived at Shop','Waiting for Estimate','Pending Approval','Approved - Work Requested','Work in Progress','Work Complete','Dispatched Back to Yard','Arrived - Needs Wash & Inspection','Transit Pros'];
 const CLAIM_ST=['Open','In Progress','Pending','Under Review','Urgent Review','Approved','Denied','On Hold','Follow Up','Follow Up with GM','Follow Up with Maintenance','Following Up with Insurance','Follow Up on Documents','Follow Up with Leasing CO','Pending Total Loss','Pending Completion','Pending Check','Pending Rejection','Pending Estimate','Pending Pay Off','Pending Pictures','Pending Legal','Pending Complete','Shah Working On','Complete','Done'];
 const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'s-epika','At Shop':'s-shop','Final Inspection':'s-insp','Ready to Assign':'s-ready','In Leasing':'s-leas','Leased Trucks Maintenance':'s-lm','Vendor Assist':'s-va','Hold 4 Cars':'s-hold','Total Loss':'s-tl','Reassignment Closed':'s-closed'};
-
-// Nav tab click handler
 document.addEventListener('DOMContentLoaded',function(){
-  document.querySelectorAll('.ntab').forEach(function(el){
-    el.addEventListener('click',function(){doTab(this.getAttribute('data-tab'),this);});
-  });
-  document.getElementById('main').addEventListener('click',function(e){
-    var row=e.target.closest('.truck-row');
-    if(row&&row.getAttribute('data-id'))openDetail(row.getAttribute('data-id'));
-  });
+  document.querySelectorAll('.ntab').forEach(function(el){el.addEventListener('click',function(){doTab(this.getAttribute('data-tab'),this);});});
+  document.getElementById('main').addEventListener('click',function(e){var row=e.target.closest('.truck-row');if(row&&row.getAttribute('data-id'))openDetail(row.getAttribute('data-id'));});
 });
-
 async function doLogin(){
   var name=document.getElementById('ln').value.trim();
   var email=document.getElementById('le').value.trim().toLowerCase();
@@ -246,60 +227,40 @@ async function doLogin(){
     var u=r1.data;
     if(!u){var r2=await db.from('users').insert({name:name,email:email}).select().single();if(r2.error)throw r2.error;u=r2.data;}
     me=u||{name:name,email:email};
-    isAdmin=(email===ADMIN_EMAIL||me.role==='admin');
+    isAdmin=(email===ADMIN_EMAIL||(me.role&&me.role==='admin'));
     localStorage.setItem('ft_user',JSON.stringify(me));
-    err.textContent='';
-    bootApp();
+    err.textContent='';bootApp();
   }catch(ex){err.textContent='Error: '+(ex.message||'Connection failed');console.error(ex);}
 }
-
 function doLogout(){localStorage.removeItem('ft_user');me=null;document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
-
 async function bootApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('ubadge').textContent='👤 '+me.name;
-  if(isAdmin)document.getElementById('admin-badge').style.display='inline-block';
-  if(isAdmin)document.getElementById('del-btn').style.display='inline-flex';
+  if(isAdmin){document.getElementById('admin-badge').style.display='inline-block';document.getElementById('del-btn').style.display='inline-flex';}
   document.getElementById('main').innerHTML='<div style="padding:40px;color:var(--text2);display:flex;align-items:center"><div class="spin"></div>Loading...</div>';
   await loadData();
   var lastTab=localStorage.getItem('ft_last_tab')||'dashboard';
   doTab(lastTab,null);
 }
-
 async function loadData(){
   var r1=await db.from('trucks').select('*').order('created_at',{ascending:false});
   var r2=await db.from('claims').select('*').order('created_at',{ascending:false});
   trucks=r1.data||[];claims=r2.data||[];updateBadges();
 }
-
-async function refreshAll(){
-  await loadData();
-  renderTab();
-  toast('Refreshed','ok');
-}
-
+async function refreshAll(){await loadData();renderTab();toast('Refreshed','ok');}
 function updateBadges(){
-  var total=trucks.length;
-  document.getElementById('total-count').textContent=total+' truck'+(total!==1?'s':'');
-  STAGES.forEach(function(s){
-    var key=s.replace(/ /g,'_');
-    var el=document.getElementById('c-'+key);
-    if(el)el.textContent=trucks.filter(function(t){return t.stage===s;}).length;
-  });
-  var cl=document.getElementById('c-claims');
-  if(cl)cl.textContent=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
+  document.getElementById('total-count').textContent=trucks.length+' truck'+(trucks.length!==1?'s':'');
+  STAGES.forEach(function(s){var el=document.getElementById('c-'+s.replace(/ /g,'_'));if(el)el.textContent=trucks.filter(function(t){return t.stage===s;}).length;});
+  var cl=document.getElementById('c-claims');if(cl)cl.textContent=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
 }
-
 function doTab(key,el){
   document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});
   var target=el||document.querySelector('.ntab[data-tab="'+key+'"]');
   if(target)target.classList.add('active');
   tab=key;window._lastTab=key;localStorage.setItem('ft_last_tab',key);renderTab();
 }
-function switchTab(key,el){doTab(key,el);}
-function clickStage(stage){var el=document.querySelector('.ntab[data-tab="'+stage+'"]');doTab(stage,el);}
-
+function clickStage(stage){doTab(stage,document.querySelector('.ntab[data-tab="'+stage+'"]'));}
 function renderTab(){
   var m=document.getElementById('main');
   if(STAGES.includes(tab))renderList(tab,m);
@@ -307,20 +268,11 @@ function renderTab(){
   else if(tab==='claims')renderClaims(m);
   else if(tab==='report')renderReport(m);
 }
-
-function fmtDate(d){if(!d)return'-';var p=d.split('-');return p.length===3?p[1]+'/'+p[2]+'/'+p[0]:d;}
+function fmtDate(d){if(!d)return'-';var p=String(d).split('-');return p.length===3?p[1]+'/'+p[2]+'/'+p[0]:d;}
 function today(){return new Date().toISOString().split('T')[0];}
 function addDays(n){var d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];}
-
-function getDaysSinceWorked(t){
-  if(!t.date_last_worked)return 999;
-  return Math.floor((new Date()-new Date(t.date_last_worked))/86400000);
-}
-function isOverdue(t){
-  if(t.est_completion_date&&new Date(t.est_completion_date)>new Date())return false;
-  return getDaysSinceWorked(t)>=2;
-}
-
+function getDaysSinceWorked(t){if(!t.date_last_worked)return 999;return Math.floor((new Date()-new Date(t.date_last_worked))/86400000);}
+function isOverdue(t){if(t.est_completion_date&&new Date(t.est_completion_date)>new Date())return false;return getDaysSinceWorked(t)>=2;}
 function flags(t){
   var f='';
   if(t.title_issue)f+='<span class="flag" style="background:#ef4444" title="Title Issue"></span>';
@@ -330,38 +282,25 @@ function flags(t){
   f+='<span class="flag" style="background:'+(ht?'#22c55e':'#6b7280')+'" title="'+(ht?'Tracker OK':'No Tracker')+'"></span>';
   return f;
 }
-
 function renderList(stage,m){
   var rows=trucks.filter(function(t){return (t.stage||'').trim()===stage.trim();});
   var shOpts=SHOP_ST.map(function(s){return '<option>'+s+'</option>';}).join('');
-  m.innerHTML=
-    '<div class="filters">'+
+  m.innerHTML='<div class="filters">'+
     '<input class="search" id="srch" placeholder="Search VIN, yard..." oninput="doSearch()">'+
     '<select class="fsel" id="shpf" onchange="doSearch()"><option value="">All Shop Status</option>'+shOpts+'</select>'+
     '<select class="fsel" id="flgf" onchange="doSearch()"><option value="">All Flags</option><option value="title_issue">Title Issue</option><option value="has_claim">Has Claim</option><option value="total_loss">Total Loss</option></select>'+
     '<span style="color:var(--text2);font-size:12px">'+rows.length+' truck'+(rows.length!==1?'s':'')+'</span>'+
     '</div>'+
     '<div class="tbl-wrap"><div class="tbl-scroll">'+
-    '<table><thead><tr>'+
-    '<th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th>'+
-    '<th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th>'+
-    '<th>Terminated</th><th>Est. Completion</th><th>Shop Status</th><th>Last Worked</th><th>Days</th><th>Flags</th>'+
-    '</tr></thead>'+
-    '<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table>'+
-    '</div></div>';
+    '<table><thead><tr><th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th><th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th><th>Terminated</th><th>Est. Completion</th><th>Shop Status</th><th>Last Worked</th><th>Days</th><th>Flags</th></tr></thead>'+
+    '<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table></div></div>';
 }
-
 function mkRows(rows){
   if(!rows.length)return '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text2)">No trucks in this stage</td></tr>';
-  rows=rows.slice().sort(function(a,b){
-    var ao=isOverdue(a),bo=isOverdue(b);
-    if(ao&&!bo)return -1;if(!ao&&bo)return 1;
-    return getDaysSinceWorked(b)-getDaysSinceWorked(a);
-  });
+  rows=rows.slice().sort(function(a,b){var ao=isOverdue(a),bo=isOverdue(b);if(ao&&!bo)return -1;if(!ao&&bo)return 1;return getDaysSinceWorked(b)-getDaysSinceWorked(a);});
   return rows.map(function(t){
     var pi=t.photo_link?'<a href="'+t.photo_link+'" target="_blank" style="color:var(--accent);margin-left:4px;font-size:11px" onclick="event.stopPropagation()">📷</a>':'';
-    var ov=isOverdue(t);
-    var days=getDaysSinceWorked(t);
+    var ov=isOverdue(t),days=getDaysSinceWorked(t);
     var daysStr=days===999?'-':days===0?'Today':days+'d ago';
     var daysColor=ov?'#ef4444':days===1?'#f59e0b':'#22c55e';
     var rowStyle=ov?'background:rgba(220,38,38,0.08);border-left:3px solid #ef4444':'';
@@ -375,11 +314,9 @@ function mkRows(rows){
       '<td style="color:var(--amber);font-size:11px">'+(t.shop_status||'-')+'</td>'+
       '<td>'+fmtDate(t.date_last_worked)+'</td>'+
       '<td style="color:'+daysColor+';font-weight:'+(ov?'700':'400')+'">'+daysStr+'</td>'+
-      '<td>'+flags(t)+pi+'</td>'+
-      '</tr>';
+      '<td>'+flags(t)+pi+'</td></tr>';
   }).join('');
 }
-
 function doSearch(){
   var q=(document.getElementById('srch')?document.getElementById('srch').value:'').toLowerCase();
   var sh=document.getElementById('shpf')?document.getElementById('shpf').value:'';
@@ -390,13 +327,11 @@ function doSearch(){
   if(fl)rows=rows.filter(function(t){return t[fl];});
   var b=document.getElementById('tbl-body');if(b)b.innerHTML=mkRows(rows);
 }
-
 async function openDetail(id){
   window._lastTab=tab;truckId=id;
   var fresh=await db.from('trucks').select('*').eq('id',id).single();
   var t=fresh.data||trucks.find(function(x){return x.id===id;})||{};
-  var idx=trucks.findIndex(function(x){return x.id===id;});
-  if(idx>=0&&fresh.data)trucks[idx]=fresh.data;
+  var idx=trucks.findIndex(function(x){return x.id===id;});if(idx>=0&&fresh.data)trucks[idx]=fresh.data;
   var r1=await db.from('notes').select('*').eq('truck_id',id).order('created_at',{ascending:false});
   var r2=await db.from('expenses').select('*').eq('truck_id',id).order('date',{ascending:false});
   var r3=await db.from('stage_history').select('*').eq('truck_id',id).order('entered_at',{ascending:true});
@@ -411,38 +346,18 @@ async function openDetail(id){
   document.getElementById('dscreen').classList.add('open');
   renderNotes();renderExps();renderHist();
 }
-
-async function refreshDetail(){
-  if(truckId)await openDetail(truckId);
-}
-
-function cpBtn(fieldId){
-  return '<button class="btn btn-secondary btn-xs" onclick="copyVal(\''+fieldId+'\')">📋</button>';
-}
-function lockBtn(fieldId,lockId){
-  return '<button class="btn btn-secondary btn-xs" id="'+lockId+'" onclick="toggleLock(\''+fieldId+'\',\''+lockId+'\')">🔒</button>';
-}
-
+async function refreshDetail(){if(truckId)await openDetail(truckId);}
+function cpBtn(fid){return '<button class="btn btn-secondary btn-xs" onclick="copyVal(\''+fid+'\')">📋</button>';}
+function lkBtn(fid,lid){return '<button class="btn btn-secondary btn-xs" id="'+lid+'" onclick="toggleLock(\''+fid+'\',\''+lid+'\')">🔒</button>';}
 function buildForm(t){
   var sho=SHOP_ST.map(function(s){return '<option'+(t.shop_status===s?' selected':'')+'>'+s+'</option>';}).join('');
   var stgo=STAGES.map(function(s){return '<option'+(t.stage===s?' selected':'')+'>'+s+'</option>';}).join('');
   var rate=t.interest_rate||9;
-  var lc=(t.estimated_payoff)?calcLease(t.estimated_payoff,t.balloon_payment,rate):'<span style="color:var(--text3)">Enter payoff to calculate</span>';
-
-  var checkItems=[
-    ['f-ph','photos_taken','📷 Photos'],['f-pm','pm_done','🔧 PM Done'],
-    ['f-bat','batteries_installed','🔋 Batteries'],['f-ws','windshield_done','🪟 Windshield'],
-    ['f-tr','tires_changed','🚗 Tires'],['f-el','electrical_issues','⚡ Electrical'],
-    ['f-ce','check_engine','🔴 Check Engine'],['f-bw','bed_works','📦 Bed Works'],
-    ['f-di','deidentified','🏷 De-ID'],['f-so','supplies_ordered','📦 Supplies'],
-    ['f-aei','aei_inspection','🔍 AEI Inspection'],['f-copart','copart_inspection','🏢 Copart Inspection']
-  ];
-
+  var lc=t.estimated_payoff?calcLease(t.estimated_payoff,t.balloon_payment,rate):'<span style="color:var(--text3)">Enter payoff to calculate</span>';
+  var checkItems=[['f-ph','photos_taken','📷 Photos'],['f-pm','pm_done','🔧 PM Done'],['f-bat','batteries_installed','🔋 Batteries'],['f-ws','windshield_done','🪟 Windshield'],['f-tr','tires_changed','🚗 Tires'],['f-el','electrical_issues','⚡ Electrical'],['f-ce','check_engine','🔴 Check Engine'],['f-bw','bed_works','📦 Bed Works'],['f-di','deidentified','🏷 De-ID'],['f-so','supplies_ordered','📦 Supplies'],['f-aei','aei_inspection','🔍 AEI Inspection'],['f-copart','copart_inspection','🏢 Copart Inspection']];
   var isVA=(t.stage==='Vendor Assist');
-  var isLM=(t.stage==='Leased Trucks Maintenance');
-
   return '<div class="sec"><div class="sec-title"><span>Vehicle Information</span></div><div class="g4">'+
-    '<div class="fg"><label class="fl">VIN '+cpBtn('f-vin')+lockBtn('f-vin','vin-lock-btn')+'</label><input class="fi" id="f-vin" value="'+(t.vin||'')+'" readonly></div>'+
+    '<div class="fg"><label class="fl">VIN '+cpBtn('f-vin')+lkBtn('f-vin','vin-lock-btn')+'</label><input class="fi" id="f-vin" value="'+(t.vin||'')+'" readonly></div>'+
     '<div class="fg"><label class="fl">Year Make Model</label><input class="fi" id="f-ymm" value="'+(t.year_make_model||'')+'"></div>'+
     '<div class="fg"><label class="fl">Cab & Color</label><input class="fi" id="f-cab" value="'+(t.cab_color||'')+'"></div>'+
     '<div class="fg"><label class="fl">Bed</label><input class="fi" id="f-bed" value="'+(t.bed||'')+'"></div>'+
@@ -451,18 +366,16 @@ function buildForm(t){
     '<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>'+
     '<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>'+
     '</div></div>'+
-
     '<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">'+
     '<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>'+
     '<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>'+
     '<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>'+
     '<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>'+
-    '<div class="fg"><label class="fl">Est. Completion Date</label><input class="fi" type="date" id="f-estcomp" value="'+(t.est_completion_date||'')+'"><div style="font-size:10px;color:var(--text3);margin-top:3px">Auto-set 2 days from now on stage move</div></div>'+
+    '<div class="fg"><label class="fl">Est. Completion Date</label><input class="fi" type="date" id="f-estcomp" value="'+(t.est_completion_date||'')+'"><div style="font-size:10px;color:var(--text3);margin-top:3px">Auto-set 2 days on stage move</div></div>'+
     '<div class="fg"><label class="fl">Intake Date</label><input class="fi" type="date" id="f-intake" value="'+(t.intake_date||'')+'"></div>'+
     '<div class="fg"><label class="fl">Ready Date</label><input class="fi" type="date" id="f-ready" value="'+(t.ready_date||'')+'"></div>'+
     '<div class="fg"><label class="fl">Truck Picked Up Date</label><input class="fi" type="date" id="f-pickup" value="'+(t.pickup_date||'')+'"></div>'+
     '</div></div>'+
-
     '<div class="sec"><div class="sec-title"><span>Leasing & Vendor</span></div><div class="g4">'+
     '<div class="fg"><label class="fl">Leasing Company</label><input class="fi" id="f-lco" value="'+(t.leasing_company||'')+'"></div>'+
     '<div class="fg"><label class="fl">Applicant Name</label><input class="fi" id="f-app" value="'+(t.applicant_name||'')+'"></div>'+
@@ -470,149 +383,74 @@ function buildForm(t){
     '<div class="fg"><label class="fl">Vendor Short Name '+cpBtn('f-vsn')+'</label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>'+
     '<div class="fg"><label class="fl">Vendor ID '+cpBtn('f-vid')+'</label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>'+
     '<div class="fg"><label class="fl">Old Vendor Name</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Previous lessee company name"></div>'+
-    '<div class="fg"><label class="fl">Old Vendor Short Name '+lockBtn('f-oldvsn','old-vsn-lock')+'</label><input class="fi" id="f-oldvsn" value="'+(t.old_vendor_short_name||'')+'" readonly placeholder="Previous short name"></div>'+
+    '<div class="fg"><label class="fl">Old Vendor Short Name '+lkBtn('f-oldvsn','old-vsn-lock')+'</label><input class="fi" id="f-oldvsn" value="'+(t.old_vendor_short_name||'')+'" readonly></div>'+
     '<div class="fg"><label class="fl">Est. Payoff ($)</label><input class="fi" type="number" id="f-payoff" value="'+(t.estimated_payoff||'')+'" oninput="updLease()"></div>'+
     '<div class="fg"><label class="fl">Balloon Payment ($)</label><input class="fi" type="number" id="f-balloon" value="'+(t.balloon_payment||'')+'" placeholder="0.00" oninput="updLease()"></div>'+
     '<div class="fg"><label class="fl">Interest Rate (%)</label><input class="fi" type="number" id="f-rate" value="'+rate+'" placeholder="9" oninput="updLease()"></div>'+
     '<div class="fg s2"><label class="fl">5-Year Lease Estimate</label><div class="lease-box" id="leasebox">'+lc+'</div></div>'+
     '</div></div>'+
-
     (isVA?'<div class="sec"><div class="sec-title"><span>Vendor Assist Details</span></div><div class="g4">'+
     '<div class="fg"><label class="fl">Who is Paying</label><select class="fsel2" id="f-vapayer"><option value="">Select...</option><option '+(t.va_payer==='Copart'?'selected':'')+'>Copart</option><option '+(t.va_payer==='Leasing Company'?'selected':'')+'>Leasing Company</option></select></div>'+
     '<div class="fg s3"><label class="fl">Repair Description</label><input class="fi" id="f-vadesc" value="'+(t.va_description||'')+'"></div>'+
     '</div></div>':'')+
-
     '<div class="sec"><div class="sec-title"><span>Flags</span></div>'+
     '<div style="display:flex;gap:20px;flex-wrap:wrap">'+
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-ti" '+(t.title_issue?'checked':'')+' style="width:15px;height:15px;accent-color:var(--red)"><span style="color:#fca5a5">⚠ Title Issue</span></label>'+
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-tl" '+(t.total_loss?'checked':'')+' style="width:15px;height:15px;accent-color:#a78bfa"><span style="color:#c4b5fd">💥 Total Loss</span></label>'+
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>'+
     '</div></div>'+
-
     '<div class="sec">'+
-    '<div class="sec-title"><span>Inspection Checklist</span>'+
-    (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Inspections</a>':'')+
-    '</div>'+
+    '<div class="sec-title"><span>Inspection Checklist</span>'+(t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Inspections</a>':'')+'</div>'+
     '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
     '<div style="flex:1"><label class="fl">📁 Inspections Folder (OneDrive)</label><input class="fi" id="f-insplink" value="'+(t.inspections_link||'')+'" placeholder="Paste OneDrive inspections folder link..."></div>'+
-    (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-sm" style="white-space:nowrap">Open</a>':'')+ 
-    '</div>'+
+    (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div>'+
     '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
     '<div style="flex:1"><label class="fl">📷 Photo Folder (OneDrive)</label><input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste photo folder link..."></div>'+
-    (t.photo_link?'<a href="'+t.photo_link+'" target="_blank" class="btn btn-secondary btn-sm" style="white-space:nowrap">Open</a>':'')+ 
-    '</div>'+
+    (t.photo_link?'<a href="'+t.photo_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div>'+
     '<div class="checklist">'+
-    checkItems.map(function(arr){
-      return '<label class="ci'+(t[arr[1]]?' on':'')+'" id="ci-'+arr[0]+'">'+
-        '<input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' onchange="this.closest(\'.ci\').classList.toggle(\'on\',this.checked)">'+
-        '<span>'+arr[2]+'</span></label>';
-    }).join('')+
-    '<div class="fg" style="grid-column:span 2"><label class="fl">Body Condition</label>'+
-    '<select class="fsel2" id="f-bc"><option value="">Select...</option>'+
-    ['Excellent','Good','Fair','Poor','Needs Work'].map(function(o){return '<option'+(t.body_condition===o?' selected':'')+'>'+o+'</option>';}).join('')+
-    '</select></div>'+
-    '<div class="fg" style="grid-column:span 2"><label class="fl">Tracker Installed</label>'+
-    '<div style="display:flex;gap:14px;margin-top:4px">'+
-    [['f-gs','tracker_gs','GS Gold Star'],['f-az','tracker_azuga','Azuga'],['f-sa','tracker_samsara','Samsara']].map(function(arr){
-      return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' style="accent-color:var(--green)"> '+arr[2]+'</label>';
-    }).join('')+
+    checkItems.map(function(arr){return '<label class="ci'+(t[arr[1]]?' on':'')+'" id="ci-'+arr[0]+'"><input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' onchange="this.closest(\'.ci\').classList.toggle(\'on\',this.checked)"><span>'+arr[2]+'</span></label>';}).join('')+
+    '<div class="fg" style="grid-column:span 2"><label class="fl">Body Condition</label><select class="fsel2" id="f-bc"><option value="">Select...</option>'+['Excellent','Good','Fair','Poor','Needs Work'].map(function(o){return '<option'+(t.body_condition===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'+
+    '<div class="fg" style="grid-column:span 2"><label class="fl">Tracker Installed</label><div style="display:flex;gap:14px;margin-top:4px">'+[['f-gs','tracker_gs','GS Gold Star'],['f-az','tracker_azuga','Azuga'],['f-sa','tracker_samsara','Samsara']].map(function(arr){return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' style="accent-color:var(--green)"> '+arr[2]+'</label>';}).join('')+'</div></div>'+
     '</div></div>'+
-    '</div></div>'+
-
-    '<div class="sec">'+
-    '<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">'+
-    '<span>Notes</span>'+
-    '<div style="display:flex;gap:6px">'+
-    '<button class="btn btn-secondary btn-xs" onclick="addDateToNote()">+ Date Entry</button>'+
-    '<button class="btn btn-secondary btn-xs" onclick="copyAllNotes()">📋 Copy All</button>'+
-    '<button class="btn btn-secondary btn-xs" onclick="copySimonNotes()">📋 Copy Simon Approvals</button>'+
-    '</div></div>'+
+    '<div class="sec"><div class="sec-title" style="display:flex;justify-content:space-between;align-items:center"><span>Notes</span><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-xs" onclick="addDateToNote()">+ Date Entry</button><button class="btn btn-secondary btn-xs" onclick="copyAllNotes()">📋 Copy All</button><button class="btn btn-secondary btn-xs" onclick="copySimonNotes()">📋 Simon Approvals</button></div></div>'+
     '<div class="notes-list" id="nlist"></div>'+
-    '<div class="note-row">'+
-    '<textarea class="note-input" id="nnote" rows="2" placeholder="Add a note..."></textarea>'+
-    '<button class="btn btn-primary btn-sm" onclick="addNote()" style="align-self:flex-end">Add</button>'+
-    '</div></div>'+
-
+    '<div class="note-row"><textarea class="note-input" id="nnote" rows="2" placeholder="Add a note..."></textarea><button class="btn btn-primary btn-sm" onclick="addNote()" style="align-self:flex-end">Add</button></div></div>'+
     '<div class="sec">'+
-    '<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">'+
-    '<span>Expenses</span>'+
-    (t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Expenses Folder</a>':'')+
-    '</div>'+
+    '<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center"><span>Expenses</span>'+(t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Expenses</a>':'')+'</div>'+
     '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
     '<div style="flex:1"><label class="fl">📁 Expenses Folder (OneDrive)</label><input class="fi" id="f-explink" value="'+(t.expenses_link||'')+'" placeholder="Paste OneDrive expenses folder link..."></div>'+
-    (t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-sm" style="white-space:nowrap">Open</a>':'')+ 
-    '</div>'+
+    (t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div>'+
     '<div id="elist"></div>'+
     '<div class="exp-row">'+
     '<input style="width:130px" type="date" id="ned" class="fi" value="'+today()+'">'+
     '<input style="flex:1" type="text" id="nedd" class="fi" placeholder="Description">'+
     '<input style="width:100px" type="number" id="nea" class="fi" placeholder="Amount">'+
     (isVA?'<select class="fsel2" style="width:160px" id="nep"><option value="">Paid by...</option><option>Copart</option><option>Leasing Company</option></select>':'')+
-    '<button class="btn btn-primary btn-sm" onclick="addExp()">Add</button>'+
-    '</div>'+
+    '<button class="btn btn-primary btn-sm" onclick="addExp()">Add</button></div>'+
     '<div class="fg" style="margin-bottom:10px">'+
     '<label class="fl">📁 Invoice Folder (OneDrive)</label>'+
     '<div style="display:flex;gap:8px;align-items:center">'+
     '<input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste OneDrive invoices folder link...">'+
-    (t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-sm" style="white-space:nowrap">Open</a>':'')+ 
-    '</div></div>'+
+    (t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div></div>'+
     '<div class="exp-total" id="etotal"></div></div>'+
-
-    '<div class="sec"><div class="sec-title"><span>Stage History & Cycle Time</span></div>'+
-    '<div id="hlist"></div></div>';
+    '<div class="sec"><div class="sec-title"><span>Stage History & Cycle Time</span></div><div id="hlist"></div></div>';
 }
-
-function toggleLock(fieldId,btnId){
-  if(!isAdmin){requestAdminPassword(function(){toggleLock(fieldId,btnId);});return;}
-  var inp=document.getElementById(fieldId);
-  var btn=document.getElementById(btnId);
-  if(!inp||!btn)return;
-  if(inp.readOnly){
-    inp.readOnly=false;inp.style.opacity='1';inp.style.cursor='text';
-    btn.textContent='🔓';btn.style.color='#f59e0b';inp.focus();
-  }else{
-    inp.readOnly=true;inp.style.opacity='0.6';inp.style.cursor='not-allowed';
-    btn.textContent='🔒';btn.style.color='';
-  }
+function toggleLock(fid,lid){
+  if(!isAdmin){toast('Admin access required','err');return;}
+  var inp=document.getElementById(fid),btn=document.getElementById(lid);if(!inp||!btn)return;
+  if(inp.readOnly){inp.readOnly=false;inp.style.opacity='1';inp.style.cursor='text';btn.textContent='🔓';btn.style.color='#f59e0b';inp.focus();}
+  else{inp.readOnly=true;inp.style.opacity='0.6';inp.style.cursor='not-allowed';btn.textContent='🔒';btn.style.color='';}
 }
-
-function requestAdminPassword(callback){
-  var el=document.createElement('div');
-  el.className='overlay-bg';el.id='pwd-modal';
-  el.innerHTML='<div class="pwd-modal">'+
-    '<h3>🔒 Admin Access Required</h3>'+
-    '<input type="password" id="pwd-input" class="fi" placeholder="Enter admin password" style="margin-bottom:12px">'+
-    '<div style="display:flex;gap:8px;justify-content:flex-end">'+
-    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'pwd-modal\').remove()">Cancel</button>'+
-    '<button class="btn btn-primary btn-sm" onclick="checkPwd(function(){'+callback.toString().replace(/"/g,"'")+'}())">Confirm</button>'+
-    '</div>'+
-    '<div id="pwd-err" style="color:#f87171;font-size:12px;margin-top:8px"></div>'+
-    '</div>';
-  document.body.appendChild(el);
-  setTimeout(function(){var inp=document.getElementById('pwd-input');if(inp)inp.focus();},100);
-}
-
-function checkPwd(cb){
-  var val=document.getElementById('pwd-input').value;
-  if(val===ADMIN_PASSWORD){document.getElementById('pwd-modal').remove();if(cb)cb();}
-  else document.getElementById('pwd-err').textContent='Incorrect password';
-}
-
 function copyVal(id){
-  var el=document.getElementById(id);
-  if(!el||!el.value){toast('Nothing to copy','err');return;}
-  navigator.clipboard.writeText(el.value).then(function(){toast('Copied!','ok');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=el.value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
-  });
+  var el=document.getElementById(id);if(!el||!el.value){toast('Nothing to copy','err');return;}
+  navigator.clipboard.writeText(el.value).then(function(){toast('Copied!','ok');}).catch(function(){var ta=document.createElement('textarea');ta.value=el.value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');});
 }
-
 function updLease(){
   var p=parseFloat(document.getElementById('f-payoff').value||0);
   var b=parseFloat(document.getElementById('f-balloon').value||0);
   var r=parseFloat(document.getElementById('f-rate').value||9);
   document.getElementById('leasebox').innerHTML=calcLease(p,b,r);
 }
-
 function calcLease(p,balloon,rate){
   if(!p)return '<span style="color:var(--text3)">Enter payoff to calculate</span>';
   var b=parseFloat(balloon||0),r=parseFloat(rate||9);
@@ -621,86 +459,66 @@ function calcLease(p,balloon,rate){
   return '<div style="display:flex;gap:24px;flex-wrap:wrap">'+
     '<div><div style="font-size:11px;color:var(--text2)">Monthly @ '+r+'%</div><div style="font-size:18px;font-weight:700;color:var(--accent)">$'+m.toFixed(2)+'</div></div>'+
     '<div><div style="font-size:11px;color:var(--text2)">Total (60mo)</div><div style="font-size:18px;font-weight:700">$'+(m*60).toFixed(2)+'</div></div>'+
-    (b?'<div><div style="font-size:11px;color:var(--text2)">Balloon</div><div style="font-size:18px;font-weight:700;color:#f59e0b">$'+b.toFixed(2)+'</div></div>':'')+
-    '</div>';
+    (b?'<div><div style="font-size:11px;color:var(--text2)">Balloon</div><div style="font-size:18px;font-weight:700;color:#f59e0b">$'+b.toFixed(2)+'</div></div>':'')+'</div>';
 }
-
 function renderNotes(){
   var l=document.getElementById('nlist');if(!l)return;
   if(!notes.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0">No notes yet</div>';return;}
   l.innerHTML=notes.map(function(n,i){
     var isAuto=n.content.startsWith('[STAGE')||n.content.startsWith('[SHOP');
     return '<div class="note-item'+(isAuto?' auto-note':'')+'">'+
-      '<div class="note-meta">'+
-      '<span style="font-weight:500;color:var(--text)">'+n.user_name+(isAuto?' <span style="color:#6ee7b7;font-size:10px">[AUTO]</span>':'')+'</span>'+
-      '<div style="display:flex;align-items:center;gap:8px">'+
-      '<span>'+new Date(n.created_at).toLocaleString()+'</span>'+
-      '<button class="btn btn-secondary btn-xs" onclick="copyNote('+i+')">📋</button>'+
-      '</div></div>'+
-      '<div class="note-text">'+n.content+'</div>'+
-      '</div>';
+      '<div class="note-meta"><span style="font-weight:500;color:var(--text)">'+n.user_name+(isAuto?' <span style="color:#6ee7b7;font-size:10px">[AUTO]</span>':'')+'</span>'+
+      '<div style="display:flex;align-items:center;gap:8px"><span>'+new Date(n.created_at).toLocaleString()+'</span>'+
+      '<button class="btn btn-secondary btn-xs" onclick="copyNote('+i+')">📋</button></div></div>'+
+      '<div class="note-text">'+n.content+'</div></div>';
   }).join('');
 }
-
 function addDateToNote(){
   var ta=document.getElementById('nnote');if(!ta)return;
   var d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
   ta.value=(ta.value?ta.value+'\n':'')+d+' - ';
   ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
 }
-
 function copyNote(idx){
   var n=notes[idx];if(!n)return;
   var text=n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content;
-  navigator.clipboard.writeText(text).then(function(){toast('Copied!','ok');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
-  });
+  navigator.clipboard.writeText(text).then(function(){toast('Copied!','ok');}).catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');});
 }
-
 function copyAllNotes(){
-  if(!notes.length){toast('No notes to copy','err');return;}
-  var recent=notes.slice(0,5);
-  var text=recent.map(function(n){return n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content;}).join('\n\n---\n\n');
-  navigator.clipboard.writeText(text).then(function(){toast('Last 5 notes copied!','ok');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
-  });
+  if(!notes.length){toast('No notes','err');return;}
+  var text=notes.slice(0,5).map(function(n){return n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content;}).join('\n\n---\n\n');
+  navigator.clipboard.writeText(text).then(function(){toast('Last 5 notes copied!','ok');}).catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');});
 }
-
 function copySimonNotes(){
-  var simonNotes=notes.filter(function(n){return n.content.toLowerCase().includes('simon')||n.user_name.toLowerCase().includes('simon');});
-  if(!simonNotes.length){toast('No Simon notes found','err');return;}
-  var text=simonNotes.map(function(n){return n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content;}).join('\n\n---\n\n');
-  navigator.clipboard.writeText(text).then(function(){toast('Simon notes copied!','ok');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
-  });
+  var sn=notes.filter(function(n){return n.content.toLowerCase().includes('simon')||n.user_name.toLowerCase().includes('simon');});
+  if(!sn.length){toast('No Simon notes found','err');return;}
+  var text=sn.map(function(n){return n.user_name+' - '+new Date(n.created_at).toLocaleString()+'\n'+n.content;}).join('\n\n---\n\n');
+  navigator.clipboard.writeText(text).then(function(){toast('Simon notes copied!','ok');}).catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');});
 }
-
 async function addNote(){
   var c=document.getElementById('nnote').value.trim();if(!c||!truckId)return;
   var res=await db.from('notes').insert({truck_id:truckId,user_name:me.name,content:c}).select().single();
   if(res.data){notes.unshift(res.data);renderNotes();document.getElementById('nnote').value='';toast('Note added','ok');}
 }
-
 function renderExps(){
   var l=document.getElementById('elist'),tot=document.getElementById('etotal');if(!l)return;
-  if(!exps.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">No expenses</div>';if(tot)tot.innerHTML='';return;}
+  if(!exps.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">No expenses yet</div>';if(tot)tot.innerHTML='';return;}
+  var sum=0;
   l.innerHTML=exps.map(function(e){
+    sum+=parseFloat(e.amount||0);
     return '<div class="exp-row">'+
       '<input style="width:130px" type="date" value="'+e.date+'" class="fi" readonly>'+
       '<input style="flex:1" type="text" value="'+(e.description||'')+'" class="fi" readonly>'+
       '<input style="width:100px" type="number" value="'+e.amount+'" class="fi" readonly>'+
       (e.paid_by?'<span style="font-size:11px;color:var(--text2);padding:0 6px">'+e.paid_by+'</span>':'')+
-      '<button class="btn btn-danger btn-xs" onclick="delExp(\''+e.id+'\')">×</button>'+
-      '</div>';
+      '<button class="btn btn-danger btn-xs" onclick="delExp(\''+e.id+'\')">x</button></div>';
   }).join('');
-  var sum=exps.reduce(function(a,e){return a+parseFloat(e.amount||0);},0);
-  if(tot)tot.innerHTML='Total: $'+sum.toFixed(2);
+  if(tot)tot.innerHTML='<div style="display:flex;justify-content:flex-end;align-items:center;gap:16px;padding:8px 0;border-top:1px solid var(--border);margin-top:4px">'+
+    '<span style="color:var(--text2);font-size:12px">'+exps.length+' expense'+(exps.length!==1?'s':'')+'</span>'+
+    '<span style="font-size:15px;font-weight:700;color:var(--accent)">Total: $'+sum.toFixed(2)+'</span></div>';
 }
-
 async function addExp(){
-  var d=document.getElementById('ned').value;
-  var desc=document.getElementById('nedd').value.trim();
-  var a=parseFloat(document.getElementById('nea').value||0);
+  var d=document.getElementById('ned').value,desc=document.getElementById('nedd').value.trim(),a=parseFloat(document.getElementById('nea').value||0);
   var paidBy=document.getElementById('nep')?document.getElementById('nep').value:'';
   if(!d||!desc||!a)return;
   var expData={truck_id:truckId,date:d,description:desc,amount:a,user_name:me.name};
@@ -708,42 +526,28 @@ async function addExp(){
   var res=await db.from('expenses').insert(expData).select().single();
   if(res.data){exps.unshift(res.data);renderExps();document.getElementById('nedd').value='';document.getElementById('nea').value='';toast('Added','ok');}
 }
-
 async function delExp(id){
   await db.from('expenses').delete().eq('id',id);
   exps=exps.filter(function(e){return e.id!==id;});renderExps();
 }
-
 function renderHist(){
   var l=document.getElementById('hlist');if(!l)return;
   if(!hist.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0">No history yet</div>';return;}
   l.innerHTML=hist.map(function(h){
-    return '<div class="hist-item">'+
-      '<span class="hist-stage">'+h.stage+'</span>'+
-      '<span>'+new Date(h.entered_at).toLocaleDateString()+'</span>'+
+    return '<div class="hist-item"><span class="hist-stage">'+h.stage+'</span><span>'+new Date(h.entered_at).toLocaleDateString()+'</span>'+
       '<span>'+(h.exited_at?'→ '+new Date(h.exited_at).toLocaleDateString():'')+'</span>'+
       '<span class="hist-dur">'+(h.duration_hours?Math.round(h.duration_hours)+'h':'(current)')+'</span>'+
-      '<span style="color:var(--text3)">'+(h.user_name||'')+'</span>'+
-      '</div>';
+      '<span style="color:var(--text3)">'+(h.user_name||'')+'</span></div>';
   }).join('');
 }
-
 async function saveTruck(){
   var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
   var newStage=document.getElementById('f-stage').value;
   var newShopStatus=document.getElementById('f-shopst').value||null;
-
-  // Auto set est_completion_date for certain stages
   var estComp=document.getElementById('f-estcomp').value||null;
-  if(AUTO_DATE_STAGES.includes(newStage)&&newStage!==prevTruck.stage&&!estComp){
-    estComp=addDays(2);
-    document.getElementById('f-estcomp').value=estComp;
-  }
-
-  // Auto set stage dates
+  if(AUTO_DATE_STAGES.includes(newStage)&&newStage!==prevTruck.stage&&!estComp){estComp=addDays(2);document.getElementById('f-estcomp').value=estComp;}
   var intakeDate=document.getElementById('f-intake').value||null;
   if(newStage==='Intake'&&!intakeDate){intakeDate=today();document.getElementById('f-intake').value=intakeDate;}
-
   var data={
     vin:document.getElementById('f-vin').value.trim(),
     year_make_model:document.getElementById('f-ymm').value.trim(),
@@ -797,26 +601,15 @@ async function saveTruck(){
     tracker_samsara:document.getElementById('f-sa').checked||false,
     updated_at:new Date().toISOString()
   };
-
-  // Vendor assist fields
   if(document.getElementById('f-vapayer'))data.va_payer=document.getElementById('f-vapayer').value||null;
   if(document.getElementById('f-vadesc'))data.va_description=document.getElementById('f-vadesc').value.trim()||null;
-
   var res;
   if(truckId){res=await db.from('trucks').update(data).eq('id',truckId).select().single();}
-  else{
-    res=await db.from('trucks').insert(data).select().single();
-    truckId=res.data?res.data.id:null;
-    if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});
-  }
-
+  else{res=await db.from('trucks').insert(data).select().single();truckId=res.data?res.data.id:null;if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});}
   if(res.data){
-    // Auto-notes for changes
     var autoNotes=[];
-    if(prevTruck.stage&&prevTruck.stage!==data.stage&&data.stage)
-      autoNotes.push('[STAGE CHANGE] '+prevTruck.stage+' → '+data.stage);
-    if(prevTruck.shop_status!==data.shop_status&&data.shop_status)
-      autoNotes.push('[SHOP STATUS] Changed to: '+data.shop_status);
+    if(prevTruck.stage&&prevTruck.stage!==data.stage&&data.stage)autoNotes.push('[STAGE CHANGE] '+prevTruck.stage+' -> '+data.stage);
+    if(prevTruck.shop_status!==data.shop_status&&data.shop_status)autoNotes.push('[SHOP STATUS] Changed to: '+data.shop_status);
     if(autoNotes.length>0){
       await db.from('notes').insert(autoNotes.map(function(content){return {truck_id:truckId,user_name:me.name,content:content};}));
       var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
@@ -831,26 +624,18 @@ async function saveTruck(){
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[res.data.stage]||'s-intake');
     document.getElementById('d-flags').innerHTML=flags(res.data);
     renderNotes();toast('Saved!','ok');
-  }else toast('Error saving','err');
+  }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
-
 async function moveStage(){
   var ns=document.getElementById('d-move').value;if(!ns||!truckId)return;
   var now=new Date().toISOString();
   var cur=await db.from('stage_history').select('*').eq('truck_id',truckId).is('exited_at',null).maybeSingle();
-  if(cur.data){
-    var hrs=(new Date(now)-new Date(cur.data.entered_at))/3600000;
-    await db.from('stage_history').update({exited_at:now,duration_hours:hrs}).eq('id',cur.data.id);
-  }
+  if(cur.data){var hrs=(new Date(now)-new Date(cur.data.entered_at))/3600000;await db.from('stage_history').update({exited_at:now,duration_hours:hrs}).eq('id',cur.data.id);}
   await db.from('stage_history').insert({truck_id:truckId,stage:ns,user_name:me.name});
-
-  // Auto set est_completion_date for auto-date stages
   var updateData={stage:ns,updated_at:now,date_last_worked:now.split('T')[0]};
-  if(AUTO_DATE_STAGES.includes(ns)){updateData.est_completion_date=addDays(2);}
-  if(ns==='Intake'&&!trucks.find(function(t){return t.id===truckId;}).intake_date){updateData.intake_date=today();}
-  if(ns==='Final Inspection'&&!trucks.find(function(t){return t.id===truckId;}).ready_date){}
-  if(ns==='Reassignment Closed'){updateData.pickup_date=today();}
-
+  if(AUTO_DATE_STAGES.includes(ns))updateData.est_completion_date=addDays(2);
+  if(ns==='Intake'){var cur2=trucks.find(function(t){return t.id===truckId;});if(cur2&&!cur2.intake_date)updateData.intake_date=today();}
+  if(ns==='Reassignment Closed')updateData.pickup_date=today();
   var res=await db.from('trucks').update(updateData).eq('id',truckId).select().single();
   if(res.data){
     var i=trucks.findIndex(function(t){return t.id===truckId;});if(i>=0)trucks[i]=res.data;
@@ -858,21 +643,18 @@ async function moveStage(){
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[ns]||'s-intake');
     document.getElementById('f-stage').value=ns;
     document.getElementById('d-move').value='';
-    // Auto note
-    await db.from('notes').insert({truck_id:truckId,user_name:me.name,content:'[STAGE CHANGE] Moved to: '+ns+(AUTO_DATE_STAGES.includes(ns)?' | Est. completion set to: '+addDays(2):'')});
+    await db.from('notes').insert({truck_id:truckId,user_name:me.name,content:'[STAGE CHANGE] Moved to: '+ns+(AUTO_DATE_STAGES.includes(ns)?' | Est. completion: '+addDays(2):'')});
     var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
     notes=nr.data||[];renderNotes();
     var h=await db.from('stage_history').select('*').eq('truck_id',truckId).order('entered_at',{ascending:true});
     hist=h.data||[];renderHist();updateBadges();
-    // Refresh form to show new dates
     await openDetail(truckId);
     toast('Moved to '+ns,'ok');
   }
 }
-
 async function delTruck(){
   if(!isAdmin){toast('Admin access required','err');return;}
-  if(!confirm('Delete this truck permanently? This cannot be undone.'))return;
+  if(!confirm('Delete this truck permanently?'))return;
   await db.from('trucks').delete().eq('id',truckId);
   await db.from('notes').delete().eq('truck_id',truckId);
   await db.from('expenses').delete().eq('truck_id',truckId);
@@ -880,12 +662,7 @@ async function delTruck(){
   trucks=trucks.filter(function(t){return t.id!==truckId;});
   updateBadges();closeDetail();renderTab();toast('Deleted','ok');
 }
-
-function closeDetail(){
-  document.getElementById('dscreen').classList.remove('open');
-  truckId=null;if(window._lastTab)tab=window._lastTab;doTab(tab,null);
-}
-
+function closeDetail(){document.getElementById('dscreen').classList.remove('open');truckId=null;if(window._lastTab)tab=window._lastTab;doTab(tab,null);}
 function openNewTruck(){
   truckId=null;notes=[];exps=[];hist=[];
   document.getElementById('d-vin').textContent='New Truck';
@@ -897,11 +674,8 @@ function openNewTruck(){
   document.getElementById('dbody').innerHTML=buildForm({stage:'Intake'});
   document.getElementById('dscreen').classList.add('open');
   renderNotes();renderExps();renderHist();
-  // Unlock VIN for new truck
-  var vinInp=document.getElementById('f-vin');
-  if(vinInp){vinInp.readOnly=false;vinInp.style.opacity='1';vinInp.style.cursor='text';}
+  var vinInp=document.getElementById('f-vin');if(vinInp){vinInp.readOnly=false;vinInp.style.opacity='1';vinInp.style.cursor='text';}
 }
-
 function emailTruck(){
   var t=trucks.find(function(x){return x.id===truckId;});if(!t)return;
   var vin=document.getElementById('f-vin').value||t.vin||'';
@@ -915,49 +689,58 @@ function emailTruck(){
   if(repoAgent)body+='\nRepo Agent: '+repoAgent;
   if(shopSt)body+='\nShop Status: '+shopSt;
   if(estComp)body+='\nEst. Completion: '+estComp;
-  // Last 5 notes only
   var recentNotes=notes.slice(0,5);
-  if(recentNotes.length>0){
-    body+='\n\n--- Recent Notes ---\n';
-    recentNotes.forEach(function(n){
-      body+='\n'+n.user_name+' ('+new Date(n.created_at).toLocaleDateString()+'):\n'+n.content+'\n';
-    });
-  }
+  if(recentNotes.length>0){body+='\n\n--- Recent Notes ---\n';recentNotes.forEach(function(n){body+='\n'+n.user_name+' ('+new Date(n.created_at).toLocaleDateString()+'):\n'+n.content+'\n';});}
   body+='\n\nThanks,\n'+me.name;
   window.location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
-
+function showOverdueTrucks(){
+  var ot=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';});
+  if(!ot.length){toast('No overdue trucks!','ok');return;}
+  var el=document.createElement('div');el.className='overlay-bg';el.id='overdue-modal';
+  el.innerHTML='<div class="overlay-box" style="max-width:800px">'+
+    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">🔴 Trucks Needing Attention ('+ot.length+')</div>'+
+    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'overdue-modal\').remove()">✕</button></div>'+
+    '<div style="overflow-y:auto">'+
+    '<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr style="background:var(--bg3)"><th style="padding:8px 12px;text-align:left">VIN</th><th style="padding:8px 12px;text-align:left">Vehicle</th><th style="padding:8px 12px;text-align:left">Stage</th><th style="padding:8px 12px;text-align:left">Last Worked</th><th style="padding:8px 12px;text-align:left">Days</th></tr></thead>'+
+    '<tbody>'+ot.map(function(t){
+      var days=getDaysSinceWorked(t);
+      return '<tr onclick="document.getElementById(\'overdue-modal\').remove();openDetail(\''+t.id+'\')" style="cursor:pointer;border-bottom:1px solid #111">'+
+        '<td style="padding:8px 12px;font-family:monospace;font-weight:600">'+(t.vin||'-')+'</td>'+
+        '<td style="padding:8px 12px">'+(t.year_make_model||'-')+'</td>'+
+        '<td style="padding:8px 12px"><span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:11px">'+(t.stage||'-')+'</span></td>'+
+        '<td style="padding:8px 12px">'+fmtDate(t.date_last_worked)+'</td>'+
+        '<td style="padding:8px 12px;color:#ef4444;font-weight:700">'+days+'d ago</td></tr>';
+    }).join('')+'</tbody></table></div>'+
+    '<div class="ov-ftr"><button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'overdue-modal\').remove()">Close</button></div></div>';
+  document.body.appendChild(el);
+}
 function renderDash(m){
-  var sc={};
-  STAGES.forEach(function(s){sc[s]=trucks.filter(function(t){return t.stage===s;}).length;});
+  var sc={};STAGES.forEach(function(s){sc[s]=trucks.filter(function(t){return t.stage===s;}).length;});
   var active=trucks.filter(function(t){return t.stage!=='Reassignment Closed';}).length;
   var overdue=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';}).length;
-  m.innerHTML=
-    '<div class="dash-grid">'+
+  m.innerHTML='<div class="dash-grid">'+
     '<div class="dc"><div class="dc-lbl">Total in System</div><div class="dc-num" style="color:#3b82f6">'+trucks.length+'</div></div>'+
     '<div class="dc"><div class="dc-lbl">Active Pipeline</div><div class="dc-num" style="color:#22c55e">'+active+'</div></div>'+
     '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
-    '<div class="dc"><div class="dc-lbl">Needs Attention</div><div class="dc-num" style="color:#ef4444">'+overdue+'</div></div>'+
+    '<div class="dc" onclick="showOverdueTrucks()" style="cursor:pointer" title="Click to view"><div class="dc-lbl">Needs Attention 👆</div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Click to view</div></div>'+
     '<div class="dc"><div class="dc-lbl">Active Claims</div><div class="dc-num" style="color:#a78bfa">'+claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length+'</div></div>'+
     '</div>'+
     '<div class="bk-grid">'+
-    '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+
-    STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')+
-    '</div>'+
+    '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')+'</div>'+
     '<div class="bk-card"><div class="bk-hdr">Alerts</div>'+
     '<div class="bk-row"><span>⚠ Title Issues</span><span class="bk-cnt" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</span></div>'+
     '<div class="bk-row"><span>📋 Has Claim</span><span class="bk-cnt" style="color:#f59e0b">'+trucks.filter(function(t){return t.has_claim;}).length+'</span></div>'+
     '<div class="bk-row"><span>📡 No Tracker (active)</span><span class="bk-cnt" style="color:#a78bfa">'+trucks.filter(function(t){return !t.tracker_gs&&!t.tracker_azuga&&!t.tracker_samsara&&t.stage!=='Reassignment Closed';}).length+'</span></div>'+
     '<div class="bk-row"><span>💥 Total Loss</span><span class="bk-cnt" style="color:#f43f5e">'+trucks.filter(function(t){return t.total_loss;}).length+'</span></div>'+
-    '<div class="bk-row"><span>🔴 Overdue (2+ days)</span><span class="bk-cnt" style="color:#ef4444">'+overdue+'</span></div>'+
+    '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🔴 Overdue (2+ days) 👆</span><span class="bk-cnt" style="color:#ef4444">'+overdue+'</span></div>'+
     '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
     '</div></div>';
 }
-
 function renderClaims(m){
   var stOpts=CLAIM_ST.map(function(s){return '<option>'+s+'</option>';}).join('');
-  m.innerHTML=
-    '<div class="filters">'+
+  m.innerHTML='<div class="filters">'+
     '<input class="search" id="csrch" placeholder="Search VIN, claim#, TIB..." oninput="filterC()">'+
     '<select class="fsel" id="cstf" onchange="filterC()"><option value="">All Statuses</option>'+stOpts+'</select>'+
     '<select class="fsel" id="cpri" onchange="filterC()"><option value="">All Priorities</option><option>High</option><option>Medium</option><option>Normal</option><option>Low</option></select>'+
@@ -965,28 +748,24 @@ function renderClaims(m){
     '</div>'+
     '<div class="tbl-wrap"><div class="tbl-scroll">'+
     '<table><thead><tr><th>Date of Loss</th><th>Status</th><th>VIN</th><th>Claim #</th><th>Insurance</th><th>TIB</th><th>Priority</th><th>Due Date</th><th>Days</th></tr></thead>'+
-    '<tbody id="ctbody">'+mkClaimRows(claims)+'</tbody></table>'+
-    '</div></div>';
+    '<tbody id="ctbody">'+mkClaimRows(claims)+'</tbody></table></div></div>';
 }
-
 function mkClaimRows(data){
   if(!data.length)return '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text2)">No claims</td></tr>';
   return data.map(function(c){
     var days=c.due_date?Math.round((new Date(c.due_date)-new Date())/86400000):null;
     var dh=days===null?'-':days<0?'<span style="color:#ef4444;font-weight:600">'+days+'</span>':days===0?'<span style="color:#f59e0b;font-weight:600">Today</span>':'<span style="color:#22c55e">'+days+'</span>';
     return '<tr onclick="openClaimDetail(\''+c.id+'\')" style="cursor:pointer">'+
-      '<td>'+(c.date_of_loss||'-')+'</td>'+
+      '<td>'+fmtDate(c.date_of_loss)+'</td>'+
       '<td><span class="sbadge s-intake" style="font-size:11px">'+(c.status||'')+'</span></td>'+
       '<td style="font-family:monospace">'+(c.vin||'-')+'</td>'+
       '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">'+(c.claim_number||'-')+'</td>'+
-      '<td>'+(c.insurance?c.insurance.substring(0,30):'- ')+'</td>'+
+      '<td>'+(c.insurance?c.insurance.substring(0,30):'-')+'</td>'+
       '<td>'+(c.tib?c.tib.substring(0,25):'-')+'</td>'+
       '<td style="color:'+(c.priority==='High'?'#ef4444':c.priority==='Medium'?'#f59e0b':'var(--text2)')+'">'+( c.priority||'-')+'</td>'+
-      '<td>'+(c.due_date||'-')+'</td><td>'+dh+'</td>'+
-      '</tr>';
+      '<td>'+fmtDate(c.due_date)+'</td><td>'+dh+'</td></tr>';
   }).join('');
 }
-
 function filterC(){
   var q=(document.getElementById('csrch').value||'').toLowerCase();
   var st=document.getElementById('cstf').value||'';
@@ -997,29 +776,22 @@ function filterC(){
   if(pr)d=d.filter(function(c){return c.priority===pr;});
   var b=document.getElementById('ctbody');if(b)b.innerHTML=mkClaimRows(d);
 }
-
 function openClaimDetail(id){var c=claims.find(function(x){return x.id===id;})||{id:'new'};showClaimModal(c);}
 function openNewClaim(){showClaimModal({id:'new',status:'Open',priority:'Normal'});}
-
 function addDateToField(fid){
   var ta=document.getElementById(fid);if(!ta)return;
   var d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
   ta.value=(ta.value?ta.value+'\n':'')+d+' - ';
   ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
 }
-
 function showClaimModal(c){
-  var el=document.createElement('div');
-  el.className='overlay-bg';el.id='cmodal';
+  var el=document.createElement('div');el.className='overlay-bg';el.id='cmodal';
   var stOpts=CLAIM_ST.map(function(s){return '<option'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('');
   var nOpts=['Lauren','Brian','Chris','Trey','Maria F','Kierra','Maria O','Mike','Simon','Khurram'].map(function(n){return '<option'+(c.also_notify===n?' selected':'')+'>'+n+'</option>';}).join('');
   var wOpts=['Insurance Company','Claim Adjustor','Vendor','Copart'].map(function(n){return '<option'+(c.waiting_on===n?' selected':'')+'>'+n+'</option>';}).join('');
-
   el.innerHTML='<div class="overlay-box">'+
-    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">Claim: '+(c.vin||'New Claim')+'</div>'+
-    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">✕</button></div>'+
-    '<div class="ov-body">'+
-    '<div class="g4" style="margin-bottom:16px">'+
+    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">Claim: '+(c.vin||'New Claim')+'</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">✕</button></div>'+
+    '<div class="ov-body"><div class="g4" style="margin-bottom:16px">'+
     '<div class="fg"><label class="fl">Date of Loss</label><input class="fi" type="date" id="cd-dol" value="'+(c.date_of_loss||'')+'"></div>'+
     '<div class="fg"><label class="fl">Status</label><select class="fsel2" id="cd-st">'+stOpts+'</select></div>'+
     '<div class="fg"><label class="fl">VIN</label><input class="fi" id="cd-vin" value="'+(c.vin||'')+'"></div>'+
@@ -1038,41 +810,19 @@ function showClaimModal(c){
     '<div class="fg"><label class="fl">Shah Notes <button class="btn btn-secondary btn-xs" onclick="addDateToField(\'cd-sn\')">+ Date</button></label><textarea class="fta fta-lg" id="cd-sn">'+(c.shah_notes||'')+'</textarea></div>'+
     '<div class="fg"><label class="fl">Chris Notes <button class="btn btn-secondary btn-xs" onclick="addDateToField(\'cd-cn2\')">+ Date</button></label><textarea class="fta fta-lg" id="cd-cn2">'+(c.chris_notes||'')+'</textarea></div>'+
     '</div></div>'+
-    '<div class="ov-ftr">'+
-    (c.id!=='new'?'<button class="btn btn-danger btn-sm" onclick="doDelClaim(\''+c.id+'\')">🗑 Delete</button>':'<div></div>')+
-    '<div style="display:flex;gap:8px">'+
-    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">Cancel</button>'+
-    '<button class="btn btn-primary btn-sm" onclick="doSaveClaim(\''+c.id+'\')">Save Claim</button>'+
-    '</div></div></div>';
+    '<div class="ov-ftr">'+(c.id!=='new'?'<button class="btn btn-danger btn-sm" onclick="doDelClaim(\''+c.id+'\')">🗑 Delete</button>':'<div></div>')+
+    '<div style="display:flex;gap:8px"><button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">Cancel</button>'+
+    '<button class="btn btn-primary btn-sm" onclick="doSaveClaim(\''+c.id+'\')">Save Claim</button></div></div></div>';
   document.body.appendChild(el);
 }
-
 async function doSaveClaim(id){
-  var data={
-    date_of_loss:document.getElementById('cd-dol').value||null,
-    status:document.getElementById('cd-st').value,
-    vin:document.getElementById('cd-vin').value.trim(),
-    claim_number:document.getElementById('cd-cn').value.trim(),
-    insurance:document.getElementById('cd-ins').value.trim(),
-    priority:document.getElementById('cd-pri').value,
-    due_date:document.getElementById('cd-due').value||null,
-    tib:document.getElementById('cd-tib').value.trim(),
-    leasing_bank:document.getElementById('cd-lb').value.trim(),
-    also_notify:document.getElementById('cd-an').value,
-    waiting_on:document.getElementById('cd-wo').value,
-    pay_deferred:document.getElementById('cd-pd').value,
-    problem:document.getElementById('cd-prob').value.trim(),
-    shah_notes:document.getElementById('cd-sn').value.trim(),
-    chris_notes:document.getElementById('cd-cn2').value.trim(),
-    updated_at:new Date().toISOString()
-  };
+  var data={date_of_loss:document.getElementById('cd-dol').value||null,status:document.getElementById('cd-st').value,vin:document.getElementById('cd-vin').value.trim(),claim_number:document.getElementById('cd-cn').value.trim(),insurance:document.getElementById('cd-ins').value.trim(),priority:document.getElementById('cd-pri').value,due_date:document.getElementById('cd-due').value||null,tib:document.getElementById('cd-tib').value.trim(),leasing_bank:document.getElementById('cd-lb').value.trim(),also_notify:document.getElementById('cd-an').value,waiting_on:document.getElementById('cd-wo').value,pay_deferred:document.getElementById('cd-pd').value,problem:document.getElementById('cd-prob').value.trim(),shah_notes:document.getElementById('cd-sn').value.trim(),chris_notes:document.getElementById('cd-cn2').value.trim(),updated_at:new Date().toISOString()};
   var res;
   if(id==='new'){res=await db.from('claims').insert(data).select().single();if(res.data)claims.unshift(res.data);}
   else{res=await db.from('claims').update(data).eq('id',id).select().single();if(res.data){var i=claims.findIndex(function(c){return c.id===id;});if(i>=0)claims[i]=res.data;}}
   if(res.data){document.getElementById('cmodal').remove();updateBadges();renderClaims(document.getElementById('main'));toast('Claim saved','ok');}
   else toast('Error','err');
 }
-
 async function doDelClaim(id){
   if(!confirm('Delete this claim?'))return;
   await db.from('claims').delete().eq('id',id);
@@ -1080,38 +830,28 @@ async function doDelClaim(id){
   document.getElementById('cmodal').remove();
   updateBadges();renderClaims(document.getElementById('main'));toast('Deleted','ok');
 }
-
 function renderReport(m){
-  var today2=today();
-  var weekAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+  var t2=today(),wa=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
   var stOpts=STAGES.map(function(s){return '<option>'+s+'</option>';}).join('');
-  m.innerHTML=
-    '<div class="sec-title" style="margin-bottom:16px"><span>Cycle Time Report</span></div>'+
+  m.innerHTML='<div class="sec-title" style="margin-bottom:16px"><span>Cycle Time Report</span></div>'+
     '<div class="filters" style="gap:12px">'+
-    '<div class="fg"><label class="fl">From Date</label><input class="fi" type="date" id="rf" value="'+weekAgo+'" style="width:150px"></div>'+
-    '<div class="fg"><label class="fl">To Date</label><input class="fi" type="date" id="rt" value="'+today2+'" style="width:150px"></div>'+
+    '<div class="fg"><label class="fl">From Date</label><input class="fi" type="date" id="rf" value="'+wa+'" style="width:150px"></div>'+
+    '<div class="fg"><label class="fl">To Date</label><input class="fi" type="date" id="rt" value="'+t2+'" style="width:150px"></div>'+
     '<div class="fg"><label class="fl">Stage From</label><select class="fsel" id="rsf"><option value="">Any Stage</option>'+stOpts+'</select></div>'+
     '<div class="fg"><label class="fl">Stage To</label><select class="fsel" id="rst"><option value="">Any Stage</option>'+stOpts+'</select></div>'+
-    '<div class="fg"><label class="fl">&nbsp;</label><button class="btn btn-primary" onclick="runReport()">Run Report</button></div>'+
-    '</div>'+
+    '<div class="fg"><label class="fl">&nbsp;</label><button class="btn btn-primary" onclick="runReport()">Run Report</button></div></div>'+
     '<div id="rresults" style="color:var(--text2);font-size:13px;padding:20px 0">Select filters and click Run Report</div>';
 }
-
 async function runReport(){
-  var fromDate=document.getElementById('rf').value;
-  var toDate=document.getElementById('rt').value;
-  var stageFrom=document.getElementById('rsf').value;
-  var stageTo=document.getElementById('rst').value;
+  var fromDate=document.getElementById('rf').value,toDate=document.getElementById('rt').value;
+  var stageFrom=document.getElementById('rsf').value,stageTo=document.getElementById('rst').value;
   var r=document.getElementById('rresults');
   r.innerHTML='<div style="display:flex;align-items:center;padding:20px 0;color:var(--text2)"><div class="spin"></div>Running...</div>';
   var res=await db.from('stage_history').select('*, trucks(vin,year_make_model,stage)').order('entered_at',{ascending:true});
   var hist2=res.data||[];
   if(!hist2.length){r.innerHTML='<div style="color:var(--text2);padding:20px 0">No data found</div>';return;}
   var byTruck={};
-  hist2.forEach(function(h){
-    if(!byTruck[h.truck_id])byTruck[h.truck_id]={vin:h.trucks?h.trucks.vin:'',ymm:h.trucks?h.trucks.year_make_model:'',currentStage:h.trucks?h.trucks.stage:'',stages:[]};
-    byTruck[h.truck_id].stages.push(h);
-  });
+  hist2.forEach(function(h){if(!byTruck[h.truck_id])byTruck[h.truck_id]={vin:h.trucks?h.trucks.vin:'',ymm:h.trucks?h.trucks.year_make_model:'',currentStage:h.trucks?h.trucks.stage:'',stages:[]};byTruck[h.truck_id].stages.push(h);});
   var now=new Date();
   var rows=Object.values(byTruck).map(function(t){
     var stages=t.stages;if(!stages.length)return null;
@@ -1119,10 +859,7 @@ async function runReport(){
     var totalHours=(new Date(last.exited_at||now)-new Date(first.entered_at))/3600000;
     var currentH=stages.find(function(s){return !s.exited_at;});
     var currentHours=currentH?(now-new Date(currentH.entered_at))/3600000:0;
-    return{vin:t.vin||'-',ymm:t.ymm||'-',currentStage:t.currentStage||last.stage,firstStage:first.stage,
-      startDate:new Date(first.entered_at).toLocaleDateString(),
-      endDate:last.exited_at?new Date(last.exited_at).toLocaleDateString():'Active',
-      totalDays:(totalHours/24).toFixed(1),currentStageDays:(currentHours/24).toFixed(1),stageCount:stages.length};
+    return{vin:t.vin||'-',ymm:t.ymm||'-',currentStage:t.currentStage||last.stage,firstStage:first.stage,startDate:new Date(first.entered_at).toLocaleDateString(),endDate:last.exited_at?new Date(last.exited_at).toLocaleDateString():'Active',totalDays:(totalHours/24).toFixed(1),currentStageDays:(currentHours/24).toFixed(1),stageCount:stages.length};
   }).filter(Boolean);
   if(fromDate)rows=rows.filter(function(row){return new Date(row.startDate)>=new Date(fromDate);});
   if(toDate)rows=rows.filter(function(row){return new Date(row.startDate)<=new Date(toDate);});
@@ -1130,37 +867,16 @@ async function runReport(){
   if(stageTo)rows=rows.filter(function(row){return row.currentStage===stageTo;});
   if(!rows.length){r.innerHTML='<div style="color:var(--text2);padding:20px 0">No trucks found</div>';return;}
   var avgDays=rows.reduce(function(a,row){return a+parseFloat(row.totalDays);},0)/rows.length;
-  r.innerHTML=
-    '<div style="display:flex;gap:12px;margin-bottom:16px">'+
+  r.innerHTML='<div style="display:flex;gap:12px;margin-bottom:16px">'+
     '<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Trucks</div><div class="dc-num" style="font-size:20px">'+rows.length+'</div></div>'+
-    '<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Avg Total Days</div><div class="dc-num" style="font-size:20px;color:var(--accent)">'+avgDays.toFixed(1)+'d</div></div>'+
-    '</div>'+
-    '<div class="tbl-wrap"><div class="tbl-scroll">'+
-    '<table><thead><tr><th>VIN</th><th>Vehicle</th><th>Current Stage</th><th>Started In</th><th>Start Date</th><th>Last Date</th><th>Total Days</th><th>Curr Stage Days</th><th>Stages</th></tr></thead>'+
-    '<tbody>'+rows.map(function(row){
-      return '<tr>'+
-        '<td style="font-family:monospace;font-weight:600">'+row.vin+'</td>'+
-        '<td>'+row.ymm+'</td>'+
-        '<td><span class="sbadge '+(SCSS[row.currentStage]||'s-intake')+'" style="font-size:11px">'+row.currentStage+'</span></td>'+
-        '<td style="color:var(--text2);font-size:11px">'+row.firstStage+'</td>'+
-        '<td>'+row.startDate+'</td><td>'+row.endDate+'</td>'+
-        '<td style="font-weight:600;color:var(--accent)">'+row.totalDays+'d</td>'+
-        '<td style="color:#f59e0b">'+row.currentStageDays+'d</td>'+
-        '<td style="color:var(--text2)">'+row.stageCount+'</td>'+
-        '</tr>';
-    }).join('')+'</tbody></table>'+
-    '</div></div>';
+    '<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Avg Total Days</div><div class="dc-num" style="font-size:20px;color:var(--accent)">'+avgDays.toFixed(1)+'d</div></div></div>'+
+    '<div class="tbl-wrap"><div class="tbl-scroll"><table><thead><tr><th>VIN</th><th>Vehicle</th><th>Current Stage</th><th>Started In</th><th>Start Date</th><th>Last Date</th><th>Total Days</th><th>Curr Stage Days</th><th>Stages</th></tr></thead>'+
+    '<tbody>'+rows.map(function(row){return '<tr><td style="font-family:monospace;font-weight:600">'+row.vin+'</td><td>'+row.ymm+'</td><td><span class="sbadge '+(SCSS[row.currentStage]||'s-intake')+'" style="font-size:11px">'+row.currentStage+'</span></td><td style="color:var(--text2);font-size:11px">'+row.firstStage+'</td><td>'+row.startDate+'</td><td>'+row.endDate+'</td><td style="font-weight:600;color:var(--accent)">'+row.totalDays+'d</td><td style="color:#f59e0b">'+row.currentStageDays+'d</td><td style="color:var(--text2)">'+row.stageCount+'</td></tr>';}).join('')+
+    '</tbody></table></div></div>';
 }
-
-function toast(msg,type){
-  var t=document.createElement('div');
-  t.className='toast '+(type==='ok'?'tok-ok':'tok-err');
-  t.textContent=msg;document.body.appendChild(t);
-  setTimeout(function(){t.remove();},3000);
-}
-
+function toast(msg,type){var t=document.createElement('div');t.className='toast '+(type==='ok'?'tok-ok':'tok-err');t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);}
 var u=localStorage.getItem('ft_user');
-if(u){me=JSON.parse(u);isAdmin=(me.email===ADMIN_EMAIL||me.role==='admin');bootApp();}
+if(u){me=JSON.parse(u);isAdmin=(me.email===ADMIN_EMAIL||(me.role&&me.role==='admin'));bootApp();}
 </script>
 </body>
 </html>
