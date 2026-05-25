@@ -466,7 +466,13 @@ function buildForm(t){
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>'+
     '</div></div>'+
 
-    '<div class="sec"><div class="sec-title">Inspection Checklist</div><div class="checklist">'+
+    '<div class="sec">'+
+    '<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span>Inspection Checklist</span>'+
+    (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Inspections Folder</a>':'')+ 
+    '</div>'+
+    '<div class="fg" style="margin-bottom:10px"><label class="fl">📁 Inspections Folder Link (OneDrive)</label><input class="fi" id="f-insplink" value="'+(t.inspections_link||'')+'" placeholder="Paste OneDrive inspections folder link (AEI, Copart, etc.)..."></div>'+
+    '<div class="checklist">'+
     checkItems.map(function(arr){
       return '<label class="ci'+(t[arr[1]]?' on':'')+'" id="ci-'+arr[0]+'">'+
         '<input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' onchange="this.closest(\'.ci\').classList.toggle(\'on\',this.checked)">'+
@@ -692,6 +698,7 @@ async function saveTruck(){
     deidentified:document.getElementById('f-di').checked||false,
     supplies_ordered:document.getElementById('f-so').checked||false,
     aei_inspection:document.getElementById('f-aei').checked||false,
+    inspections_link:document.getElementById('f-insplink').value.trim()||null,
     copart_inspection:document.getElementById('f-copart').checked||false,
     tracker_gs:document.getElementById('f-gs').checked||false,
     tracker_azuga:document.getElementById('f-az').checked||false,
