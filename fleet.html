@@ -389,7 +389,12 @@ function doSearch(){
 async function openDetail(id){
   window._lastTab=tab;
   truckId=id;
-  var t=trucks.find(function(x){return x.id===id;})||{};
+  // Always fetch fresh data from DB
+  var fresh=await db.from('trucks').select('*').eq('id',id).single();
+  var t=fresh.data||trucks.find(function(x){return x.id===id;})||{};
+  // Update local cache
+  var idx=trucks.findIndex(function(x){return x.id===id;});
+  if(idx>=0&&fresh.data)trucks[idx]=fresh.data;
   var r1=await db.from('notes').select('*').eq('truck_id',id).order('created_at',{ascending:false});
   var r2=await db.from('expenses').select('*').eq('truck_id',id).order('date',{ascending:false});
   var r3=await db.from('stage_history').select('*').eq('truck_id',id).order('entered_at',{ascending:true});
