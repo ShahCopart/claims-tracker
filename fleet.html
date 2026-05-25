@@ -23,28 +23,23 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .app-title{font-size:16px;font-weight:700;color:var(--accent)}
 .user-badge{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--text2)}
 .nav{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto}
-.nav::-webkit-scrollbar{height:3px}
-.nav::-webkit-scrollbar-thumb{background:#333}
+.nav::-webkit-scrollbar{height:3px}.nav::-webkit-scrollbar-thumb{background:#333}
 .ntab{padding:10px 14px;cursor:pointer;font-size:12px;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s}
-.ntab:hover{color:var(--text)}
-.ntab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.ntab:hover{color:var(--text)}.ntab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
 .nbadge{background:var(--accent);color:white;border-radius:10px;padding:1px 5px;font-size:10px;margin-left:4px}
 .main{flex:1;padding:16px 20px}
 .btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px}
 .btn-primary{background:var(--accent);color:white}.btn-primary:hover{background:var(--accent2)}
 .btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}.btn-secondary:hover{background:var(--bg4)}
 .btn-danger{background:var(--red);color:white}
-.btn-sm{padding:4px 10px;font-size:11px}
-.btn-xs{padding:2px 7px;font-size:11px}
+.btn-sm{padding:4px 10px;font-size:11px}.btn-xs{padding:2px 7px;font-size:11px}
 .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:flex-end}
 .search{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:6px 12px;color:var(--text);font-size:13px;width:220px}
 .search:focus{outline:none;border-color:var(--accent)}
 .fsel{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;cursor:pointer}
 .tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .tbl-scroll{overflow-x:auto;max-height:calc(100vh - 210px);overflow-y:auto}
-.tbl-scroll::-webkit-scrollbar{width:6px;height:6px}
-.tbl-scroll::-webkit-scrollbar-track{background:var(--bg3)}
-.tbl-scroll::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+.tbl-scroll::-webkit-scrollbar{width:6px;height:6px}.tbl-scroll::-webkit-scrollbar-track{background:var(--bg3)}.tbl-scroll::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
 table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
 thead th{background:var(--bg3);padding:8px 10px;text-align:left;font-weight:500;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
 tbody td{padding:8px 10px;border-bottom:1px solid #111;vertical-align:middle;white-space:nowrap}
@@ -62,13 +57,11 @@ tbody tr:last-child td{border-bottom:none}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg.s2{grid-column:span 2}.fg.s4{grid-column:span 4}
-.fl{font-size:11px;font-weight:500;color:var(--text2)}
+.fg{display:flex;flex-direction:column;gap:4px}.fg.s2{grid-column:span 2}.fg.s4{grid-column:span 4}
+.fl{font-size:11px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:6px}
 .fi,.fsel2,.fta{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px;width:100%}
 .fi:focus,.fsel2:focus,.fta:focus{outline:none;border-color:var(--accent)}
-.fta{resize:vertical;min-height:80px;font-family:inherit;line-height:1.6}
-.fta-lg{min-height:200px}
+.fta{resize:vertical;min-height:80px;font-family:inherit;line-height:1.6}.fta-lg{min-height:200px}
 .checklist{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .ci{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;font-size:12px}
 .ci.on{background:#0f2a1a;border-color:#166534}
@@ -86,22 +79,18 @@ tbody tr:last-child td{border-bottom:none}
 .stage-sel{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px}
 .dash-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .dc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
-.dc-num{font-size:28px;font-weight:700;margin:4px 0}
-.dc-lbl{font-size:11px;color:var(--text2)}
+.dc-num{font-size:28px;font-weight:700;margin:4px 0}.dc-lbl{font-size:11px;color:var(--text2)}
 .bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .bk-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .bk-hdr{background:var(--bg3);padding:8px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text2)}
 .bk-row{display:flex;justify-content:space-between;padding:6px 14px;border-bottom:1px solid #111;font-size:12px;cursor:pointer}
-.bk-row:hover{background:#1a1a1a}
-.bk-row:last-child{border-bottom:none}
+.bk-row:hover{background:#1a1a1a}.bk-row:last-child{border-bottom:none}
 .bk-cnt{font-weight:600;color:var(--accent)}
 .hist-item{display:flex;gap:10px;font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid #111}
-.hist-stage{color:var(--text);font-weight:500;min-width:160px}
-.hist-dur{color:var(--accent);min-width:80px}
+.hist-stage{color:var(--text);font-weight:500;min-width:160px}.hist-dur{color:var(--accent);min-width:80px}
 .lease-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:8px}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:13px;z-index:9999;animation:fIn 0.2s ease}
-.tok-ok{border-color:var(--green);color:#86efac}
-.tok-err{border-color:var(--red);color:#fca5a5}
+.tok-ok{border-color:var(--green);color:#86efac}.tok-err{border-color:var(--red);color:#fca5a5}
 @keyframes fIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .spin{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite;display:inline-block;margin-right:8px}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -195,10 +184,21 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<!-- yard datalist -->
+<datalist id="yard-list" style="display:none"></datalist>
+<!-- state datalist -->
+<datalist id="state-list" style="display:none"></datalist>
+
 <script>
 const SB_URL='https://grillezennazhgruvtav.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyaWxsZXplbm5hemhncnV2dGF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzAxMzMsImV4cCI6MjA5NTIwNjEzM30.CVbSaQ04mI8L7RUF8KEFGqQKskumFVGyJczP1RjwKkE';
 const db=supabase.createClient(SB_URL,SB_KEY);
+
+// Populate datalists
+var ydl=document.getElementById('yard-list');
+for(var yi=1;yi<=400;yi++){var yo=document.createElement('option');yo.value='Yard '+yi;ydl.appendChild(yo);}
+var stl=document.getElementById('state-list');
+['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].forEach(function(s){var o=document.createElement('option');o.value=s;stl.appendChild(o);});
 
 let me=null,tab='dashboard',truckId=null;
 let trucks=[],claims=[],notes=[],exps=[],hist=[];
@@ -210,23 +210,28 @@ const CLAIM_ST=['Open','In Progress','Pending','Under Review','Urgent Review','A
 const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'s-epika','At Shop':'s-shop','Final Inspection':'s-insp','Ready to Assign':'s-ready','In Leasing':'s-leas','Hold 4 Cars':'s-hold','Total Loss':'s-tl','Reassignment Closed':'s-closed'};
 
 async function doLogin(){
-  const name=document.getElementById('ln').value.trim();
-  const email=document.getElementById('le').value.trim().toLowerCase();
-  const err=document.getElementById('lerr');
-  if(!name||!email){err.textContent='Enter name and email';return}
+  var name=document.getElementById('ln').value.trim();
+  var email=document.getElementById('le').value.trim().toLowerCase();
+  var err=document.getElementById('lerr');
+  if(!name||!email){err.textContent='Enter name and email';return;}
   err.textContent='Signing in...';
   try{
-    let{data:u,error:e}=await db.from('users').select('*').eq('email',email).maybeSingle();
-    if(e)throw e;
-    if(!u){const r=await db.from('users').insert({name,email}).select().single();if(r.error)throw r.error;u=r.data;}
-    me=u||{name,email};
+    var r1=await db.from('users').select('*').eq('email',email).maybeSingle();
+    if(r1.error)throw r1.error;
+    var u=r1.data;
+    if(!u){var r2=await db.from('users').insert({name:name,email:email}).select().single();if(r2.error)throw r2.error;u=r2.data;}
+    me=u||{name:name,email:email};
     localStorage.setItem('ft_user',JSON.stringify(me));
     err.textContent='';
     bootApp();
-  }catch(ex){err.textContent='Error: '+(ex.message||'Connection failed. Check your internet.');console.error(ex);}
+  }catch(ex){err.textContent='Error: '+(ex.message||'Connection failed');console.error(ex);}
 }
 
-function doLogout(){localStorage.removeItem('ft_user');me=null;document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';}
+function doLogout(){
+  localStorage.removeItem('ft_user');me=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
 
 async function bootApp(){
   document.getElementById('login-screen').style.display='none';
@@ -238,115 +243,136 @@ async function bootApp(){
 }
 
 async function loadData(){
-  const[{data:t},{data:c}]=await Promise.all([
-    db.from('trucks').select('*').order('created_at',{ascending:false}),
-    db.from('claims').select('*').order('created_at',{ascending:false})
-  ]);
-  trucks=t||[];claims=c||[];updateBadges();
+  var r1=await db.from('trucks').select('*').order('created_at',{ascending:false});
+  var r2=await db.from('claims').select('*').order('created_at',{ascending:false});
+  trucks=r1.data||[];claims=r2.data||[];updateBadges();
 }
 
 function updateBadges(){
-  STAGES.forEach(s=>{const el=document.getElementById('c-'+s);if(el)el.textContent=trucks.filter(t=>t.stage===s).length;});
-  const cl=document.getElementById('c-claims');
-  if(cl)cl.textContent=claims.filter(c=>c.status!=='Done'&&c.status!=='Complete').length;
+  STAGES.forEach(function(s){
+    var el=document.getElementById('c-'+s);
+    if(el)el.textContent=trucks.filter(function(t){return t.stage===s;}).length;
+  });
+  var cl=document.getElementById('c-claims');
+  if(cl)cl.textContent=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
 }
 
 function doTab(key,el){
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});
   if(el)el.classList.add('active');
   tab=key;renderTab();
 }
 function switchTab(key,el){doTab(key,el);}
+
 function clickStage(stage){
-  const tabs=document.querySelectorAll('.ntab');
-  const idx=['dashboard','Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Hold 4 Cars','Total Loss','Reassignment Closed','claims','report'];
-  const i=idx.indexOf(stage);
+  var tabs=document.querySelectorAll('.ntab');
+  var idx=['dashboard','Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Hold 4 Cars','Total Loss','Reassignment Closed','claims','report'];
+  var i=idx.indexOf(stage);
   if(i>=0)doTab(stage,tabs[i]);
 }
 
 function renderTab(){
-  const m=document.getElementById('main');
+  var m=document.getElementById('main');
   if(STAGES.includes(tab))renderList(tab,m);
   else if(tab==='dashboard')renderDash(m);
   else if(tab==='claims')renderClaims(m);
   else if(tab==='report')renderReport(m);
 }
 
-function fmtDate(d){if(!d)return'-';const p=d.split('-');return p.length===3?p[1]+'/'+p[2]+'/'+p[0]:d;}
+function fmtDate(d){
+  if(!d)return'-';
+  var p=d.split('-');
+  return p.length===3?p[1]+'/'+p[2]+'/'+p[0]:d;
+}
 
 function flags(t){
-  let f='';
+  var f='';
   if(t.title_issue)f+='<span class="flag" style="background:#ef4444" title="Title Issue"></span>';
   if(t.has_claim)f+='<span class="flag" style="background:#f59e0b" title="Has Claim"></span>';
   if(t.total_loss)f+='<span class="flag" style="background:#a78bfa" title="Total Loss"></span>';
-  const ht=t.tracker_gs||t.tracker_azuga||t.tracker_samsara;
+  var ht=t.tracker_gs||t.tracker_azuga||t.tracker_samsara;
   f+='<span class="flag" style="background:'+(ht?'#22c55e':'#6b7280')+'" title="'+(ht?'Tracker OK':'No Tracker')+'"></span>';
   return f;
 }
 
 function renderList(stage,m){
-  const rows=trucks.filter(t=>t.stage===stage);
-  m.innerHTML='<div class="filters">'
-    +'<input class="search" id="srch" placeholder="Search VIN, yard..." oninput="doSearch(\''+stage+'\')">'
-    +'<select class="fsel" id="shpf" onchange="doSearch(\''+stage+'\')">'
-    +'<option value="">All Shop Status</option>'+SHOP_ST.map(s=>'<option>'+s+'</option>').join('')+'</select>'
-    +'<select class="fsel" onchange="doFlagFilter(\''+stage+'\',this.value)">'
-    +'<option value="">All Flags</option><option value="title_issue">Title Issue</option>'
-    +'<option value="has_claim">Has Claim</option><option value="total_loss">Total Loss</option></select>'
-    +'<span style="color:var(--text2);font-size:12px">'+rows.length+' truck'+(rows.length!==1?'s':'')+'</span>'
-    +'</div>'
-    +'<div class="tbl-wrap"><div class="tbl-scroll">'
-    +'<table><thead><tr>'
-    +'<th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th>'
-    +'<th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th>'
-    +'<th>Terminated Date</th><th>Est. Completion</th><th>Shop Status</th><th>Last Worked</th><th>Flags</th>'
-    +'</tr></thead>'
-    +'<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table>'
-    +'</div></div>';
+  var rows=trucks.filter(function(t){return t.stage===stage;});
+  var shOpts=SHOP_ST.map(function(s){return '<option>'+s+'</option>';}).join('');
+  m.innerHTML=
+    '<div class="filters">'+
+    '<input class="search" id="srch" placeholder="Search VIN, yard..." oninput="doSearch()">'+
+    '<select class="fsel" id="shpf" onchange="doSearch()"><option value="">All Shop Status</option>'+shOpts+'</select>'+
+    '<select class="fsel" id="flgf" onchange="doSearch()"><option value="">All Flags</option><option value="title_issue">Title Issue</option><option value="has_claim">Has Claim</option><option value="total_loss">Total Loss</option></select>'+
+    '<span style="color:var(--text2);font-size:12px">'+rows.length+' truck'+(rows.length!==1?'s':'')+'</span>'+
+    '</div>'+
+    '<div class="tbl-wrap"><div class="tbl-scroll">'+
+    '<table><thead><tr>'+
+    '<th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th>'+
+    '<th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th>'+
+    '<th>Terminated Date</th><th>Est. Completion</th><th>Shop Status</th><th>Last Worked</th><th>Days</th><th>Flags</th>'+
+    '</tr></thead>'+
+    '<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table>'+
+    '</div></div>';
+  window._curStage=stage;
 }
 
+function getDaysSinceWorked(t){
+  if(!t.date_last_worked)return 999;
+  return Math.floor((new Date()-new Date(t.date_last_worked))/86400000);
+}
+function isOverdue(t){
+  // Not overdue if has future est_completion_date
+  if(t.est_completion_date){
+    var estDate=new Date(t.est_completion_date);
+    if(estDate>new Date())return false;
+  }
+  // Overdue if not worked on in 2+ days
+  return getDaysSinceWorked(t)>=2;
+}
 function mkRows(rows){
   if(!rows.length)return '<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--text2)">No trucks in this stage</td></tr>';
+  // Sort: overdue trucks first, then by days since worked desc
+  rows=rows.slice().sort(function(a,b){
+    var ao=isOverdue(a),bo=isOverdue(b);
+    if(ao&&!bo)return -1;if(!ao&&bo)return 1;
+    return getDaysSinceWorked(b)-getDaysSinceWorked(a);
+  });
   return rows.map(function(t){
-    var photoIcon=t.photo_link?'<a href="'+t.photo_link+'" target="_blank" style="color:var(--accent);margin-left:4px;font-size:11px" onclick="event.stopPropagation()">📷</a>':'';
-    return '<tr onclick="openDetail(\''+t.id+'\')">'
-      +'<td style="font-family:monospace;font-weight:600">'+(t.vin||'-')+'</td>'
-      +'<td>'+(t.year_make_model||'-')+'</td><td>'+(t.cab_color||'-')+'</td><td>'+(t.bed||'-')+'</td>'
-      +'<td>'+(t.yard||'-')+'</td><td>'+(t.state||'-')+'</td><td>'+(t.mileage||'-')+'</td>'
-      +'<td>'+(t.repo_agent||'-')+'</td>'
-      +'<td>'+fmtDate(t.terminated_date)+'</td>'
-      +'<td style="color:#22c55e">'+fmtDate(t.est_completion_date)+'</td>'
-      +'<td style="color:var(--amber);font-size:11px">'+(t.shop_status||'-')+'</td>'
-      +'<td>'+fmtDate(t.date_last_worked)+'</td>'
-      +'<td>'+flags(t)+photoIcon+'</td>'
-      +'</tr>';
+    var pi=t.photo_link?'<a href="'+t.photo_link+'" target="_blank" style="color:var(--accent);margin-left:4px;font-size:11px" onclick="event.stopPropagation()">📷</a>':'';
+    return '<tr onclick="openDetail(\''+t.id+'\')">'+
+      '<td style="font-family:monospace;font-weight:600">'+(t.vin||'-')+'</td>'+
+      '<td>'+(t.year_make_model||'-')+'</td><td>'+(t.cab_color||'-')+'</td><td>'+(t.bed||'-')+'</td>'+
+      '<td>'+(t.yard||'-')+'</td><td>'+(t.state||'-')+'</td><td>'+(t.mileage||'-')+'</td>'+
+      '<td>'+(t.repo_agent||'-')+'</td>'+
+      '<td>'+fmtDate(t.terminated_date)+'</td>'+
+      '<td style="color:#22c55e">'+fmtDate(t.est_completion_date)+'</td>'+
+      '<td style="color:var(--amber);font-size:11px">'+(t.shop_status||'-')+'</td>'+
+      '<td>'+fmtDate(t.date_last_worked)+'</td>'+
+      '<td style="color:'+daysColor+';font-weight:'+(ov?'700':'400')+'">'+daysStr+'</td>'+
+      '<td>'+flags(t)+pi+'</td>'+
+      '</tr>';
   }).join('');
 }
 
-function doSearch(stage){
-  const q=(document.getElementById('srch')?document.getElementById('srch').value:'').toLowerCase();
-  const sh=document.getElementById('shpf')?document.getElementById('shpf').value:'';
+function doSearch(){
+  var stage=window._curStage||tab;
+  var q=(document.getElementById('srch')?document.getElementById('srch').value:'').toLowerCase();
+  var sh=document.getElementById('shpf')?document.getElementById('shpf').value:'';
+  var fl=document.getElementById('flgf')?document.getElementById('flgf').value:'';
   var rows=trucks.filter(function(t){return t.stage===stage;});
   if(q)rows=rows.filter(function(t){return (t.vin||'').toLowerCase().includes(q)||(t.year_make_model||'').toLowerCase().includes(q)||(t.yard||'').toLowerCase().includes(q);});
   if(sh)rows=rows.filter(function(t){return t.shop_status===sh;});
-  var b=document.getElementById('tbl-body');if(b)b.innerHTML=mkRows(rows);
-}
-
-function doFlagFilter(stage,flag){
-  var rows=trucks.filter(function(t){return t.stage===stage;});
-  if(flag)rows=rows.filter(function(t){return t[flag];});
+  if(fl)rows=rows.filter(function(t){return t[fl];});
   var b=document.getElementById('tbl-body');if(b)b.innerHTML=mkRows(rows);
 }
 
 async function openDetail(id){
   truckId=id;
-  const t=trucks.find(function(x){return x.id===id;})||{};
-  const res=await Promise.all([
-    db.from('notes').select('*').eq('truck_id',id).order('created_at',{ascending:false}),
-    db.from('expenses').select('*').eq('truck_id',id).order('date',{ascending:false}),
-    db.from('stage_history').select('*').eq('truck_id',id).order('entered_at',{ascending:true})
-  ]);
-  notes=res[0].data||[];exps=res[1].data||[];hist=res[2].data||[];
+  var t=trucks.find(function(x){return x.id===id;})||{};
+  var r1=await db.from('notes').select('*').eq('truck_id',id).order('created_at',{ascending:false});
+  var r2=await db.from('expenses').select('*').eq('truck_id',id).order('date',{ascending:false});
+  var r3=await db.from('stage_history').select('*').eq('truck_id',id).order('entered_at',{ascending:true});
+  notes=r1.data||[];exps=r2.data||[];hist=r3.data||[];
   document.getElementById('d-vin').textContent=t.vin||'New Truck';
   document.getElementById('d-ymm').textContent=t.year_make_model||'';
   document.getElementById('d-sbadge').textContent=t.stage||'';
@@ -358,105 +384,132 @@ async function openDetail(id){
   renderNotes();renderExps();renderHist();
 }
 
+function cpBtn(fieldId){
+  return '<button class="btn btn-secondary btn-xs" onclick="copyVal(\''+fieldId+'\')">📋</button>';
+}
+
 function buildForm(t){
-  var yo=Array.from({length:400},function(_,i){return '<option value="Yard '+(i+1)+'">Yard '+(i+1)+'</option>';}).join('');
-  var so=STATES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
   var sho=SHOP_ST.map(function(s){return '<option'+(t.shop_status===s?' selected':'')+'>'+s+'</option>';}).join('');
   var stgo=STAGES.map(function(s){return '<option'+(t.stage===s?' selected':'')+'>'+s+'</option>';}).join('');
   var lc=t.estimated_payoff?calcLease(t.estimated_payoff,t.balloon_payment):'<span style="color:var(--text3)">Enter payoff to calculate</span>';
 
-  return '<div class="sec"><div class="sec-title">Vehicle Information</div>'
-    +'<div class="g4">'
-    +'<div class="fg"><label class="fl">VIN <button class="btn btn-secondary btn-xs" style="margin-left:6px" onclick="copyField(&quot;f-vin&quot;)">📋</button></label><input class="fi" id="f-vin" value="'+(t.vin||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Year Make Model</label><input class="fi" id="f-ymm" value="'+(t.year_make_model||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Cab & Color</label><input class="fi" id="f-cab" value="'+(t.cab_color||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Bed</label><input class="fi" id="f-bed" value="'+(t.bed||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Mileage</label><input class="fi" id="f-mil" value="'+(t.mileage||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Yard (type number)</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"><datalist id="yard-list">'+yo+'</datalist></div>'
-    +'<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"><datalist id="state-list">'+so+'</datalist></div>'
-    +'<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>'
-    +'<div class="fg s4"><label class="fl">📷 Photo Folder Link</label><input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste OneDrive or Google Drive folder link..."></div>'
-    +'</div></div>'
+  var checkItems=[
+    ['f-ph','photos_taken','📷 Photos'],['f-pm','pm_done','🔧 PM Done'],
+    ['f-bat','batteries_installed','🔋 Batteries'],['f-ws','windshield_done','🪟 Windshield'],
+    ['f-tr','tires_changed','🚗 Tires'],['f-el','electrical_issues','⚡ Electrical'],
+    ['f-ce','check_engine','🔴 Check Engine'],['f-bw','bed_works','📦 Bed Works'],
+    ['f-di','deidentified','🏷 De-ID'],['f-so','supplies_ordered','📦 Supplies']
+  ];
 
-    +'<div class="sec"><div class="sec-title">Status & Dates</div>'
-    +'<div class="g4">'
-    +'<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>'
-    +'<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>'
-    +'<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Est. Completion Date</label><input class="fi" type="date" id="f-estcomp" value="'+(t.est_completion_date||'')+'"><div style="font-size:10px;color:var(--text3);margin-top:3px">Shop / Mobile Mechanic / Vendor</div></div>'
-    +'<div class="fg"><label class="fl">Intake Date</label><input class="fi" type="date" id="f-intake" value="'+(t.intake_date||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Ready Date</label><input class="fi" type="date" id="f-ready" value="'+(t.ready_date||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Assigned Date</label><input class="fi" type="date" id="f-assign" value="'+(t.assigned_date||'')+'"></div>'
-    +'</div></div>'
+  var html=
+    '<div class="sec"><div class="sec-title">Vehicle Information</div><div class="g4">'+
+    '<div class="fg"><label class="fl">VIN '+cpBtn('f-vin')+'<button class="btn btn-secondary btn-xs" onclick="toggleVinLock()" id="vin-lock-btn" title="Unlock VIN to edit">🔒</button></label><input class="fi" id="f-vin" value="'+(t.vin||'')+'" readonly style="opacity:0.7;cursor:not-allowed"></div>'+
+    '<div class="fg"><label class="fl">Year Make Model</label><input class="fi" id="f-ymm" value="'+(t.year_make_model||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Cab & Color</label><input class="fi" id="f-cab" value="'+(t.cab_color||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Bed</label><input class="fi" id="f-bed" value="'+(t.bed||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Mileage</label><input class="fi" id="f-mil" value="'+(t.mileage||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Yard (type to search)</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"></div>'+
+    '<div class="fg"><label class="fl">State (type to search)</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>'+
+    '<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>'+
+    '<div class="fg s4"><label class="fl">📷 Photo Folder Link</label><input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste OneDrive or Google Drive folder link..."></div>'+
+    '</div></div>'+
 
-    +'<div class="sec"><div class="sec-title">Leasing & Vendor</div>'
-    +'<div class="g4">'
-    +'<div class="fg"><label class="fl">Leasing Company</label><input class="fi" id="f-lco" value="'+(t.leasing_company||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Applicant Name</label><input class="fi" id="f-app" value="'+(t.applicant_name||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Vendor Short Name <button class="btn btn-secondary btn-xs" style="margin-left:6px" onclick="copyField(&quot;f-vsn&quot;)">📋</button></label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Vendor ID <button class="btn btn-secondary btn-xs" style="margin-left:6px" onclick="copyField(&quot;f-vid&quot;)">📋</button></label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Old Vendor (previous lessee)</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Company that previously had this truck"></div>'
-    +'<div class="fg"><label class="fl">Est. Payoff ($)</label><input class="fi" type="number" id="f-payoff" value="'+(t.estimated_payoff||'')+'" oninput="updLease()"></div>'
-    +'<div class="fg"><label class="fl">Balloon Payment ($)</label><input class="fi" type="number" id="f-balloon" value="'+(t.balloon_payment||'')+'" placeholder="0.00" oninput="updLease()"></div>'
-    +'<div class="fg s2"><label class="fl">5-Year Lease @ 9%</label><div class="lease-box" id="leasebox">'+lc+'</div></div>'
-    +'</div></div>'
+    '<div class="sec"><div class="sec-title">Status & Dates</div><div class="g4">'+
+    '<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>'+
+    '<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>'+
+    '<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Est. Completion Date</label><input class="fi" type="date" id="f-estcomp" value="'+(t.est_completion_date||'')+'"><div style="font-size:10px;color:var(--text3);margin-top:3px">Shop / Mobile Mechanic / Vendor</div></div>'+
+    '<div class="fg"><label class="fl">Intake Date</label><input class="fi" type="date" id="f-intake" value="'+(t.intake_date||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Ready Date</label><input class="fi" type="date" id="f-ready" value="'+(t.ready_date||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Assigned Date</label><input class="fi" type="date" id="f-assign" value="'+(t.assigned_date||'')+'"></div>'+
+    '</div></div>'+
 
-    +'<div class="sec"><div class="sec-title">Flags</div>'
-    +'<div style="display:flex;gap:20px;flex-wrap:wrap">'
-    +'<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-ti" '+(t.title_issue?'checked':'')+' style="width:15px;height:15px;accent-color:var(--red)"><span style="color:#fca5a5">⚠ Title Issue</span></label>'
-    +'<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-tl" '+(t.total_loss?'checked':'')+' style="width:15px;height:15px;accent-color:#a78bfa"><span style="color:#c4b5fd">💥 Total Loss</span></label>'
-    +'<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>'
-    +'</div></div>'
+    '<div class="sec"><div class="sec-title">Leasing & Vendor</div><div class="g4">'+
+    '<div class="fg"><label class="fl">Leasing Company</label><input class="fi" id="f-lco" value="'+(t.leasing_company||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Applicant Name</label><input class="fi" id="f-app" value="'+(t.applicant_name||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Vendor Short Name '+cpBtn('f-vsn')+'</label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Vendor ID '+cpBtn('f-vid')+'</label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>'+
+    '<div class="fg s2"><label class="fl">Old Vendor (previous lessee)</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Company that previously had this truck"></div>'+
+    '<div class="fg"><label class="fl">Est. Payoff ($)</label><input class="fi" type="number" id="f-payoff" value="'+(t.estimated_payoff||'')+'" oninput="updLease()"></div>'+
+    '<div class="fg"><label class="fl">Balloon Payment ($)</label><input class="fi" type="number" id="f-balloon" value="'+(t.balloon_payment||'')+'" placeholder="0.00" oninput="updLease()"></div>'+
+    '<div class="fg s2"><label class="fl">5-Year Lease @ 9%</label><div class="lease-box" id="leasebox">'+lc+'</div></div>'+
+    '</div></div>'+
 
-    +'<div class="sec"><div class="sec-title">Inspection Checklist</div>'
-    +'<div class="checklist">'
-    +[['f-ph','photos_taken','📷 Photos'],['f-pm','pm_done','🔧 PM Done'],['f-bat','batteries_installed','🔋 Batteries'],
-      ['f-ws','windshield_done','🪟 Windshield'],['f-tr','tires_changed','🚗 Tires'],['f-el','electrical_issues','⚡ Electrical'],
-      ['f-ce','check_engine','🔴 Check Engine'],['f-bw','bed_works','📦 Bed Works'],['f-di','deidentified','🏷 De-ID'],
-      ['f-so','supplies_ordered','📦 Supplies']].map(function(arr){
-        var id=arr[0],field=arr[1],lbl=arr[2];
-        return '<label class="ci'+(t[field]?' on':'')+'" id="ci-'+id+'">'
-          +'<input type="checkbox" id="'+id+'" '+(t[field]?'checked':'')+' onchange="this.closest(\'.ci\').classList.toggle(\'on\',this.checked)">'
-          +'<span>'+lbl+'</span></label>';
-      }).join('')
-    +'<div class="fg" style="grid-column:span 2"><label class="fl">Body Condition</label>'
-    +'<select class="fsel2" id="f-bc"><option value="">Select...</option>'
-    +['Excellent','Good','Fair','Poor','Needs Work'].map(function(o){return '<option'+(t.body_condition===o?' selected':'')+'>'+o+'</option>';}).join('')
-    +'</select></div>'
-    +'<div class="fg" style="grid-column:span 2"><label class="fl">Tracker Installed</label>'
-    +'<div style="display:flex;gap:14px;margin-top:4px">'
-    +[['f-gs','tracker_gs','GS Gold Star'],['f-az','tracker_azuga','Azuga'],['f-sa','tracker_samsara','Samsara']].map(function(arr){
-        return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' style="accent-color:var(--green)"> '+arr[2]+'</label>';
-      }).join('')
-    +'</div></div>'
-    +'</div></div>'
+    '<div class="sec"><div class="sec-title">Flags</div>'+
+    '<div style="display:flex;gap:20px;flex-wrap:wrap">'+
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-ti" '+(t.title_issue?'checked':'')+' style="width:15px;height:15px;accent-color:var(--red)"><span style="color:#fca5a5">⚠ Title Issue</span></label>'+
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-tl" '+(t.total_loss?'checked':'')+' style="width:15px;height:15px;accent-color:#a78bfa"><span style="color:#c4b5fd">💥 Total Loss</span></label>'+
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>'+
+    '</div></div>'+
 
-    +'<div class="sec">'
-    +'<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">'
-    +'<span>Notes</span>'
-    +'<div style="display:flex;gap:6px">'
-    +'<button class="btn btn-secondary btn-xs" onclick="addDateToNote()">+ Date Entry</button>'
-    +'<button class="btn btn-secondary btn-xs" onclick="copyAllNotes()">📋 Copy All</button>'
-    +'</div></div>'
-    +'<div class="notes-list" id="nlist"></div>'
-    +'<div class="note-row">'
-    +'<textarea class="note-input" id="nnote" rows="2" placeholder="Add a note..."></textarea>'
-    +'<button class="btn btn-primary btn-sm" onclick="addNote()" style="align-self:flex-end">Add</button>'
-    +'</div></div>'
+    '<div class="sec"><div class="sec-title">Inspection Checklist</div><div class="checklist">'+
+    checkItems.map(function(arr){
+      return '<label class="ci'+(t[arr[1]]?' on':'')+'" id="ci-'+arr[0]+'">'+
+        '<input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' onchange="this.closest(\'.ci\').classList.toggle(\'on\',this.checked)">'+
+        '<span>'+arr[2]+'</span></label>';
+    }).join('')+
+    '<div class="fg" style="grid-column:span 2"><label class="fl">Body Condition</label>'+
+    '<select class="fsel2" id="f-bc"><option value="">Select...</option>'+
+    ['Excellent','Good','Fair','Poor','Needs Work'].map(function(o){return '<option'+(t.body_condition===o?' selected':'')+'>'+o+'</option>';}).join('')+
+    '</select></div>'+
+    '<div class="fg" style="grid-column:span 2"><label class="fl">Tracker Installed</label>'+
+    '<div style="display:flex;gap:14px;margin-top:4px">'+
+    [['f-gs','tracker_gs','GS Gold Star'],['f-az','tracker_azuga','Azuga'],['f-sa','tracker_samsara','Samsara']].map(function(arr){
+      return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' style="accent-color:var(--green)"> '+arr[2]+'</label>';
+    }).join('')+
+    '</div></div>'+
+    '</div></div>'+
 
-    +'<div class="sec"><div class="sec-title">Expenses</div>'
-    +'<div id="elist"></div>'
-    +'<div class="exp-row">'
-    +'<input style="width:130px" type="date" id="ned" class="fi" value="'+new Date().toISOString().split('T')[0]+'">'
-    +'<input style="flex:1" type="text" id="nedd" class="fi" placeholder="Description">'
-    +'<input style="width:100px" type="number" id="nea" class="fi" placeholder="Amount">'
-    +'<button class="btn btn-primary btn-sm" onclick="addExp()">Add</button>'
-    +'</div>'
-    +'<div class="exp-total" id="etotal"></div></div>'
+    '<div class="sec">'+
+    '<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span>Notes</span>'+
+    '<div style="display:flex;gap:6px">'+
+    '<button class="btn btn-secondary btn-xs" onclick="addDateToNote()">+ Date Entry</button>'+
+    '<button class="btn btn-secondary btn-xs" onclick="copyAllNotes()">📋 Copy All</button>'+
+    '</div></div>'+
+    '<div class="notes-list" id="nlist"></div>'+
+    '<div class="note-row">'+
+    '<textarea class="note-input" id="nnote" rows="2" placeholder="Add a note..."></textarea>'+
+    '<button class="btn btn-primary btn-sm" onclick="addNote()" style="align-self:flex-end">Add</button>'+
+    '</div></div>'+
 
-    +'<div class="sec"><div class="sec-title">Stage History & Cycle Time</div>'
-    +'<div id="hlist"></div></div>';
+    '<div class="sec"><div class="sec-title">Expenses</div>'+
+    '<div id="elist"></div>'+
+    '<div class="exp-row">'+
+    '<input style="width:130px" type="date" id="ned" class="fi" value="'+new Date().toISOString().split('T')[0]+'">'+
+    '<input style="flex:1" type="text" id="nedd" class="fi" placeholder="Description">'+
+    '<input style="width:100px" type="number" id="nea" class="fi" placeholder="Amount">'+
+    '<button class="btn btn-primary btn-sm" onclick="addExp()">Add</button>'+
+    '</div>'+
+    '<div class="exp-total" id="etotal"></div></div>'+
+
+    '<div class="sec"><div class="sec-title">Stage History & Cycle Time</div>'+
+    '<div id="hlist"></div></div>';
+
+  return html;
+}
+
+function toggleVinLock(){
+  var inp=document.getElementById('f-vin');
+  var btn=document.getElementById('vin-lock-btn');
+  if(!inp||!btn)return;
+  if(inp.readOnly){
+    if(!confirm('Are you sure you want to unlock the VIN for editing?'))return;
+    inp.readOnly=false;inp.style.opacity='1';inp.style.cursor='text';
+    btn.textContent='🔓';btn.style.color='#f59e0b';
+    inp.focus();
+  }else{
+    inp.readOnly=true;inp.style.opacity='0.7';inp.style.cursor='not-allowed';
+    btn.textContent='🔒';btn.style.color='';
+  }
+}
+function copyVal(id){
+  var el=document.getElementById(id);
+  if(!el||!el.value){toast('Nothing to copy','err');return;}
+  navigator.clipboard.writeText(el.value).then(function(){toast('Copied!','ok');}).catch(function(){
+    var ta=document.createElement('textarea');ta.value=el.value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
+  });
 }
 
 function updLease(){
@@ -470,36 +523,29 @@ function calcLease(p,balloon){
   var b=parseFloat(balloon||0);
   var principal=p-b/Math.pow(1+0.09/12,60);
   var r=0.09/12,n=60,m=principal*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
-  return '<div style="display:flex;gap:24px;flex-wrap:wrap">'
-    +'<div><div style="font-size:11px;color:var(--text2)">Monthly</div><div style="font-size:18px;font-weight:700;color:var(--accent)">$'+m.toFixed(2)+'</div></div>'
-    +'<div><div style="font-size:11px;color:var(--text2)">Total (60mo)</div><div style="font-size:18px;font-weight:700">$'+(m*60).toFixed(2)+'</div></div>'
-    +(b?'<div><div style="font-size:11px;color:var(--text2)">Balloon</div><div style="font-size:18px;font-weight:700;color:#f59e0b">$'+b.toFixed(2)+'</div></div>':'')
-    +'</div>';
+  return '<div style="display:flex;gap:24px;flex-wrap:wrap">'+
+    '<div><div style="font-size:11px;color:var(--text2)">Monthly</div><div style="font-size:18px;font-weight:700;color:var(--accent)">$'+m.toFixed(2)+'</div></div>'+
+    '<div><div style="font-size:11px;color:var(--text2)">Total (60mo)</div><div style="font-size:18px;font-weight:700">$'+(m*60).toFixed(2)+'</div></div>'+
+    (b?'<div><div style="font-size:11px;color:var(--text2)">Balloon</div><div style="font-size:18px;font-weight:700;color:#f59e0b">$'+b.toFixed(2)+'</div></div>':'')+
+    '</div>';
 }
 
 function renderNotes(){
   var l=document.getElementById('nlist');if(!l)return;
   if(!notes.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0">No notes yet</div>';return;}
   l.innerHTML=notes.map(function(n,i){
-    return '<div class="note-item">'
-      +'<div class="note-meta">'
-      +'<span style="font-weight:500;color:var(--text)">'+n.user_name+'</span>'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +'<span>'+new Date(n.created_at).toLocaleString()+'</span>'
-      +'<button class="btn btn-secondary btn-xs" onclick="copyNote('+i+')" style="padding:1px 6px">📋</button>'
-      +'</div></div>'
-      +'<div class="note-text">'+n.content+'</div>'
-      +'</div>';
+    return '<div class="note-item">'+
+      '<div class="note-meta">'+
+      '<span style="font-weight:500;color:var(--text)">'+n.user_name+'</span>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+      '<span>'+new Date(n.created_at).toLocaleString()+'</span>'+
+      '<button class="btn btn-secondary btn-xs" onclick="copyNote('+i+')">📋</button>'+
+      '</div></div>'+
+      '<div class="note-text">'+n.content+'</div>'+
+      '</div>';
   }).join('');
 }
 
-function copyField(fieldId){
-  var el=document.getElementById(fieldId);if(!el)return;
-  var text=el.value;if(!text){toast('Nothing to copy','err');return;}
-  navigator.clipboard.writeText(text).then(function(){toast('Copied!','ok');}).catch(function(){
-    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
-  });
-}
 function addDateToNote(){
   var ta=document.getElementById('nnote');if(!ta)return;
   var d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
@@ -533,19 +579,21 @@ function renderExps(){
   var l=document.getElementById('elist'),tot=document.getElementById('etotal');if(!l)return;
   if(!exps.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">No expenses</div>';if(tot)tot.innerHTML='';return;}
   l.innerHTML=exps.map(function(e){
-    return '<div class="exp-row">'
-      +'<input style="width:130px" type="date" value="'+e.date+'" class="fi" readonly>'
-      +'<input style="flex:1" type="text" value="'+e.description+'" class="fi" readonly>'
-      +'<input style="width:100px" type="number" value="'+e.amount+'" class="fi" readonly>'
-      +'<button class="btn btn-danger btn-xs" onclick="delExp(\''+e.id+'\')">×</button>'
-      +'</div>';
+    return '<div class="exp-row">'+
+      '<input style="width:130px" type="date" value="'+e.date+'" class="fi" readonly>'+
+      '<input style="flex:1" type="text" value="'+e.description+'" class="fi" readonly>'+
+      '<input style="width:100px" type="number" value="'+e.amount+'" class="fi" readonly>'+
+      '<button class="btn btn-danger btn-xs" onclick="delExp(\''+e.id+'\')">×</button>'+
+      '</div>';
   }).join('');
   var sum=exps.reduce(function(a,e){return a+parseFloat(e.amount||0);},0);
   if(tot)tot.innerHTML='Total: $'+sum.toFixed(2);
 }
 
 async function addExp(){
-  var d=document.getElementById('ned').value,desc=document.getElementById('nedd').value.trim(),a=parseFloat(document.getElementById('nea').value||0);
+  var d=document.getElementById('ned').value;
+  var desc=document.getElementById('nedd').value.trim();
+  var a=parseFloat(document.getElementById('nea').value||0);
   if(!d||!desc||!a)return;
   var res=await db.from('expenses').insert({truck_id:truckId,date:d,description:desc,amount:a,user_name:me.name}).select().single();
   if(res.data){exps.unshift(res.data);renderExps();document.getElementById('nedd').value='';document.getElementById('nea').value='';toast('Added','ok');}
@@ -560,17 +608,18 @@ function renderHist(){
   var l=document.getElementById('hlist');if(!l)return;
   if(!hist.length){l.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px 0">No history yet</div>';return;}
   l.innerHTML=hist.map(function(h){
-    return '<div class="hist-item">'
-      +'<span class="hist-stage">'+h.stage+'</span>'
-      +'<span>'+new Date(h.entered_at).toLocaleDateString()+'</span>'
-      +'<span>'+(h.exited_at?'→ '+new Date(h.exited_at).toLocaleDateString():'')+'</span>'
-      +'<span class="hist-dur">'+(h.duration_hours?Math.round(h.duration_hours)+'h':'(current)')+'</span>'
-      +'<span style="color:var(--text3)">'+(h.user_name||'')+'</span>'
-      +'</div>';
+    return '<div class="hist-item">'+
+      '<span class="hist-stage">'+h.stage+'</span>'+
+      '<span>'+new Date(h.entered_at).toLocaleDateString()+'</span>'+
+      '<span>'+(h.exited_at?'→ '+new Date(h.exited_at).toLocaleDateString():'')+'</span>'+
+      '<span class="hist-dur">'+(h.duration_hours?Math.round(h.duration_hours)+'h':'(current)')+'</span>'+
+      '<span style="color:var(--text3)">'+(h.user_name||'')+'</span>'+
+      '</div>';
   }).join('');
 }
 
 async function saveTruck(){
+  var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
   var data={
     vin:document.getElementById('f-vin').value.trim(),
     year_make_model:document.getElementById('f-ymm').value.trim(),
@@ -616,6 +665,7 @@ async function saveTruck(){
     tracker_samsara:document.getElementById('f-sa').checked||false,
     updated_at:new Date().toISOString()
   };
+
   var res;
   if(truckId){res=await db.from('trucks').update(data).eq('id',truckId).select().single();}
   else{
@@ -623,18 +673,20 @@ async function saveTruck(){
     truckId=res.data?res.data.id:null;
     if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});
   }
+
   if(res.data){
-    var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
+    // Auto-notes for changes
     var autoNotes=[];
+    if(prevTruck.stage&&prevTruck.stage!==data.stage&&data.stage)
+      autoNotes.push('[STAGE CHANGE] '+prevTruck.stage+' → '+data.stage);
     if(prevTruck.shop_status!==data.shop_status&&data.shop_status)
       autoNotes.push('[SHOP STATUS] Changed to: '+data.shop_status);
-    if(prevTruck.stage!==data.stage&&data.stage)
-      autoNotes.push('[STAGE] Changed to: '+data.stage);
     if(autoNotes.length>0){
       await db.from('notes').insert(autoNotes.map(function(content){return {truck_id:truckId,user_name:me.name,content:content};}));
       var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
       notes=nr.data||[];
     }
+
     var i=trucks.findIndex(function(t){return t.id===truckId;});
     if(i>=0)trucks[i]=res.data;else trucks.unshift(res.data);
     updateBadges();
@@ -652,7 +704,10 @@ async function moveStage(){
   var ns=document.getElementById('d-move').value;if(!ns||!truckId)return;
   var now=new Date().toISOString();
   var cur=await db.from('stage_history').select('*').eq('truck_id',truckId).is('exited_at',null).maybeSingle();
-  if(cur.data){var hrs=(new Date(now)-new Date(cur.data.entered_at))/3600000;await db.from('stage_history').update({exited_at:now,duration_hours:hrs}).eq('id',cur.data.id);}
+  if(cur.data){
+    var hrs=(new Date(now)-new Date(cur.data.entered_at))/3600000;
+    await db.from('stage_history').update({exited_at:now,duration_hours:hrs}).eq('id',cur.data.id);
+  }
   await db.from('stage_history').insert({truck_id:truckId,stage:ns,user_name:me.name});
   var res=await db.from('trucks').update({stage:ns,updated_at:now,date_last_worked:now.split('T')[0]}).eq('id',truckId).select().single();
   if(res.data){
@@ -661,28 +716,29 @@ async function moveStage(){
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[ns]||'s-intake');
     document.getElementById('f-stage').value=ns;
     document.getElementById('d-move').value='';
-    var h=await db.from('stage_history').select('*').eq('truck_id',truckId).order('entered_at',{ascending:true});
-    hist=h.data||[];renderHist();updateBadges();toast('Moved to '+ns,'ok');
-    // Auto-note for stage change
+    // Auto-note
     await db.from('notes').insert({truck_id:truckId,user_name:me.name,content:'[STAGE CHANGE] Moved to: '+ns});
     var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
     notes=nr.data||[];renderNotes();
+    var h=await db.from('stage_history').select('*').eq('truck_id',truckId).order('entered_at',{ascending:true});
+    hist=h.data||[];renderHist();updateBadges();toast('Moved to '+ns,'ok');
   }
 }
 
 async function delTruck(){
   if(!confirm('Delete this truck permanently?'))return;
-  await Promise.all([
-    db.from('trucks').delete().eq('id',truckId),
-    db.from('notes').delete().eq('truck_id',truckId),
-    db.from('expenses').delete().eq('truck_id',truckId),
-    db.from('stage_history').delete().eq('truck_id',truckId)
-  ]);
+  await db.from('trucks').delete().eq('id',truckId);
+  await db.from('notes').delete().eq('truck_id',truckId);
+  await db.from('expenses').delete().eq('truck_id',truckId);
+  await db.from('stage_history').delete().eq('truck_id',truckId);
   trucks=trucks.filter(function(t){return t.id!==truckId;});
   updateBadges();closeDetail();renderTab();toast('Deleted','ok');
 }
 
-function closeDetail(){document.getElementById('dscreen').classList.remove('open');truckId=null;renderTab();}
+function closeDetail(){
+  document.getElementById('dscreen').classList.remove('open');
+  truckId=null;renderTab();
+}
 
 function openNewTruck(){
   truckId=null;notes=[];exps=[];hist=[];
@@ -699,7 +755,6 @@ function openNewTruck(){
 
 function emailTruck(){
   var t=trucks.find(function(x){return x.id===truckId;});if(!t)return;
-  var emails={lauren:'lauren.gadd@copart.com',brian:'brian.gates@copart.com',chris:'christcisco.komari@copart.com',trey:'trey.ferguson@copart.com','maria f':'maria.flores@copart.com',kierra:'kierra.tolbert@copart.com','maria o':'maria.ortiz@copart.com',mike:'michael.london@copart.com',simon:'simon.smock@copart.com',khurram:'khurram.shah@copart.com'};
   var vin=document.getElementById('f-vin').value||t.vin||'';
   var ymm=document.getElementById('f-ymm').value||t.year_make_model||'';
   var stage=document.getElementById('f-stage').value||t.stage||'';
@@ -719,38 +774,42 @@ function emailTruck(){
 }
 
 function renderDash(m){
-  var sc={};STAGES.forEach(function(s){sc[s]=trucks.filter(function(t){return t.stage===s;}).length;});
+  var sc={};
+  STAGES.forEach(function(s){sc[s]=trucks.filter(function(t){return t.stage===s;}).length;});
   var active=trucks.filter(function(t){return t.stage!=='Reassignment Closed';}).length;
-  m.innerHTML='<div class="dash-grid">'
-    +'<div class="dc"><div class="dc-lbl">Active Trucks</div><div class="dc-num" style="color:#3b82f6">'+active+'</div></div>'
-    +'<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#22c55e">'+(sc['Ready to Assign']||0)+'</div></div>'
-    +'<div class="dc"><div class="dc-lbl">In Shops</div><div class="dc-num" style="color:#f59e0b">'+((sc['At Shop']||0)+(sc['Epika']||0))+'</div></div>'
-    +'<div class="dc"><div class="dc-lbl">Title Issues</div><div class="dc-num" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</div></div>'
-    +'<div class="dc"><div class="dc-lbl">Active Claims</div><div class="dc-num" style="color:#a78bfa">'+claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length+'</div></div>'
-    +'</div>'
-    +'<div class="bk-grid">'
-    +'<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'
-    +STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')
-    +'</div>'
-    +'<div class="bk-card"><div class="bk-hdr">Alerts</div>'
-    +'<div class="bk-row"><span>⚠ Title Issues</span><span class="bk-cnt" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</span></div>'
-    +'<div class="bk-row"><span>📋 Has Claim</span><span class="bk-cnt" style="color:#f59e0b">'+trucks.filter(function(t){return t.has_claim;}).length+'</span></div>'
-    +'<div class="bk-row"><span>📡 No Tracker (active)</span><span class="bk-cnt" style="color:#a78bfa">'+trucks.filter(function(t){return !t.tracker_gs&&!t.tracker_azuga&&!t.tracker_samsara&&t.stage!=='Reassignment Closed';}).length+'</span></div>'
-    +'<div class="bk-row"><span>💥 Total Loss</span><span class="bk-cnt" style="color:#f43f5e">'+trucks.filter(function(t){return t.total_loss;}).length+'</span></div>'
-    +'<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'
-    +'</div></div>';
+  m.innerHTML=
+    '<div class="dash-grid">'+
+    '<div class="dc"><div class="dc-lbl">Active Trucks</div><div class="dc-num" style="color:#3b82f6">'+active+'</div></div>'+
+    '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#22c55e">'+(sc['Ready to Assign']||0)+'</div></div>'+
+    '<div class="dc"><div class="dc-lbl">In Shops</div><div class="dc-num" style="color:#f59e0b">'+((sc['At Shop']||0)+(sc['Epika']||0))+'</div></div>'+
+    '<div class="dc"><div class="dc-lbl">Title Issues</div><div class="dc-num" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</div></div>'+
+    '<div class="dc"><div class="dc-lbl">Active Claims</div><div class="dc-num" style="color:#a78bfa">'+claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length+'</div></div>'+
+    '</div>'+
+    '<div class="bk-grid">'+
+    '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+
+    STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')+
+    '</div>'+
+    '<div class="bk-card"><div class="bk-hdr">Alerts</div>'+
+    '<div class="bk-row"><span>⚠ Title Issues</span><span class="bk-cnt" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</span></div>'+
+    '<div class="bk-row"><span>📋 Has Claim</span><span class="bk-cnt" style="color:#f59e0b">'+trucks.filter(function(t){return t.has_claim;}).length+'</span></div>'+
+    '<div class="bk-row"><span>📡 No Tracker (active)</span><span class="bk-cnt" style="color:#a78bfa">'+trucks.filter(function(t){return !t.tracker_gs&&!t.tracker_azuga&&!t.tracker_samsara&&t.stage!=='Reassignment Closed';}).length+'</span></div>'+
+    '<div class="bk-row"><span>💥 Total Loss</span><span class="bk-cnt" style="color:#f43f5e">'+trucks.filter(function(t){return t.total_loss;}).length+'</span></div>'+
+    '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
+    '</div></div>';
 }
 
 function renderClaims(m){
-  m.innerHTML='<div class="filters">'
-    +'<input class="search" id="csrch" placeholder="Search VIN, claim#..." oninput="filterC()">'
-    +'<select class="fsel" id="cstf" onchange="filterC()"><option value="">All Statuses</option>'+CLAIM_ST.map(function(s){return '<option>'+s+'</option>';}).join('')+'</select>'
-    +'<button class="btn btn-primary btn-sm" onclick="openNewClaim()">+ Add Claim</button>'
-    +'</div>'
-    +'<div class="tbl-wrap"><div class="tbl-scroll">'
-    +'<table><thead><tr><th>Date of Loss</th><th>Status</th><th>VIN</th><th>Claim #</th><th>Insurance</th><th>Priority</th><th>Due Date</th><th>Days</th></tr></thead>'
-    +'<tbody id="ctbody">'+mkClaimRows(claims)+'</tbody></table>'
-    +'</div></div>';
+  var stOpts=CLAIM_ST.map(function(s){return '<option>'+s+'</option>';}).join('');
+  m.innerHTML=
+    '<div class="filters">'+
+    '<input class="search" id="csrch" placeholder="Search VIN, claim#..." oninput="filterC()">'+
+    '<select class="fsel" id="cstf" onchange="filterC()"><option value="">All Statuses</option>'+stOpts+'</select>'+
+    '<button class="btn btn-primary btn-sm" onclick="openNewClaim()">+ Add Claim</button>'+
+    '</div>'+
+    '<div class="tbl-wrap"><div class="tbl-scroll">'+
+    '<table><thead><tr><th>Date of Loss</th><th>Status</th><th>VIN</th><th>Claim #</th><th>Insurance</th><th>Priority</th><th>Due Date</th><th>Days</th></tr></thead>'+
+    '<tbody id="ctbody">'+mkClaimRows(claims)+'</tbody></table>'+
+    '</div></div>';
 }
 
 function mkClaimRows(data){
@@ -758,14 +817,14 @@ function mkClaimRows(data){
   return data.map(function(c){
     var days=c.due_date?Math.round((new Date(c.due_date)-new Date())/86400000):null;
     var dh=days===null?'-':days<0?'<span style="color:#ef4444;font-weight:600">'+days+'</span>':days===0?'<span style="color:#f59e0b;font-weight:600">Today</span>':'<span style="color:#22c55e">'+days+'</span>';
-    return '<tr onclick="openClaimDetail(\''+c.id+'\')">'
-      +'<td>'+(c.date_of_loss||'-')+'</td>'
-      +'<td><span class="sbadge s-intake" style="font-size:11px">'+(c.status||'')+'</span></td>'
-      +'<td style="font-family:monospace">'+(c.vin||'-')+'</td>'
-      +'<td>'+(c.claim_number||'-')+'</td><td>'+(c.insurance||'-')+'</td>'
-      +'<td style="color:'+(c.priority==='High'?'#ef4444':c.priority==='Medium'?'#f59e0b':'var(--text2)')+'">'+( c.priority||'-')+'</td>'
-      +'<td>'+(c.due_date||'-')+'</td><td>'+dh+'</td>'
-      +'</tr>';
+    return '<tr onclick="openClaimDetail(\''+c.id+'\')">'+
+      '<td>'+(c.date_of_loss||'-')+'</td>'+
+      '<td><span class="sbadge s-intake" style="font-size:11px">'+(c.status||'')+'</span></td>'+
+      '<td style="font-family:monospace">'+(c.vin||'-')+'</td>'+
+      '<td>'+(c.claim_number||'-')+'</td><td>'+(c.insurance||'-')+'</td>'+
+      '<td style="color:'+(c.priority==='High'?'#ef4444':c.priority==='Medium'?'#f59e0b':'var(--text2)')+'">'+( c.priority||'-')+'</td>'+
+      '<td>'+(c.due_date||'-')+'</td><td>'+dh+'</td>'+
+      '</tr>';
   }).join('');
 }
 
@@ -791,37 +850,41 @@ function addDateToField(fid){
 function showClaimModal(c){
   var el=document.createElement('div');
   el.className='overlay-bg';el.id='cmodal';
-  var statusOpts=CLAIM_ST.map(function(s){return '<option'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('');
-  var notifyOpts=['Lauren','Brian','Chris','Trey','Maria F','Kierra','Maria O','Mike','Simon','Khurram'].map(function(n){return '<option'+(c.also_notify===n?' selected':'')+'>'+n+'</option>';}).join('');
-  var waitOpts=['Insurance Company','Claim Adjustor','Vendor','Copart'].map(function(n){return '<option'+(c.waiting_on===n?' selected':'')+'>'+n+'</option>';}).join('');
-  el.innerHTML='<div class="overlay-box">'
-    +'<div class="ov-hdr"><div style="font-size:15px;font-weight:600">Claim: '+(c.vin||'New Claim')+'</div><button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">✕</button></div>'
-    +'<div class="ov-body">'
-    +'<div class="g4" style="margin-bottom:16px">'
-    +'<div class="fg"><label class="fl">Date of Loss</label><input class="fi" type="date" id="cd-dol" value="'+(c.date_of_loss||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Status</label><select class="fsel2" id="cd-st">'+statusOpts+'</select></div>'
-    +'<div class="fg"><label class="fl">VIN</label><input class="fi" id="cd-vin" value="'+(c.vin||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Claim #</label><input class="fi" id="cd-cn" value="'+(c.claim_number||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Insurance</label><input class="fi" id="cd-ins" value="'+(c.insurance||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Priority</label><select class="fsel2" id="cd-pri"><option>Normal</option><option'+(c.priority==='High'?' selected':'')+'>High</option><option'+(c.priority==='Medium'?' selected':'')+'>Medium</option><option'+(c.priority==='Low'?' selected':'')+'>Low</option></select></div>'
-    +'<div class="fg"><label class="fl">Due Date</label><input class="fi" type="date" id="cd-due" value="'+(c.due_date||'')+'"></div>'
-    +'<div class="fg"><label class="fl">TIB</label><input class="fi" id="cd-tib" value="'+(c.tib||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Leasing Bank</label><input class="fi" id="cd-lb" value="'+(c.leasing_bank||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Also Notify</label><select class="fsel2" id="cd-an"><option value="">Select</option>'+notifyOpts+'</select></div>'
-    +'<div class="fg"><label class="fl">Waiting On</label><select class="fsel2" id="cd-wo"><option value="">Select</option>'+waitOpts+'</select></div>'
-    +'<div class="fg"><label class="fl">Pay Deferred</label><select class="fsel2" id="cd-pd"><option'+(c.pay_deferred==='No'?' selected':'')+'>No</option><option'+(c.pay_deferred==='Yes'?' selected':'')+'>Yes</option></select></div>'
-    +'</div>'
-    +'<div class="fg" style="margin-bottom:14px"><label class="fl">Problem</label><textarea class="fta" id="cd-prob">'+(c.problem||'')+'</textarea></div>'
-    +'<div class="g2">'
-    +'<div class="fg"><label class="fl">Shah Notes</label><button class="btn btn-secondary btn-xs" style="margin-bottom:4px;width:fit-content" onclick="addDateToField(\'cd-sn\')">+ Date Entry</button><textarea class="fta fta-lg" id="cd-sn">'+(c.shah_notes||'')+'</textarea></div>'
-    +'<div class="fg"><label class="fl">Chris Notes</label><button class="btn btn-secondary btn-xs" style="margin-bottom:4px;width:fit-content" onclick="addDateToField(\'cd-cn2\')">+ Date Entry</button><textarea class="fta fta-lg" id="cd-cn2">'+(c.chris_notes||'')+'</textarea></div>'
-    +'</div></div>'
-    +'<div class="ov-ftr">'
-    +(c.id!=='new'?'<button class="btn btn-danger btn-sm" onclick="doDelClaim(\''+c.id+'\')">🗑 Delete</button>':'<div></div>')
-    +'<div style="display:flex;gap:8px">'
-    +'<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">Cancel</button>'
-    +'<button class="btn btn-primary btn-sm" onclick="doSaveClaim(\''+c.id+'\')">Save Claim</button>'
-    +'</div></div></div>';
+  var stOpts=CLAIM_ST.map(function(s){return '<option'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('');
+  var nOpts=['Lauren','Brian','Chris','Trey','Maria F','Kierra','Maria O','Mike','Simon','Khurram'].map(function(n){return '<option'+(c.also_notify===n?' selected':'')+'>'+n+'</option>';}).join('');
+  var wOpts=['Insurance Company','Claim Adjustor','Vendor','Copart'].map(function(n){return '<option'+(c.waiting_on===n?' selected':'')+'>'+n+'</option>';}).join('');
+
+  var html='<div class="overlay-box">'+
+    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">Claim: '+(c.vin||'New Claim')+'</div>'+
+    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">✕</button></div>'+
+    '<div class="ov-body">'+
+    '<div class="g4" style="margin-bottom:16px">'+
+    '<div class="fg"><label class="fl">Date of Loss</label><input class="fi" type="date" id="cd-dol" value="'+(c.date_of_loss||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Status</label><select class="fsel2" id="cd-st">'+stOpts+'</select></div>'+
+    '<div class="fg"><label class="fl">VIN</label><input class="fi" id="cd-vin" value="'+(c.vin||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Claim #</label><input class="fi" id="cd-cn" value="'+(c.claim_number||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Insurance</label><input class="fi" id="cd-ins" value="'+(c.insurance||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Priority</label><select class="fsel2" id="cd-pri"><option>Normal</option><option'+(c.priority==='High'?' selected':'')+'>High</option><option'+(c.priority==='Medium'?' selected':'')+'>Medium</option><option'+(c.priority==='Low'?' selected':'')+'>Low</option></select></div>'+
+    '<div class="fg"><label class="fl">Due Date</label><input class="fi" type="date" id="cd-due" value="'+(c.due_date||'')+'"></div>'+
+    '<div class="fg"><label class="fl">TIB</label><input class="fi" id="cd-tib" value="'+(c.tib||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Leasing Bank</label><input class="fi" id="cd-lb" value="'+(c.leasing_bank||'')+'"></div>'+
+    '<div class="fg"><label class="fl">Also Notify</label><select class="fsel2" id="cd-an"><option value="">Select</option>'+nOpts+'</select></div>'+
+    '<div class="fg"><label class="fl">Waiting On</label><select class="fsel2" id="cd-wo"><option value="">Select</option>'+wOpts+'</select></div>'+
+    '<div class="fg"><label class="fl">Pay Deferred</label><select class="fsel2" id="cd-pd"><option'+(c.pay_deferred==='No'?' selected':'')+'>No</option><option'+(c.pay_deferred==='Yes'?' selected':'')+'>Yes</option></select></div>'+
+    '</div>'+
+    '<div class="fg" style="margin-bottom:14px"><label class="fl">Problem</label><textarea class="fta" id="cd-prob">'+(c.problem||'')+'</textarea></div>'+
+    '<div class="g2">'+
+    '<div class="fg"><label class="fl">Shah Notes <button class="btn btn-secondary btn-xs" onclick="addDateToField(\'cd-sn\')">+ Date</button></label><textarea class="fta fta-lg" id="cd-sn">'+(c.shah_notes||'')+'</textarea></div>'+
+    '<div class="fg"><label class="fl">Chris Notes <button class="btn btn-secondary btn-xs" onclick="addDateToField(\'cd-cn2\')">+ Date</button></label><textarea class="fta fta-lg" id="cd-cn2">'+(c.chris_notes||'')+'</textarea></div>'+
+    '</div></div>'+
+    '<div class="ov-ftr">'+
+    (c.id!=='new'?'<button class="btn btn-danger btn-sm" onclick="doDelClaim(\''+c.id+'\')">🗑 Delete</button>':'<div></div>')+
+    '<div style="display:flex;gap:8px">'+
+    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cmodal\').remove()">Cancel</button>'+
+    '<button class="btn btn-primary btn-sm" onclick="doSaveClaim(\''+c.id+'\')">Save Claim</button>'+
+    '</div></div></div>';
+
+  el.innerHTML=html;
   document.body.appendChild(el);
 }
 
@@ -862,15 +925,17 @@ async function doDelClaim(id){
 function renderReport(m){
   var today=new Date().toISOString().split('T')[0];
   var weekAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
-  m.innerHTML='<div class="sec-title" style="margin-bottom:16px">Cycle Time Report</div>'
-    +'<div class="filters" style="gap:12px">'
-    +'<div class="fg"><label class="fl">From Date</label><input class="fi" type="date" id="rf" value="'+weekAgo+'" style="width:150px"></div>'
-    +'<div class="fg"><label class="fl">To Date</label><input class="fi" type="date" id="rt" value="'+today+'" style="width:150px"></div>'
-    +'<div class="fg"><label class="fl">Stage From</label><select class="fsel" id="rsf"><option value="">Any Stage</option>'+STAGES.map(function(s){return '<option>'+s+'</option>';}).join('')+'</select></div>'
-    +'<div class="fg"><label class="fl">Stage To</label><select class="fsel" id="rst"><option value="">Any Stage</option>'+STAGES.map(function(s){return '<option>'+s+'</option>';}).join('')+'</select></div>'
-    +'<div class="fg"><label class="fl">&nbsp;</label><button class="btn btn-primary" onclick="runReport()">Run Report</button></div>'
-    +'</div>'
-    +'<div id="rresults" style="color:var(--text2);font-size:13px;padding:20px 0">Select filters and click Run Report</div>';
+  var stOpts=STAGES.map(function(s){return '<option>'+s+'</option>';}).join('');
+  m.innerHTML=
+    '<div class="sec-title" style="margin-bottom:16px">Cycle Time Report</div>'+
+    '<div class="filters" style="gap:12px">'+
+    '<div class="fg"><label class="fl">From Date</label><input class="fi" type="date" id="rf" value="'+weekAgo+'" style="width:150px"></div>'+
+    '<div class="fg"><label class="fl">To Date</label><input class="fi" type="date" id="rt" value="'+today+'" style="width:150px"></div>'+
+    '<div class="fg"><label class="fl">Stage From</label><select class="fsel" id="rsf"><option value="">Any Stage</option>'+stOpts+'</select></div>'+
+    '<div class="fg"><label class="fl">Stage To</label><select class="fsel" id="rst"><option value="">Any Stage</option>'+stOpts+'</select></div>'+
+    '<div class="fg"><label class="fl">&nbsp;</label><button class="btn btn-primary" onclick="runReport()">Run Report</button></div>'+
+    '</div>'+
+    '<div id="rresults" style="color:var(--text2);font-size:13px;padding:20px 0">Select filters and click Run Report</div>';
 }
 
 async function runReport(){
@@ -892,12 +957,13 @@ async function runReport(){
   var rows=Object.values(byTruck).map(function(t){
     var stages=t.stages;if(!stages.length)return null;
     var first=stages[0],last=stages[stages.length-1];
-    var startTime=new Date(first.entered_at);
-    var endTime=last.exited_at?new Date(last.exited_at):now;
-    var totalHours=(endTime-startTime)/3600000;
+    var totalHours=(new Date(last.exited_at||now)-new Date(first.entered_at))/3600000;
     var currentH=stages.find(function(s){return !s.exited_at;});
     var currentHours=currentH?(now-new Date(currentH.entered_at))/3600000:0;
-    return{vin:t.vin||'-',ymm:t.ymm||'-',currentStage:t.currentStage||last.stage,firstStage:first.stage,startDate:new Date(first.entered_at).toLocaleDateString(),endDate:last.exited_at?new Date(last.exited_at).toLocaleDateString():'Active',totalHours:totalHours,totalDays:(totalHours/24).toFixed(1),currentStageDays:(currentHours/24).toFixed(1),stageCount:stages.length};
+    return{vin:t.vin||'-',ymm:t.ymm||'-',currentStage:t.currentStage||last.stage,firstStage:first.stage,
+      startDate:new Date(first.entered_at).toLocaleDateString(),
+      endDate:last.exited_at?new Date(last.exited_at).toLocaleDateString():'Active',
+      totalDays:(totalHours/24).toFixed(1),currentStageDays:(currentHours/24).toFixed(1),stageCount:stages.length};
   }).filter(Boolean);
   if(fromDate)rows=rows.filter(function(row){return new Date(row.startDate)>=new Date(fromDate);});
   if(toDate)rows=rows.filter(function(row){return new Date(row.startDate)<=new Date(toDate);});
@@ -905,25 +971,26 @@ async function runReport(){
   if(stageTo)rows=rows.filter(function(row){return row.currentStage===stageTo;});
   if(!rows.length){r.innerHTML='<div style="color:var(--text2);padding:20px 0">No trucks found</div>';return;}
   var avgDays=rows.reduce(function(a,row){return a+parseFloat(row.totalDays);},0)/rows.length;
-  r.innerHTML='<div style="display:flex;gap:12px;margin-bottom:16px">'
-    +'<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Trucks</div><div class="dc-num" style="font-size:20px">'+rows.length+'</div></div>'
-    +'<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Avg Total Days</div><div class="dc-num" style="font-size:20px;color:var(--accent)">'+avgDays.toFixed(1)+'d</div></div>'
-    +'</div>'
-    +'<div class="tbl-wrap"><div class="tbl-scroll">'
-    +'<table><thead><tr><th>VIN</th><th>Vehicle</th><th>Current Stage</th><th>Started In</th><th>Start Date</th><th>Last Date</th><th>Total Days</th><th>Current Stage Days</th><th>Stages</th></tr></thead>'
-    +'<tbody>'+rows.map(function(row){
-      return '<tr>'
-        +'<td style="font-family:monospace;font-weight:600">'+row.vin+'</td>'
-        +'<td>'+row.ymm+'</td>'
-        +'<td><span class="sbadge '+(SCSS[row.currentStage]||'s-intake')+'" style="font-size:11px">'+row.currentStage+'</span></td>'
-        +'<td style="color:var(--text2);font-size:11px">'+row.firstStage+'</td>'
-        +'<td>'+row.startDate+'</td><td>'+row.endDate+'</td>'
-        +'<td style="font-weight:600;color:var(--accent)">'+row.totalDays+'d</td>'
-        +'<td style="color:#f59e0b">'+row.currentStageDays+'d</td>'
-        +'<td style="color:var(--text2)">'+row.stageCount+'</td>'
-        +'</tr>';
-    }).join('')+'</tbody></table>'
-    +'</div></div>';
+  r.innerHTML=
+    '<div style="display:flex;gap:12px;margin-bottom:16px">'+
+    '<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Trucks</div><div class="dc-num" style="font-size:20px">'+rows.length+'</div></div>'+
+    '<div class="dc" style="padding:10px 14px"><div class="dc-lbl">Avg Total Days</div><div class="dc-num" style="font-size:20px;color:var(--accent)">'+avgDays.toFixed(1)+'d</div></div>'+
+    '</div>'+
+    '<div class="tbl-wrap"><div class="tbl-scroll">'+
+    '<table><thead><tr><th>VIN</th><th>Vehicle</th><th>Current Stage</th><th>Started In</th><th>Start Date</th><th>Last Date</th><th>Total Days</th><th>Curr Stage Days</th><th>Stages</th></tr></thead>'+
+    '<tbody>'+rows.map(function(row){
+      return '<tr>'+
+        '<td style="font-family:monospace;font-weight:600">'+row.vin+'</td>'+
+        '<td>'+row.ymm+'</td>'+
+        '<td><span class="sbadge '+(SCSS[row.currentStage]||'s-intake')+'" style="font-size:11px">'+row.currentStage+'</span></td>'+
+        '<td style="color:var(--text2);font-size:11px">'+row.firstStage+'</td>'+
+        '<td>'+row.startDate+'</td><td>'+row.endDate+'</td>'+
+        '<td style="font-weight:600;color:var(--accent)">'+row.totalDays+'d</td>'+
+        '<td style="color:#f59e0b">'+row.currentStageDays+'d</td>'+
+        '<td style="color:var(--text2)">'+row.stageCount+'</td>'+
+        '</tr>';
+    }).join('')+'</tbody></table>'+
+    '</div></div>';
 }
 
 function toast(msg,type){
