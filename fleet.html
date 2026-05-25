@@ -359,21 +359,21 @@ async function openDetail(id){
 }
 
 function buildForm(t){
-  var yo=Array.from({length:400},function(_,i){return '<option'+(t.yard==='Yard '+(i+1)?' selected':'')+'>Yard '+(i+1)+'</option>';}).join('');
-  var so=STATES.map(function(s){return '<option'+(t.state===s?' selected':'')+'>'+s+'</option>';}).join('');
+  var yo=Array.from({length:400},function(_,i){return '<option value="Yard '+(i+1)+'">Yard '+(i+1)+'</option>';}).join('');
+  var so=STATES.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join('');
   var sho=SHOP_ST.map(function(s){return '<option'+(t.shop_status===s?' selected':'')+'>'+s+'</option>';}).join('');
   var stgo=STAGES.map(function(s){return '<option'+(t.stage===s?' selected':'')+'>'+s+'</option>';}).join('');
   var lc=t.estimated_payoff?calcLease(t.estimated_payoff,t.balloon_payment):'<span style="color:var(--text3)">Enter payoff to calculate</span>';
 
   return '<div class="sec"><div class="sec-title">Vehicle Information</div>'
     +'<div class="g4">'
-    +'<div class="fg"><label class="fl">VIN</label><input class="fi" id="f-vin" value="'+(t.vin||'')+'"></div>'
+    +'<div class="fg"><label class="fl">VIN <button class="btn btn-secondary btn-xs" style="margin-left:6px" onclick="copyField('f-vin')">📋</button></label><input class="fi" id="f-vin" value="'+(t.vin||'')+'"></div>'
     +'<div class="fg"><label class="fl">Year Make Model</label><input class="fi" id="f-ymm" value="'+(t.year_make_model||'')+'"></div>'
     +'<div class="fg"><label class="fl">Cab & Color</label><input class="fi" id="f-cab" value="'+(t.cab_color||'')+'"></div>'
     +'<div class="fg"><label class="fl">Bed</label><input class="fi" id="f-bed" value="'+(t.bed||'')+'"></div>'
     +'<div class="fg"><label class="fl">Mileage</label><input class="fi" id="f-mil" value="'+(t.mileage||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Yard</label><select class="fsel2" id="f-yard"><option value="">Select</option>'+yo+'</select></div>'
-    +'<div class="fg"><label class="fl">State</label><select class="fsel2" id="f-state"><option value="">Select</option>'+so+'</select></div>'
+    +'<div class="fg"><label class="fl">Yard (type number)</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"><datalist id="yard-list">'+yo+'</datalist></div>'
+    +'<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"><datalist id="state-list">'+so+'</datalist></div>'
     +'<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>'
     +'<div class="fg s4"><label class="fl">📷 Photo Folder Link</label><input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste OneDrive or Google Drive folder link..."></div>'
     +'</div></div>'
@@ -394,8 +394,9 @@ function buildForm(t){
     +'<div class="g4">'
     +'<div class="fg"><label class="fl">Leasing Company</label><input class="fi" id="f-lco" value="'+(t.leasing_company||'')+'"></div>'
     +'<div class="fg"><label class="fl">Applicant Name</label><input class="fi" id="f-app" value="'+(t.applicant_name||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Vendor Short Name</label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>'
-    +'<div class="fg"><label class="fl">Vendor ID</label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>'
+    +'<div class="fg"><label class="fl">Vendor Short Name <button class="btn btn-secondary btn-xs" style="margin-left:6px" onclick="copyField('f-vsn')">📋</button></label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>'
+    +'<div class="fg"><label class="fl">Vendor ID <button class="btn btn-secondary btn-xs" style="margin-left:6px" onclick="copyField('f-vid')">📋</button></label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>'
+    +'<div class="fg"><label class="fl">Old Vendor (previous lessee)</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Company that previously had this truck"></div>'
     +'<div class="fg"><label class="fl">Est. Payoff ($)</label><input class="fi" type="number" id="f-payoff" value="'+(t.estimated_payoff||'')+'" oninput="updLease()"></div>'
     +'<div class="fg"><label class="fl">Balloon Payment ($)</label><input class="fi" type="number" id="f-balloon" value="'+(t.balloon_payment||'')+'" placeholder="0.00" oninput="updLease()"></div>'
     +'<div class="fg s2"><label class="fl">5-Year Lease @ 9%</label><div class="lease-box" id="leasebox">'+lc+'</div></div>'
@@ -492,6 +493,13 @@ function renderNotes(){
   }).join('');
 }
 
+function copyField(fieldId){
+  var el=document.getElementById(fieldId);if(!el)return;
+  var text=el.value;if(!text){toast('Nothing to copy','err');return;}
+  navigator.clipboard.writeText(text).then(function(){toast('Copied!','ok');}).catch(function(){
+    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');
+  });
+}
 function addDateToNote(){
   var ta=document.getElementById('nnote');if(!ta)return;
   var d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
@@ -585,6 +593,7 @@ async function saveTruck(){
     applicant_name:document.getElementById('f-app').value.trim(),
     vendor_short_name:document.getElementById('f-vsn').value.trim(),
     vendor_id:document.getElementById('f-vid').value.trim(),
+    old_vendor_name:document.getElementById('f-oldvendor').value.trim()||null,
     estimated_payoff:parseFloat(document.getElementById('f-payoff').value||0)||null,
     balloon_payment:parseFloat(document.getElementById('f-balloon').value||0)||null,
     photo_link:document.getElementById('f-photolink').value.trim()||null,
