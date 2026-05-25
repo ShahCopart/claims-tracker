@@ -133,20 +133,20 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
   <div class="nav">
-    <div class="ntab active" onclick="switchTab('dashboard',this)">Dashboard</div>
-    <div class="ntab" onclick="switchTab('Repo',this)">Repo <span class="nbadge" id="c-Repo">0</span></div>
-    <div class="ntab" onclick="switchTab('Intake',this)">Intake <span class="nbadge" id="c-Intake">0</span></div>
-    <div class="ntab" onclick="switchTab('Manager Review',this)">Manager Review <span class="nbadge" id="c-Manager_Review">0</span></div>
-    <div class="ntab" onclick="switchTab('Epika',this)">Epika <span class="nbadge" id="c-Epika">0</span></div>
-    <div class="ntab" onclick="switchTab('At Shop',this)">At Shop <span class="nbadge" id="c-At_Shop">0</span></div>
-    <div class="ntab" onclick="switchTab('Final Inspection',this)">Final Inspection <span class="nbadge" id="c-Final_Inspection">0</span></div>
-    <div class="ntab" onclick="switchTab('Ready to Assign',this)">Ready to Assign <span class="nbadge" id="c-Ready_to_Assign">0</span></div>
-    <div class="ntab" onclick="switchTab('In Leasing',this)">In Leasing <span class="nbadge" id="c-In_Leasing">0</span></div>
-    <div class="ntab" onclick="switchTab('Hold 4 Cars',this)">Hold 4 Cars <span class="nbadge" id="c-Hold_4_Cars">0</span></div>
-    <div class="ntab" onclick="switchTab('Total Loss',this)">Total Loss <span class="nbadge" id="c-Total_Loss">0</span></div>
-    <div class="ntab" onclick="switchTab('Reassignment Closed',this)">Reassignment Closed <span class="nbadge" id="c-Reassignment_Closed">0</span></div>
-    <div class="ntab" onclick="switchTab('claims',this)">Claims <span class="nbadge" id="c-claims">0</span></div>
-    <div class="ntab" onclick="switchTab('report',this)">Reports</div>
+    <div class="ntab active" data-tab="dashboard">Dashboard</div>
+    <div class="ntab" data-tab="Repo">Repo <span class="nbadge" id="c-Repo">0</span></div>
+    <div class="ntab" data-tab="Intake">Intake <span class="nbadge" id="c-Intake">0</span></div>
+    <div class="ntab" data-tab="Manager Review">Manager Review <span class="nbadge" id="c-Manager_Review">0</span></div>
+    <div class="ntab" data-tab="Epika">Epika <span class="nbadge" id="c-Epika">0</span></div>
+    <div class="ntab" data-tab="At Shop">At Shop <span class="nbadge" id="c-At_Shop">0</span></div>
+    <div class="ntab" data-tab="Final Inspection">Final Inspection <span class="nbadge" id="c-Final_Inspection">0</span></div>
+    <div class="ntab" data-tab="Ready to Assign">Ready to Assign <span class="nbadge" id="c-Ready_to_Assign">0</span></div>
+    <div class="ntab" data-tab="In Leasing">In Leasing <span class="nbadge" id="c-In_Leasing">0</span></div>
+    <div class="ntab" data-tab="Hold 4 Cars">Hold 4 Cars <span class="nbadge" id="c-Hold_4_Cars">0</span></div>
+    <div class="ntab" data-tab="Total Loss">Total Loss <span class="nbadge" id="c-Total_Loss">0</span></div>
+    <div class="ntab" data-tab="Reassignment Closed">Reassignment Closed <span class="nbadge" id="c-Reassignment_Closed">0</span></div>
+    <div class="ntab" data-tab="claims">Claims <span class="nbadge" id="c-claims">0</span></div>
+    <div class="ntab" data-tab="report">Reports</div>
   </div>
   <div class="main" id="main"></div>
 </div>
@@ -190,6 +190,13 @@ tbody tr:last-child td{border-bottom:none}
 <datalist id="state-list" style="display:none"></datalist>
 
 <script>
+// Nav tab click handler
+document.querySelectorAll('.ntab').forEach(function(el){
+  el.addEventListener('click', function(){
+    doTab(this.getAttribute('data-tab'), this);
+  });
+});
+
 const SB_URL='https://grillezennazhgruvtav.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyaWxsZXplbm5hemhncnV2dGF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzAxMzMsImV4cCI6MjA5NTIwNjEzM30.CVbSaQ04mI8L7RUF8KEFGqQKskumFVGyJczP1RjwKkE';
 const db=supabase.createClient(SB_URL,SB_KEY);
@@ -239,12 +246,8 @@ async function bootApp(){
   document.getElementById('ubadge').textContent='👤 '+me.name;
   document.getElementById('main').innerHTML='<div style="padding:40px;color:var(--text2);display:flex;align-items:center"><div class="spin"></div>Loading...</div>';
   await loadData();
-  // Restore last tab if available
   var lastTab=localStorage.getItem('ft_last_tab')||'dashboard';
-  var tabs=document.querySelectorAll('.ntab');
-  var idx=['dashboard','Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Hold 4 Cars','Total Loss','Reassignment Closed','claims','report'];
-  var ti=idx.indexOf(lastTab);
-  doTab(lastTab,tabs[ti>=0?ti:0]);
+  doTab(lastTab,null);
 }
 
 async function loadData(){
@@ -264,16 +267,15 @@ function updateBadges(){
 
 function doTab(key,el){
   document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});
-  if(el)el.classList.add('active');
+  var target=el||document.querySelector('.ntab[data-tab="'+key+'"]');
+  if(target)target.classList.add('active');
   tab=key;window._lastTab=key;localStorage.setItem('ft_last_tab',key);renderTab();
 }
 function switchTab(key,el){doTab(key,el);}
 
 function clickStage(stage){
-  var tabs=document.querySelectorAll('.ntab');
-  var idx=['dashboard','Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Hold 4 Cars','Total Loss','Reassignment Closed','claims','report'];
-  var i=idx.indexOf(stage);
-  if(i>=0)doTab(stage,tabs[i]);
+  var el=document.querySelector('.ntab[data-tab="'+stage+'"]');
+  doTab(stage,el);
 }
 
 function renderTab(){
@@ -744,15 +746,8 @@ async function delTruck(){
 function closeDetail(){
   document.getElementById('dscreen').classList.remove('open');
   truckId=null;
-  // Return to the stage the truck was in, not dashboard
   if(window._lastTab)tab=window._lastTab;
-  // Update active tab
-  var tabs=document.querySelectorAll('.ntab');
-  var idx=['dashboard','Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Hold 4 Cars','Total Loss','Reassignment Closed','claims','report'];
-  var i=idx.indexOf(tab);
-  tabs.forEach(function(t){t.classList.remove('active');});
-  if(i>=0&&tabs[i])tabs[i].classList.add('active');
-  renderTab();
+  doTab(tab,null);
 }
 
 function openNewTruck(){
