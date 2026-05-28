@@ -200,7 +200,6 @@ const SB_URL='https://grillezennazhgruvtav.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyaWxsZXplbm5hemhncnV2dGF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzAxMzMsImV4cCI6MjA5NTIwNjEzM30.CVbSaQ04mI8L7RUF8KEFGqQKskumFVGyJczP1RjwKkE';
 const db=supabase.createClient(SB_URL,SB_KEY);
 const ADMIN_EMAIL='khurram.shah@copart.com';
-const ADMIN_PASSWORD='Copart2024!';
 var ydl=document.getElementById('yard-list');
 for(var yi=1;yi<=400;yi++){var yo=document.createElement('option');yo.value='Yard '+yi;ydl.appendChild(yo);}
 ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'].forEach(function(s){var o=document.createElement('option');o.value=s;document.getElementById('state-list').appendChild(o);});
@@ -227,7 +226,7 @@ async function doLogin(){
     var u=r1.data;
     if(!u){var r2=await db.from('users').insert({name:name,email:email}).select().single();if(r2.error)throw r2.error;u=r2.data;}
     me=u||{name:name,email:email};
-    isAdmin=(email===ADMIN_EMAIL||(me.role&&me.role==='admin'));
+    isAdmin=(email===ADMIN_EMAIL||(me&&me.role==='admin'));
     localStorage.setItem('ft_user',JSON.stringify(me));
     err.textContent='';bootApp();
   }catch(ex){err.textContent='Error: '+(ex.message||'Connection failed');console.error(ex);}
@@ -436,7 +435,7 @@ function buildForm(t){
     '<div class="sec"><div class="sec-title"><span>Stage History & Cycle Time</span></div><div id="hlist"></div></div>';
 }
 function toggleLock(fid,lid){
-  if(!isAdmin){toast('Admin access required','err');return;}
+  if(!isAdmin){toast('Admin access required - contact Khurram','err');return;}
   var inp=document.getElementById(fid),btn=document.getElementById(lid);if(!inp||!btn)return;
   if(inp.readOnly){inp.readOnly=false;inp.style.opacity='1';inp.style.cursor='text';btn.textContent='🔓';btn.style.color='#f59e0b';inp.focus();}
   else{inp.readOnly=true;inp.style.opacity='0.6';inp.style.cursor='not-allowed';btn.textContent='🔒';btn.style.color='';}
@@ -878,7 +877,7 @@ async function runReport(){
 }
 function toast(msg,type){var t=document.createElement('div');t.className='toast '+(type==='ok'?'tok-ok':'tok-err');t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);}
 var u=localStorage.getItem('ft_user');
-if(u){me=JSON.parse(u);isAdmin=(me.email===ADMIN_EMAIL||(me.role&&me.role==='admin'));bootApp();}
+if(u){me=JSON.parse(u);isAdmin=(me.email===ADMIN_EMAIL||(me&&me.role==='admin'));bootApp();}
 </script>
 </body>
 </html>
