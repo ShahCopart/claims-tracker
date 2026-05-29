@@ -1636,23 +1636,23 @@ async function loadUserList(){
         '<td style="padding:8px 12px">'+
         (isPrimary||isCurrentUser?'<span style="color:var(--text3);font-size:11px">—</span>':
          isAdminUser?
-         '<button class="btn btn-secondary btn-xs" data-action2="demoteUser" data-user-id="'+u.id+'" data-user-name="'+u.name+'">Remove Admin</button>':
+         '<button class="btn btn-secondary btn-xs" data-action2="demoteUser" data-user-id="'+u.email+'" data-user-name="'+u.name+'">Remove Admin</button>':
          '<button class="btn btn-primary btn-xs" data-action2="promoteUser" data-user-id="'+u.id+'" data-user-name="'+u.name+'">Make Admin</button>')+
         '</td></tr>';
     }).join('')+
     '</tbody></table>';
 }
 
-async function promoteUser(id,name){
+async function promoteUser(email,name){
   if(!confirm('Make '+name+' an admin?'))return;
-  var res=await db.from('users').update({role:'admin'}).eq('id',id);
+  var res=await db.from('users').update({role:'admin'}).eq('email',email);
   if(!res.error){toast(name+' is now an admin','ok');loadUserList();}
   else toast('Error: '+res.error.message,'err');
 }
 
-async function demoteUser(id,name){
+async function demoteUser(email,name){
   if(!confirm('Remove admin role from '+name+'?'))return;
-  var res=await db.from('users').update({role:null}).eq('id',id);
+  var res=await db.from('users').update({role:null}).eq('email',email);
   if(!res.error){toast(name+' is now a regular user','ok');loadUserList();}
   else toast('Error: '+res.error.message,'err');
 }
