@@ -80,7 +80,7 @@ tbody tr:last-child td{border-bottom:none}
 .exp-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
 .exp-row input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12px}
 .stage-sel{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px}
-.dash-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px}
+.dash-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:12px;margin-bottom:20px}
 .dc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
 .dc-num{font-size:28px;font-weight:700;margin:4px 0}.dc-lbl{font-size:11px;color:var(--text2)}
 .bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -252,6 +252,8 @@ document.addEventListener('DOMContentLoaded',function(){
       if(action==='showOverdue')showOverdueTrucks();
       if(action==='showApproval')showApprovalTrucks();
       if(action==='showMgrReview')showMgrReviewTrucks();
+      if(action==='showReady'){var rl=trucks.filter(function(t){return t.stage==='Ready to Assign';});showTruckList('Ready to Assign ('+rl.length+')',rl);}
+      if(action==='showClaims')doTab('claims',null);
     }
     // data-action2 handled by body listener
   });
@@ -1092,12 +1094,12 @@ function renderDash(m){
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
     '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
-    '<div class="dc" onclick="showTruckList(&quot;Closed&quot;,closed)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
-    '<div class="dc" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
-    '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
-    '<div class="dc" style="cursor:pointer" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between">Needs Attention <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">2+ days no activity</div></div>'+
-    '<div class="dc" style="cursor:pointer;background:rgba(6,182,212,0.08);border-color:#164e63" onclick="showApprovalTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#67e8f9">Waiting Approval <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#06b6d4">'+approval+'</div></div>'+
-    '<div class="dc"><div class="dc-lbl">Active Claims</div><div class="dc-num" style="color:#a78bfa">'+activeClaims+'</div></div>'+
+    '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
+    '<div class="dc" data-action="showReady" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Ready to Assign <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
+    '<div class="dc" data-action="showOverdue" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Needs Attention <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">2+ days no activity</div></div>'+
+    '<div class="dc" data-action="showApproval" style="cursor:pointer;background:rgba(6,182,212,0.08);border-color:#164e63"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#67e8f9">Waiting Approval <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#06b6d4">'+approval+'</div></div>'+
+    '<div class="dc" data-action="showClaims" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Claims <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#a78bfa">'+activeClaims+'</div></div>'+
+    '<div class="dc" data-action="showMgrReview" style="cursor:pointer;background:rgba(245,158,11,0.08);border-color:#78350f"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fcd34d">Mgr Review Needed <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#f59e0b">'+mgrReview+'</div></div>'+
     '</div>'+
     '<div class="bk-grid">'+
     '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+
@@ -1114,14 +1116,13 @@ function renderDash(m){
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🚨 Critical (7+ days)</span><span class="bk-cnt" style="color:#dc2626">'+critical+'</span></div>'+
     '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
     '</div></div>'+
-    '<div style="margin-top:16px">'+
-    '<div class="bk-card">'+
+    '<div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">'+
     '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
     '<span>✅ Recently Approved (Last 20)</span>'+
     '<span style="font-size:10px;color:var(--text2);font-weight:400">Estimates approved by managers</span>'+
     '</div>'+
-    '<div id="recent-approvals" style="padding:10px 14px;color:var(--text2);font-size:12px">Loading...</div>'+
-    '</div></div>';
+    '<div id="recent-approvals" style="padding:10px 14px;color:var(--text2);font-size:12px;min-height:60px">Loading...</div>'+
+    '</div>';
 }
 
 function renderClaims(m){
