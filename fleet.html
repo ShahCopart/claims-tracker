@@ -82,7 +82,7 @@ tbody tr:last-child td{border-bottom:none}
 .exp-row input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12px}
 .exp-total{padding:4px 0}
 .stage-sel{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px}
-.dash-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.dash-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
 .dc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
 .dc-num{font-size:28px;font-weight:700;margin:4px 0}.dc-lbl{font-size:11px;color:var(--text2)}
 .bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -133,7 +133,8 @@ tbody tr:last-child td{border-bottom:none}
       <div class="user-badge" id="ubadge"></div>
       <div class="admin-badge" id="admin-badge" style="display:none">👑 Admin</div>
     </div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:240px" oninput="globalSearch(this.value)" onkeydown="if(event.key==='Escape')this.value=''">
       <button class="btn btn-secondary btn-sm" onclick="refreshAll()">🔄 Refresh</button>
       <button class="btn btn-primary btn-sm" onclick="openNewTruck()">+ Add Truck</button>
       <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sign Out</button>
@@ -274,6 +275,7 @@ function getDaysSinceWorked(t){if(!t.date_last_worked)return 999;return Math.flo
 function isOverdue(t){if(t.est_completion_date&&new Date(t.est_completion_date)>new Date())return false;return getDaysSinceWorked(t)>=2;}
 function flags(t){
   var f='';
+  if(t.needs_approval)f+='<span class="flag" style="background:#06b6d4;width:10px;height:10px" title="Approval Needed"></span>';
   if(t.title_issue)f+='<span class="flag" style="background:#ef4444" title="Title Issue"></span>';
   if(t.has_claim)f+='<span class="flag" style="background:#f59e0b" title="Has Claim"></span>';
   if(t.total_loss)f+='<span class="flag" style="background:#a78bfa" title="Total Loss"></span>';
@@ -281,17 +283,35 @@ function flags(t){
   f+='<span class="flag" style="background:'+(ht?'#22c55e':'#6b7280')+'" title="'+(ht?'Tracker OK':'No Tracker')+'"></span>';
   return f;
 }
+var _sortField=null,_sortAsc=true;
+function sortList(field){
+  if(_sortField===field)_sortAsc=!_sortAsc;
+  else{_sortField=field;_sortAsc=true;}
+  doSearch();
+}
 function renderList(stage,m){
   var rows=trucks.filter(function(t){return (t.stage||'').trim()===stage.trim();});
   var shOpts=SHOP_ST.map(function(s){return '<option>'+s+'</option>';}).join('');
   m.innerHTML='<div class="filters">'+
     '<input class="search" id="srch" placeholder="Search VIN, yard..." oninput="doSearch()">'+
     '<select class="fsel" id="shpf" onchange="doSearch()"><option value="">All Shop Status</option>'+shOpts+'</select>'+
-    '<select class="fsel" id="flgf" onchange="doSearch()"><option value="">All Flags</option><option value="title_issue">Title Issue</option><option value="has_claim">Has Claim</option><option value="total_loss">Total Loss</option></select>'+
+    '<select class="fsel" id="flgf" onchange="doSearch()"><option value="">All Flags</option><option value="title_issue">Title Issue</option><option value="has_claim">Has Claim</option><option value="total_loss">Total Loss</option><option value="needs_approval">Needs Approval</option></select>'+
     '<span style="color:var(--text2);font-size:12px">'+rows.length+' truck'+(rows.length!==1?'s':'')+'</span>'+
     '</div>'+
     '<div class="tbl-wrap"><div class="tbl-scroll">'+
-    '<table><thead><tr><th>VIN</th><th>Year/Make/Model</th><th>Cab/Color</th><th>Bed</th><th>Yard</th><th>State</th><th>Mileage</th><th>Repo Agent</th><th>Terminated</th><th>Est. Completion</th><th>Shop Status</th><th>Last Worked</th><th>Days</th><th>Flags</th></tr></thead>'+
+    '<table><thead><tr>'+
+    '<th onclick="sortList('vin')" style="cursor:pointer">VIN ↕</th>'+
+    '<th onclick="sortList('year_make_model')" style="cursor:pointer">Year/Make/Model ↕</th>'+
+    '<th>Cab/Color</th><th>Bed</th>'+
+    '<th onclick="sortList('yard')" style="cursor:pointer">Yard ↕</th>'+
+    '<th onclick="sortList('state')" style="cursor:pointer">State ↕</th>'+
+    '<th>Mileage</th><th>Repo Agent</th>'+
+    '<th onclick="sortList('terminated_date')" style="cursor:pointer">Terminated ↕</th>'+
+    '<th onclick="sortList('est_completion_date')" style="cursor:pointer">Est. Completion ↕</th>'+
+    '<th onclick="sortList('shop_status')" style="cursor:pointer">Shop Status ↕</th>'+
+    '<th onclick="sortList('date_last_worked')" style="cursor:pointer">Last Worked ↕</th>'+
+    '<th onclick="sortList('days')" style="cursor:pointer">Days ↕</th><th>Flags</th>'+
+    '</tr></thead>'+
     '<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table></div></div>';
 }
 function mkRows(rows){
@@ -321,9 +341,17 @@ function doSearch(){
   var sh=document.getElementById('shpf')?document.getElementById('shpf').value:'';
   var fl=document.getElementById('flgf')?document.getElementById('flgf').value:'';
   var rows=trucks.filter(function(t){return (t.stage||'').trim()===tab.trim();});
-  if(q)rows=rows.filter(function(t){return (t.vin||'').toLowerCase().includes(q)||(t.year_make_model||'').toLowerCase().includes(q)||(t.yard||'').toLowerCase().includes(q);});
+  if(q)rows=rows.filter(function(t){return (t.vin||'').toLowerCase().includes(q)||(t.year_make_model||'').toLowerCase().includes(q)||(t.yard||'').toLowerCase().includes(q)||(t.vendor_short_name||'').toLowerCase().includes(q)||(t.old_vendor_name||'').toLowerCase().includes(q);});
   if(sh)rows=rows.filter(function(t){return t.shop_status===sh;});
   if(fl)rows=rows.filter(function(t){return t[fl];});
+  if(_sortField){
+    rows=rows.slice().sort(function(a,b){
+      var av=_sortField==='days'?getDaysSinceWorked(a):(a[_sortField]||'');
+      var bv=_sortField==='days'?getDaysSinceWorked(b):(b[_sortField]||'');
+      if(typeof av==='string')return _sortAsc?av.localeCompare(bv):bv.localeCompare(av);
+      return _sortAsc?av-bv:bv-av;
+    });
+  }
   var b=document.getElementById('tbl-body');if(b)b.innerHTML=mkRows(rows);
 }
 async function openDetail(id){
@@ -364,6 +392,7 @@ function buildForm(t){
     '<div class="fg"><label class="fl">Yard</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"></div>'+
     '<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>'+
     '<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>'+
+    '<div class="fg s2"><label class="fl">Old Vendor Name (Previous Lessee)</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Previous lessee company name"></div>'+
     '</div></div>'+
     '<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">'+
     '<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>'+
@@ -381,7 +410,7 @@ function buildForm(t){
     '<div class="fg"><label class="fl">Assigned Date</label><input class="fi" type="date" id="f-assign" value="'+(t.assigned_date||'')+'"></div>'+
     '<div class="fg"><label class="fl">Vendor Short Name '+cpBtn('f-vsn')+'</label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>'+
     '<div class="fg"><label class="fl">Vendor ID '+cpBtn('f-vid')+'</label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>'+
-    '<div class="fg"><label class="fl">Old Vendor Name</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Previous lessee company name"></div>'+
+    
     '<div class="fg"><label class="fl">Old Vendor Short Name '+lkBtn('f-oldvsn','old-vsn-lock')+'</label><input class="fi" id="f-oldvsn" value="'+(t.old_vendor_short_name||'')+'" readonly></div>'+
     '<div class="fg"><label class="fl">Est. Payoff ($)</label><input class="fi" type="number" id="f-payoff" value="'+(t.estimated_payoff||'')+'" oninput="updLease()"></div>'+
     '<div class="fg"><label class="fl">Balloon Payment ($)</label><input class="fi" type="number" id="f-balloon" value="'+(t.balloon_payment||'')+'" placeholder="0.00" oninput="updLease()"></div>'+
@@ -397,15 +426,16 @@ function buildForm(t){
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-ti" '+(t.title_issue?'checked':'')+' style="width:15px;height:15px;accent-color:var(--red)"><span style="color:#fca5a5">⚠ Title Issue</span></label>'+
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-tl" '+(t.total_loss?'checked':'')+' style="width:15px;height:15px;accent-color:#a78bfa"><span style="color:#c4b5fd">💥 Total Loss</span></label>'+
     '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>'+
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-approval" '+(t.needs_approval?'checked':'')+' style="width:15px;height:15px;accent-color:#06b6d4"><span style="color:#67e8f9">⏳ Approval Needed</span></label>'+
     '</div></div>'+
     '<div class="sec">'+
-    '<div class="sec-title"><span>Inspection Checklist</span>'+(t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Inspections</a>':'')+'</div>'+
-    '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
-    '<div style="flex:1"><label class="fl">📁 Inspections Folder (OneDrive)</label><input class="fi" id="f-insplink" value="'+(t.inspections_link||'')+'" placeholder="Paste OneDrive inspections folder link..."></div>'+
-    (t.inspections_link?'<a href="'+t.inspections_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div>'+
-    '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
-    '<div style="flex:1"><label class="fl">📷 Photo Folder (OneDrive)</label><input class="fi" id="f-photolink" value="'+(t.photo_link||'')+'" placeholder="Paste photo folder link..."></div>'+
-    (t.photo_link?'<a href="'+t.photo_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div>'+
+    '<div class="sec-title"><span>Documents & Links</span></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">'+
+    buildLinkField("📁 Inspections Folder","f-insplink",t.inspections_link)+
+    buildLinkField("📷 Photo Folder","f-photolink",t.photo_link)+
+    buildLinkField("📋 Estimates Folder","f-estlink",t.estimates_link)+
+    buildLinkField("📎 Misc Link","f-misclink",t.misc_link)+
+    '</div>'+
     '<div class="checklist">'+
     checkItems.map(function(arr){return '<label class="ci'+(t[arr[1]]?' on':'')+'" id="ci-'+arr[0]+'"><input type="checkbox" id="'+arr[0]+'" '+(t[arr[1]]?'checked':'')+' onchange="this.closest(\'.ci\').classList.toggle(\'on\',this.checked)"><span>'+arr[2]+'</span></label>';}).join('')+
     '<div class="fg" style="grid-column:span 2"><label class="fl">Body Condition</label><select class="fsel2" id="f-bc"><option value="">Select...</option>'+['Excellent','Good','Fair','Poor','Needs Work'].map(function(o){return '<option'+(t.body_condition===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'+
@@ -416,9 +446,7 @@ function buildForm(t){
     '<div class="note-row"><textarea class="note-input" id="nnote" rows="2" placeholder="Add a note..."></textarea><button class="btn btn-primary btn-sm" onclick="addNote()" style="align-self:flex-end">Add</button></div></div>'+
     '<div class="sec">'+
     '<div class="sec-title" style="display:flex;justify-content:space-between;align-items:center"><span>Expenses</span>'+(t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-xs">📁 Open Expenses</a>':'')+'</div>'+
-    '<div class="fg" style="margin-bottom:10px;display:flex;gap:10px;align-items:flex-end">'+
-    '<div style="flex:1"><label class="fl">📁 Expenses Folder (OneDrive)</label><input class="fi" id="f-explink" value="'+(t.expenses_link||'')+'" placeholder="Paste OneDrive expenses folder link..."></div>'+
-    (t.expenses_link?'<a href="'+t.expenses_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div>'+
+    
     '<div id="elist"></div>'+
     '<div class="exp-row">'+
     '<input style="width:130px" type="date" id="ned" class="fi" value="'+today()+'">'+
@@ -427,10 +455,10 @@ function buildForm(t){
     (isVA?'<select class="fsel2" style="width:160px" id="nep"><option value="">Paid by...</option><option>Copart</option><option>Leasing Company</option></select>':'')+
     '<button class="btn btn-primary btn-sm" onclick="addExp()">Add</button></div>'+
     '<div class="fg" style="margin-bottom:10px">'+
-    '<label class="fl">📁 Invoice Folder (OneDrive)</label>'+
+    '<label class="fl">📁 Invoice Folder</label>'+
     '<div style="display:flex;gap:8px;align-items:center">'+
-    '<input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste OneDrive invoices folder link...">'+
-    (t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-sm">Open</a>':'')+'</div></div>'+
+    '<input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste invoice folder link..." '+(t.invoice_link?'readonly style="opacity:0.6"':'')+'>'+
+    (t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-sm">📁 Open</a><button class="btn btn-secondary btn-xs" onclick="unlockField('f-invoicelink')">🔓</button>':'')+'</div></div>'+
     '<div class="exp-total" id="etotal"></div></div>'+
     '<div class="sec"><div class="sec-title"><span>Stage History & Cycle Time</span></div><div id="hlist"></div></div>';
 }
@@ -444,6 +472,34 @@ function copyVal(id){
   var el=document.getElementById(id);if(!el||!el.value){toast('Nothing to copy','err');return;}
   navigator.clipboard.writeText(el.value).then(function(){toast('Copied!','ok');}).catch(function(){var ta=document.createElement('textarea');ta.value=el.value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied!','ok');});
 }
+function buildLinkField(label,id,val){
+  return '<div class="fg" style="display:flex;flex-direction:column;gap:4px">'+
+    '<label class="fl">'+label+'</label>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    (val
+      ?'<button class="btn btn-secondary btn-sm" onclick="window.open(''+val+'','_blank')">'+label.split(' ')[0]+' Open</button>'+
+        '<button class="btn btn-secondary btn-xs" onclick="editLink(''+id+'',''+val.replace(/'/g,"\'")+'')" title="Edit link">✏️</button>'
+      :'<input class="fi" id="'+id+'" value="" placeholder="Paste link..." style="font-size:12px">')+
+    '</div></div>';
+}
+
+function editLink(fieldId,currentVal){
+  var newVal=prompt("Enter new link:",currentVal||"");
+  if(newVal!==null){
+    // Store in a hidden field
+    var hidden=document.getElementById(fieldId);
+    if(!hidden){hidden=document.createElement('input');hidden.type='hidden';hidden.id=fieldId;document.body.appendChild(hidden);}
+    hidden.value=newVal;
+    toast("Link updated - click Save to apply","ok");
+  }
+}
+
+function unlockField(id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  el.readOnly=false;el.style.opacity='1';el.style.cursor='text';el.focus();
+}
+
 function updLease(){
   var p=parseFloat(document.getElementById('f-payoff').value||0);
   var b=parseFloat(document.getElementById('f-balloon').value||0);
@@ -575,13 +631,16 @@ async function saveTruck(){
     estimated_payoff:parseFloat(document.getElementById('f-payoff').value||0)||null,
     balloon_payment:parseFloat(document.getElementById('f-balloon').value||0)||null,
     interest_rate:parseFloat(document.getElementById('f-rate').value||9)||9,
-    photo_link:document.getElementById('f-photolink').value.trim()||null,
+    photo_link:(document.getElementById('f-photolink')?document.getElementById('f-photolink').value.trim():null)||null,
+    inspections_link:(document.getElementById('f-insplink')?document.getElementById('f-insplink').value.trim():null)||null,
+    estimates_link:(document.getElementById('f-estlink')?document.getElementById('f-estlink').value.trim():null)||null,
+    misc_link:(document.getElementById('f-misclink')?document.getElementById('f-misclink').value.trim():null)||null,
     invoice_link:document.getElementById('f-invoicelink').value.trim()||null,
     expenses_link:document.getElementById('f-explink').value.trim()||null,
-    inspections_link:document.getElementById('f-insplink').value.trim()||null,
     title_issue:document.getElementById('f-ti').checked||false,
     total_loss:document.getElementById('f-tl').checked||false,
     has_claim:document.getElementById('f-hc').checked||false,
+    needs_approval:document.getElementById('f-approval').checked||false,
     photos_taken:document.getElementById('f-ph').checked||false,
     pm_done:document.getElementById('f-pm').checked||false,
     batteries_installed:document.getElementById('f-bat').checked||false,
@@ -721,10 +780,11 @@ function renderDash(m){
   var active=trucks.filter(function(t){return t.stage!=='Reassignment Closed';}).length;
   var overdue=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';}).length;
   m.innerHTML='<div class="dash-grid">'+
-    '<div class="dc"><div class="dc-lbl">Total in System</div><div class="dc-num" style="color:#3b82f6">'+trucks.length+'</div></div>'+
+    '<div class="dc" onclick="showAllTrucks()" style="cursor:pointer" title="Click to see all trucks"><div class="dc-lbl" style="display:flex;justify-content:space-between">Total in System <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+trucks.length+'</div></div>'+
     '<div class="dc" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+trucks.filter(function(t){return getDaysSinceWorked(t)>=7&&t.stage!=='Reassignment Closed';}).length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
     '<div class="dc" style="cursor:pointer" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between">Needs Attention <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">2+ days no activity</div></div>'+
+    '<div class="dc" onclick="showApprovalTrucks()" style="cursor:pointer;background:rgba(6,182,212,0.08);border-color:#164e63"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#67e8f9">Waiting Approval <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#06b6d4">'+trucks.filter(function(t){return t.needs_approval;}).length+'</div></div>'+
     '<div class="dc"><div class="dc-lbl">Active Claims</div><div class="dc-num" style="color:#a78bfa">'+claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length+'</div></div>'+
     '</div>'+
     '<div class="bk-grid">'+
@@ -732,6 +792,7 @@ function renderDash(m){
     '<div class="bk-card"><div class="bk-hdr">Alerts</div>'+
     '<div class="bk-row"><span>⚠ Title Issues</span><span class="bk-cnt" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</span></div>'+
     '<div class="bk-row"><span>📋 Has Claim</span><span class="bk-cnt" style="color:#f59e0b">'+trucks.filter(function(t){return t.has_claim;}).length+'</span></div>'+
+    '<div class="bk-row" onclick="showApprovalTrucks()" style="cursor:pointer"><span>⏳ Waiting Approval <span style="color:var(--accent);font-size:10px">See</span></span><span class="bk-cnt" style="color:#06b6d4">'+trucks.filter(function(t){return t.needs_approval;}).length+'</span></div>'+
     '<div class="bk-row"><span>📡 No Tracker (active)</span><span class="bk-cnt" style="color:#a78bfa">'+trucks.filter(function(t){return !t.tracker_gs&&!t.tracker_azuga&&!t.tracker_samsara&&t.stage!=='Reassignment Closed';}).length+'</span></div>'+
     '<div class="bk-row"><span>💥 Total Loss</span><span class="bk-cnt" style="color:#f43f5e">'+trucks.filter(function(t){return t.total_loss;}).length+'</span></div>'+
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🔴 Overdue (2+ days) <span style="color:var(--accent);font-size:10px">See</span></span><span class="bk-cnt" style="color:#ef4444">'+overdue+'</span></div>'+
@@ -875,6 +936,84 @@ async function runReport(){
     '<tbody>'+rows.map(function(row){return '<tr><td style="font-family:monospace;font-weight:600">'+row.vin+'</td><td>'+row.ymm+'</td><td><span class="sbadge '+(SCSS[row.currentStage]||'s-intake')+'" style="font-size:11px">'+row.currentStage+'</span></td><td style="color:var(--text2);font-size:11px">'+row.firstStage+'</td><td>'+row.startDate+'</td><td>'+row.endDate+'</td><td style="font-weight:600;color:var(--accent)">'+row.totalDays+'d</td><td style="color:#f59e0b">'+row.currentStageDays+'d</td><td style="color:var(--text2)">'+row.stageCount+'</td></tr>';}).join('')+
     '</tbody></table></div></div>';
 }
+function globalSearch(q){
+  if(!q||q.length<2){return;}
+  q=q.toLowerCase();
+  var results=trucks.filter(function(t){
+    return (t.vin||'').toLowerCase().includes(q)||
+      (t.year_make_model||'').toLowerCase().includes(q)||
+      (t.vendor_short_name||'').toLowerCase().includes(q)||
+      (t.vendor_id||'').toLowerCase().includes(q)||
+      (t.old_vendor_name||'').toLowerCase().includes(q)||
+      (t.yard||'').toLowerCase().includes(q)||
+      (t.applicant_name||'').toLowerCase().includes(q)||
+      (t.leasing_company||'').toLowerCase().includes(q);
+  });
+  showSearchResults(results,q);
+}
+
+function showSearchResults(results,q){
+  var existing=document.getElementById('search-results-modal');
+  if(existing)existing.remove();
+  var el=document.createElement('div');
+  el.className='overlay-bg';el.id='search-results-modal';
+  el.innerHTML='<div class="overlay-box" style="max-width:1000px">'+
+    '<div class="ov-hdr">'+
+    '<div><div style="font-size:15px;font-weight:600">Search Results for "'+q+'"</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:2px">'+results.length+' truck'+(results.length!==1?'s':'')+' found</div></div>'+
+    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById('search-results-modal').remove()">✕</button></div>'+
+    '<div style="overflow-y:auto;max-height:70vh">'+
+    (results.length?
+      '<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+      '<thead><tr style="background:var(--bg3)">'+
+      '<th style="padding:8px 12px;text-align:left">VIN</th>'+
+      '<th style="padding:8px 12px;text-align:left">Vehicle</th>'+
+      '<th style="padding:8px 12px;text-align:left">Stage</th>'+
+      '<th style="padding:8px 12px;text-align:left">Yard</th>'+
+      '<th style="padding:8px 12px;text-align:left">Vendor</th>'+
+      '<th style="padding:8px 12px;text-align:left">Last Worked</th>'+
+      '</tr></thead><tbody>'+
+      results.map(function(t){
+        return '<tr onclick="document.getElementById('search-results-modal').remove();openDetail(''+t.id+'')" style="cursor:pointer;border-bottom:1px solid #111">'+
+          '<td style="padding:8px 12px;font-family:monospace;font-weight:600">'+(t.vin||'-')+'</td>'+
+          '<td style="padding:8px 12px">'+(t.year_make_model||'-')+'</td>'+
+          '<td style="padding:8px 12px"><span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:11px">'+(t.stage||'-')+'</span></td>'+
+          '<td style="padding:8px 12px">'+(t.yard||'-')+'</td>'+
+          '<td style="padding:8px 12px">'+(t.vendor_short_name||t.old_vendor_name||'-')+'</td>'+
+          '<td style="padding:8px 12px">'+fmtDate(t.date_last_worked)+'</td>'+
+          '</tr>';
+      }).join('')+'</tbody></table>'
+      :'<div style="padding:40px;text-align:center;color:var(--text2)">No trucks found</div>')+
+    '</div>'+
+    '<div class="ov-ftr"><button class="btn btn-secondary btn-sm" onclick="document.getElementById('search-results-modal').remove()">Close</button></div>'+
+    '</div>';
+  document.body.appendChild(el);
+}
+
+function showApprovalTrucks(){
+  var at=trucks.filter(function(t){return t.needs_approval;});
+  if(!at.length){toast('No trucks waiting for approval','ok');return;}
+  var el=document.createElement('div');el.className='overlay-bg';el.id='approval-modal';
+  el.innerHTML='<div class="overlay-box" style="max-width:900px">'+
+    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">⏳ Waiting for Approval ('+at.length+')</div>'+
+    '<button class="btn btn-secondary btn-sm" onclick="document.getElementById('approval-modal').remove()">✕</button></div>'+
+    '<div style="overflow-y:auto;max-height:70vh"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr style="background:var(--bg3)"><th style="padding:8px 12px;text-align:left">VIN</th><th style="padding:8px 12px;text-align:left">Vehicle</th><th style="padding:8px 12px;text-align:left">Stage</th><th style="padding:8px 12px;text-align:left">Shop Status</th><th style="padding:8px 12px;text-align:left">Last Worked</th></tr></thead>'+
+    '<tbody>'+at.map(function(t){
+      return '<tr onclick="document.getElementById('approval-modal').remove();openDetail(''+t.id+'')" style="cursor:pointer;border-bottom:1px solid #111;background:rgba(6,182,212,0.05)">'+
+        '<td style="padding:8px 12px;font-family:monospace;font-weight:600">'+(t.vin||'-')+'</td>'+
+        '<td style="padding:8px 12px">'+(t.year_make_model||'-')+'</td>'+
+        '<td style="padding:8px 12px"><span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:11px">'+(t.stage||'-')+'</span></td>'+
+        '<td style="padding:8px 12px;color:var(--amber)">'+(t.shop_status||'-')+'</td>'+
+        '<td style="padding:8px 12px">'+fmtDate(t.date_last_worked)+'</td></tr>';
+    }).join('')+'</tbody></table></div>'+
+    '<div class="ov-ftr"><button class="btn btn-secondary btn-sm" onclick="document.getElementById('approval-modal').remove()">Close</button></div></div>';
+  document.body.appendChild(el);
+}
+function showAllTrucks(){
+  showSearchResults(trucks,'all trucks');
+}
+
 function toast(msg,type){var t=document.createElement('div');t.className='toast '+(type==='ok'?'tok-ok':'tok-err');t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);}
 var u=localStorage.getItem('ft_user');
 if(u){me=JSON.parse(u);isAdmin=(me.email===ADMIN_EMAIL||(me&&me.role==='admin'));bootApp();}
