@@ -220,6 +220,8 @@ const SHOP_ST=['Under Review','Dispatched to Shop','Arrived at Shop','Waiting fo
 const CLAIM_ST=['Open','In Progress','Pending','Under Review','Urgent Review','Approved','Denied','On Hold','Follow Up','Follow Up with GM','Follow Up with Maintenance','Following Up with Insurance','Follow Up on Documents','Follow Up with Leasing CO','Pending Total Loss','Pending Completion','Pending Check','Pending Rejection','Pending Estimate','Pending Pay Off','Pending Pictures','Pending Legal','Pending Complete','Shah Working On','Complete','Done'];
 const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'s-epika','At Shop':'s-shop','Final Inspection':'s-insp','Ready to Assign':'s-ready','In Leasing':'s-leas','Leased Trucks Maintenance':'s-lm','Vendor Assist':'s-va','Hold 4 Cars':'s-hold','Total Loss':'s-tl','Reassignment Closed':'s-closed','Closed - Totals Only':'s-totals'};
 
+function _showActive(){var al=trucks.filter(function(t){return !['Reassignment Closed','Closed - Totals Only'].includes(t.stage)&&!t.is_archived;});showTruckList('Active Trucks',al);}
+function _showClosed(){var cl=trucks.filter(function(t){return ['Reassignment Closed','Closed - Totals Only'].includes(t.stage)||t.is_archived;});showTruckList('Closed / Archived',cl);}
 document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('.ntab').forEach(function(el){
     el.addEventListener('click',function(){doTab(this.getAttribute('data-tab'),this);});
@@ -227,6 +229,15 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('main').addEventListener('click',function(e){
     var row=e.target.closest('.truck-row');
     if(row&&row.getAttribute('data-id'))openDetail(row.getAttribute('data-id'));
+    var dc=e.target.closest('[data-action]');
+    if(dc){
+      var action=dc.getAttribute('data-action');
+      if(action==='showActive')_showActive();
+      if(action==='showClosed')showTruckList('Closed / Archived',trucks.filter(function(t){return ['Reassignment Closed','Closed - Totals Only'].includes(t.stage)||t.is_archived;}));
+      if(action==='showOverdue')showOverdueTrucks();
+      if(action==='showApproval')showApprovalTrucks();
+      if(action==='showMgrReview')showMgrReviewTrucks();
+    }
   });
 });
 
@@ -927,8 +938,9 @@ function renderDash(m){
 
   m.innerHTML=
     '<div class="dash-grid">'+
-    '<div class="dc" onclick="showTruckList('Active Trucks',active)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
-    '<div class="dc" onclick="showTruckList('Closed',closed)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
+    '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
+    '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
+    '<div class="dc" onclick="showTruckList(&quot;Closed&quot;,closed)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '<div class="dc" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
     '<div class="dc" style="cursor:pointer" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between">Needs Attention <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">2+ days no activity</div></div>'+
