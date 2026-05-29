@@ -190,7 +190,8 @@ tbody tr:last-child td{border-bottom:none}
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-secondary btn-sm" onclick="closeDetail()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveTruck()">💾 Save</button>
+      <button class="btn btn-secondary" onclick="saveTruck()">💾 Save</button>
+      <button class="btn btn-primary" onclick="saveTruck(true)">💾 Save & Close</button>
     </div>
   </div>
 </div>
@@ -238,6 +239,7 @@ document.addEventListener('DOMContentLoaded',function(){
       var tid=a2.getAttribute('data-truck-id');
       if(act==='closeApproval'){var m=document.getElementById('approval-screen-modal');if(m)m.remove();}
       if(act==='closeRecent'){var mr=document.getElementById('recent-modal');if(mr)mr.remove();}
+      if(act==='closeProd'){var pm=document.getElementById('prod-modal');if(pm)pm.remove();}
       if(act==='openFromRecent'){var mr2=document.getElementById('recent-modal');if(mr2)mr2.remove();openDetail(tid);}
       if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
       if(act==='approveEst')approveEstimate(tid);
@@ -254,6 +256,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(action==='showOverdue')showOverdueTrucks();
       if(action==='showApproval')showApprovalTrucks();
       if(action==='showMgrReview')showMgrReviewTrucks();
+      if(action==='showProductivity')showProductivityModal();
       if(action==='showReady'){var rl=trucks.filter(function(t){return t.stage==='Ready to Assign';});showTruckList('Ready to Assign ('+rl.length+')',rl);}
       if(action==='showRecent')showRecentApprovalsList();
       if(action==='showClaims')doTab('claims',null);
@@ -325,10 +328,32 @@ async function showRecentApprovalsList(){
   document.body.appendChild(el);
 }
 
-async function loadProductivity(){
-  var el=document.getElementById('productivity-list');
+async function showProductivityModal(){
+  var old=document.getElementById('prod-modal');if(old)old.remove();
+  var el=document.createElement('div');el.className='overlay-bg';el.id='prod-modal';
+  el.innerHTML='<div class="overlay-box" style="max-width:700px">'+
+    '<div class="ov-hdr">'+
+    '<div style="font-size:15px;font-weight:600">👑 Team Productivity</div>'+
+    '<div style="display:flex;gap:8px;align-items:center">'+
+    '<select id="prod-modal-filter" class="fsel" style="font-size:11px" onchange="loadProductivity(true)">'+
+    '<option value="today">Today</option>'+
+    '<option value="week">This Week</option>'+
+    '<option value="month">This Month</option>'+
+    '</select>'+
+    '<button class="btn btn-secondary btn-sm" data-action2="closeProd">✕</button>'+
+    '</div></div>'+
+    '<div class="ov-body"><div id="productivity-list-modal" style="min-height:100px;color:var(--text2)">Loading...</div></div>'+
+    '</div>';
+  document.body.appendChild(el);
+  loadProductivity(true);
+}
+
+async function loadProductivity(modal){
+  var listId=modal?'productivity-list-modal':'productivity-list';
+  var el=document.getElementById(listId||'productivity-list');
   if(!el||!isAdmin)return;
-  var filter=document.getElementById('prod-filter')?document.getElementById('prod-filter').value:'today';
+  var filterId=modal?'prod-modal-filter':'prod-filter';
+  var filter=document.getElementById(filterId)?document.getElementById(filterId).value:'today';
   var since=new Date();
   if(filter==='today'){since.setHours(0,0,0,0);}
   else if(filter==='week'){since.setDate(since.getDate()-since.getDay());since.setHours(0,0,0,0);}
@@ -360,6 +385,9 @@ async function loadProductivity(){
 
   var max=sorted[0]?sorted[0].trucks:1;
 
+  // Update top card count
+  var pc=document.getElementById('prod-count');
+  if(pc)pc.textContent=sorted.length+' users';
   el.innerHTML=sorted.map(function(u){
     var pct=Math.round((u.trucks/max)*100);
     var isMe=me&&u.name===me.name;
@@ -380,31 +408,36 @@ async function loadProductivity(){
 async function loadRecentWorked(){
   var el=document.getElementById('recent-worked');
   if(!el||!me)return;
-  // Get most recent notes/saves by this user
+  el.innerHTML='<div style="color:var(--text3);padding:8px 0">Loading...</div>';
+  // Get trucks this user has added notes to recently
   var res=await db.from('notes')
-    .select('truck_id,created_at,content,trucks(vin,year_make_model,stage)')
+    .select('truck_id,created_at,trucks(id,vin,year_make_model,stage)')
     .eq('user_name',me.name)
+    .not('content','ilike','%STAGE CHANGE%')
     .order('created_at',{ascending:false})
-    .limit(30);
+    .limit(50);
   if(!res.data||!res.data.length){
-    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity</div>';
+    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity — trucks you work on will appear here</div>';
     return;
   }
-  // Deduplicate by truck_id, keep most recent
-  var seen={};
-  var recent=[];
+  // Deduplicate by truck_id
+  var seen={};var recent=[];
   res.data.forEach(function(n){
-    if(!seen[n.truck_id]&&n.trucks){
+    if(n.trucks&&n.trucks.id&&!seen[n.truck_id]){
       seen[n.truck_id]=true;
       recent.push(n);
     }
   });
   recent=recent.slice(0,10);
+  if(!recent.length){
+    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity found</div>';
+    return;
+  }
   el.innerHTML=recent.map(function(n){
     var t=n.trucks||{};
     var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
     var when=days===0?'Today':days===1?'Yesterday':days+'d ago';
-    return '<div data-action2="openFromRecent" data-truck-id="'+n.truck_id+'" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer">'+
+    return '<div data-action2="openFromRecent" data-truck-id="'+(t.id||n.truck_id)+'" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer">'+
       '<div>'+
       '<span style="font-family:monospace;font-weight:600;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
       '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
@@ -1079,7 +1112,7 @@ function renderHist(){
 function getFormVal(id,def){var el=document.getElementById(id);return el?el.value.trim():(def||'');}
 function getFormCheck(id){var el=document.getElementById(id);return el?el.checked:false;}
 
-async function saveTruck(){
+async function saveTruck(closeAfter){
   var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
   var newStage=getFormVal('f-stage');
   var newShop=getFormVal('f-shopst')||null;
@@ -1144,7 +1177,7 @@ async function saveTruck(){
     document.getElementById('d-sbadge').textContent=res.data.stage||'';
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[res.data.stage]||'s-intake');
     document.getElementById('d-flags').innerHTML=flags(res.data);
-    renderNotes();toast('Saved!','ok');if(tab==='dashboard')loadRecentWorked();
+    renderNotes();toast('Saved!','ok');if(tab==='dashboard')loadRecentWorked();if(closeAfter)closeDetail();
   }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
 
@@ -1231,6 +1264,7 @@ function renderDash(m){
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
     '<div class="dc" data-action="showRecent" style="cursor:pointer;background:rgba(22,163,74,0.08);border-color:#14532d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#86efac">Recently Approved <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#22c55e" id="recent-count">—</div></div>'+
+    (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">—</div></div>':'')+
     '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc" data-action="showReady" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Ready to Assign <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
 
