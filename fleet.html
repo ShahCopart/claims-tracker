@@ -335,11 +335,16 @@ async function showProductivityModal(){
     '<div class="ov-hdr">'+
     '<div style="font-size:15px;font-weight:600">👑 Team Productivity</div>'+
     '<div style="display:flex;gap:8px;align-items:center">'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
     '<select id="prod-modal-filter" class="fsel" style="font-size:11px" onchange="loadProductivity(true)">'+
     '<option value="today">Today</option>'+
     '<option value="week">This Week</option>'+
     '<option value="month">This Month</option>'+
     '</select>'+
+    '<select id="prod-modal-user" class="fsel" style="font-size:11px" onchange="loadProductivity(true)">'+
+    '<option value="">All Users</option>'+
+    '</select>'+
+    '</div>'+
     '<button class="btn btn-secondary btn-sm" data-action2="closeProd">✕</button>'+
     '</div></div>'+
     '<div class="ov-body"><div id="productivity-list-modal" style="min-height:100px;color:var(--text2)">Loading...</div></div>'+
@@ -359,10 +364,21 @@ async function loadProductivity(modal){
   else if(filter==='week'){since.setDate(since.getDate()-since.getDay());since.setHours(0,0,0,0);}
   else if(filter==='month'){since.setDate(1);since.setHours(0,0,0,0);}
 
-  var res=await db.from('notes')
+  // Populate user dropdown in modal
+  if(modal){
+    var uf=document.getElementById('prod-modal-user');
+    if(uf&&uf.options.length<=1){
+      var usrs=await db.from('users').select('name').order('name');
+      if(usrs.data)usrs.data.forEach(function(u){var o=document.createElement('option');o.value=u.name;o.textContent=u.name;uf.appendChild(o);});
+    }
+  }
+  var selectedModalUser=modal&&document.getElementById('prod-modal-user')?document.getElementById('prod-modal-user').value:'';
+  var q2=db.from('notes')
     .select('user_name,truck_id,created_at')
     .gte('created_at',since.toISOString())
     .order('created_at',{ascending:false});
+  if(selectedModalUser)q2=q2.eq('user_name',selectedModalUser);
+  var res=await q2;
 
   if(!res.data||!res.data.length){
     el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No activity in this period</div>';
@@ -385,9 +401,15 @@ async function loadProductivity(modal){
 
   var max=sorted[0]?sorted[0].trucks:1;
 
-  // Update top card count
-  var pc=document.getElementById('prod-count');
-  if(pc&&!modal)pc.textContent=sorted.length+(sorted.length===1?' user':' users');
+  // Update top card count with total files worked today
+  if(!modal){
+    var pc=document.getElementById('prod-count');
+    var todayTotal=0;
+    sorted.forEach(function(u){todayTotal+=u.trucks;});
+    if(pc)pc.textContent=todayTotal+' file'+(todayTotal!==1?'s':'');
+    var ps=document.getElementById('prod-sub');
+    if(ps)ps.textContent='by '+sorted.length+' user'+(sorted.length!==1?'s':'');
+  }
   el.innerHTML=sorted.map(function(u){
     var pct=Math.round((u.trucks/max)*100);
     var isMe=me&&u.name===me.name;
@@ -412,7 +434,7 @@ async function loadRecentWorked(){
 
   // Get user filter (admin only)
   var userFilter=document.getElementById('worked-user-filter');
-  var selectedUser=userFilter&&userFilter.value?userFilter.value:me.name;
+  var selectedUser=(userFilter&&userFilter.value)?userFilter.value:me.name;
   var limit=parseInt((document.getElementById('worked-period')||{value:'10'}).value)||10;
 
   // If admin, populate user dropdown first time
@@ -429,15 +451,14 @@ async function loadRecentWorked(){
     }
   }
 
-  var query=db.from('notes')
+  var q=db.from('notes')
     .select('truck_id,created_at,user_name,trucks(id,vin,year_make_model,stage)')
-    .eq('user_name',selectedUser)
     .not('content','ilike','%[STAGE CHANGE]%')
     .not('content','ilike','%[SHOP STATUS]%')
     .order('created_at',{ascending:false})
-    .limit(limit*3);
-
-  var res=await query;
+    .limit(limit*5);
+  if(selectedUser!=='__all__')q=q.eq('user_name',selectedUser);
+  var res=await q;
   if(!res.data||!res.data.length){
     el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity for '+selectedUser+'</div>';
     return;
@@ -459,7 +480,7 @@ async function loadRecentWorked(){
 
   el.innerHTML=
     '<div style="font-size:11px;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">'+
-    'Showing '+recent.length+' most recent trucks worked on by <strong style="color:var(--text)">'+selectedUser+'</strong></div>'+
+    'Showing '+recent.length+' trucks — '+(selectedUser==='__all__'?'All Users':selectedUser)+'</div>'+
     recent.map(function(n){
       var t=n.trucks||{};
       var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
@@ -472,6 +493,7 @@ async function loadRecentWorked(){
         '<div style="display:flex;align-items:center;gap:10px">'+
         '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
         '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
+        (selectedUser==='__all__'?'<span style="font-size:10px;color:var(--text2);background:var(--bg3);padding:2px 6px;border-radius:4px">'+n.user_name+'</span>':'')+ 
         '</div>'+
         '</div>';
     }).join('');
@@ -535,7 +557,7 @@ function clickStage(stage){doTab(stage,document.querySelector('.ntab[data-tab="'
 function renderTab(){
   var m=document.getElementById('main');
   if(STAGES.includes(tab))renderList(tab,m);
-  else if(tab==='dashboard'){renderDash(m);loadRecentApprovals();}
+  else if(tab==='dashboard'){renderDash(m);loadRecentApprovals();loadRecentWorked();if(isAdmin)loadProductivity(false);}
   else if(tab==='claims')renderClaims(m);
   else if(tab==='report')renderReport(m);
 }
@@ -1290,7 +1312,7 @@ function renderDash(m){
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
     '<div class="dc" data-action="showRecent" style="cursor:pointer;background:rgba(22,163,74,0.08);border-color:#14532d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#86efac">Recently Approved <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#22c55e" id="recent-count">—</div></div>'+
-    (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">—</div></div>':'')+
+    (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">—</div><div style="font-size:10px;color:var(--text3);margin-top:2px" id="prod-sub">files worked today</div></div>':'')+
     '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc" data-action="showReady" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Ready to Assign <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
 
@@ -1319,7 +1341,7 @@ function renderDash(m){
     '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
     '<span>🕐 Recently Worked On</span>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
-    (isAdmin?'<select id="worked-user-filter" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadRecentWorked()"><option value="">My Activity</option></select>':'')+ 
+    (isAdmin?'<select id="worked-user-filter" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadRecentWorked()"><option value="">My Activity</option><option value="__all__">All Users</option></select>':'')+ 
     '<select id="worked-period" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadRecentWorked()"><option value="10">Last 10</option><option value="20">Last 20</option><option value="50">Last 50</option></select>'+
     '</div>'+
     '</div>'+
