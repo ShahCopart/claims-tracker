@@ -435,7 +435,7 @@ async function loadProductivity(modal){
   }).join('');
 }
 
-async function loadRecentWorked(){async function loadRecentWorked(){
+async function loadRecentWorked(){
   var el=document.getElementById('recent-worked');
   if(!el||!me)return;
   el.innerHTML='<div style="color:var(--text3);padding:8px 0">Loading...</div>';
@@ -508,34 +508,39 @@ async function loadRecentWorked(){async function loadRecentWorked(){
         '</div>';
     }).join('');
 }
-
-}
 async function loadAvgCycleTime(){
   var el=document.getElementById('avg-cycle');if(!el)return;
-  // Get stage history entries from Intake to Ready to Assign
-  var res=await db.from('stage_history')
-    .select('truck_id,stage,entered_at,exited_at,duration_hours')
-    .in('stage',['Intake','Ready to Assign'])
-    .not('exited_at','is',null)
-    .limit(200);
+  // Use trucks with both intake_date and ready_date set
+  var res=await db.from('trucks')
+    .select('intake_date,ready_date,date_last_worked,stage')
+    .not('intake_date','is',null)
+    .limit(500);
   if(!res.data||!res.data.length){el.textContent='N/A';return;}
-  // Group by truck, find intake start and ready exit
-  var byTruck={};
-  res.data.forEach(function(h){
-    if(!byTruck[h.truck_id])byTruck[h.truck_id]={intake:null,ready:null};
-    if(h.stage==='Intake'&&!byTruck[h.truck_id].intake)byTruck[h.truck_id].intake=h.entered_at;
-    if(h.stage==='Ready to Assign')byTruck[h.truck_id].ready=h.exited_at;
-  });
   var cycles=[];
-  Object.values(byTruck).forEach(function(t){
-    if(t.intake&&t.ready){
-      var days=(new Date(t.ready)-new Date(t.intake))/86400000;
-      if(days>0&&days<365)cycles.push(days);
-    }
+  res.data.forEach(function(t){
+    var startDate=t.intake_date;
+    // End date: ready_date if set, or date_last_worked for active trucks
+    var endDate=t.ready_date||t.date_last_worked;
+    if(!startDate||!endDate)return;
+    var days=(new Date(endDate)-new Date(startDate))/86400000;
+    if(days>0&&days<500)cycles.push(days);
   });
   if(!cycles.length){el.textContent='N/A';return;}
   var avg=cycles.reduce(function(a,b){return a+b;},0)/cycles.length;
+  // Also calc active only
+  var activeCycles=[];
+  res.data.forEach(function(t){
+    if(!t.intake_date||t.ready_date)return; // skip completed
+    if(!t.date_last_worked)return;
+    var days=(new Date(t.date_last_worked)-new Date(t.intake_date))/86400000;
+    if(days>0&&days<500)activeCycles.push(days);
+  });
+  var avgActive=activeCycles.length?activeCycles.reduce(function(a,b){return a+b;},0)/activeCycles.length:0;
   el.textContent=Math.round(avg)+'d';
+  // Show tooltip with more detail
+  el.title='All trucks avg: '+Math.round(avg)+'d | Active trucks: '+Math.round(avgActive)+'d';
+  var sub=document.getElementById('cycle-sub');
+  if(sub)sub.textContent=cycles.length+' trucks tracked';
 }
 
 async function loadRecentApprovals(){
@@ -1356,7 +1361,7 @@ function renderDash(m){
   m.innerHTML=
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
-    '<div class="dc"><div class="dc-lbl">Avg Cycle Time</div><div class="dc-num" style="color:#f59e0b" id="avg-cycle">—</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Intake → Ready to Assign</div></div>'+
+    '<div class="dc"><div class="dc-lbl">Avg Cycle Time</div><div class="dc-num" style="color:#f59e0b" id="avg-cycle">—</div><div style="font-size:10px;color:var(--text3);margin-top:2px" id="cycle-sub">Intake → Ready to Assign</div></div>'+
     '<div class="dc" data-action="showRecent" style="cursor:pointer;background:rgba(22,163,74,0.08);border-color:#14532d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#86efac">Recently Approved <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#22c55e" id="recent-count">—</div></div>'+
     (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">0</div><div style="font-size:10px;color:var(--text3);margin-top:2px" id="prod-sub">today</div></div>':'')+
     '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
