@@ -284,9 +284,7 @@ function flags(t){
   return f;
 }
 var _sortField=null,_sortAsc=true;
-function thSort(field,label){
-  return '<th onclick="sortList(\'' + field + '\')" style="cursor:pointer">'+label+' ↕</th>';
-}
+
 function sortList(field){
   if(_sortField===field)_sortAsc=!_sortAsc;
   else{_sortField=field;_sortAsc=true;}
@@ -299,19 +297,22 @@ function renderList(stage,m){
     '<input class="search" id="srch" placeholder="Search VIN, yard..." oninput="doSearch()">'+
     '<select class="fsel" id="shpf" onchange="doSearch()"><option value="">All Shop Status</option>'+shOpts+'</select>'+
     '<select class="fsel" id="flgf" onchange="doSearch()"><option value="">All Flags</option><option value="title_issue">Title Issue</option><option value="has_claim">Has Claim</option><option value="total_loss">Total Loss</option><option value="needs_approval">Needs Approval</option></select>'+
+    '<select class="fsel" id="sortf" onchange="doSearch()"><option value="">Sort by...</option><option value="vin">VIN</option><option value="yard">Yard</option><option value="state">State</option><option value="date_last_worked">Last Worked</option><option value="est_completion_date">Est. Completion</option><option value="shop_status">Shop Status</option><option value="days">Days</option></select>'+
+    '<select class="fsel" id="sortd" onchange="doSearch()"><option value="asc">↑ Asc</option><option value="desc">↓ Desc</option></select>'+
     '<span style="color:var(--text2);font-size:12px">'+rows.length+' truck'+(rows.length!==1?'s':'')+'</span>'+
     '</div>'+
     '<div class="tbl-wrap"><div class="tbl-scroll">'+
     '<table><thead><tr>'+
-    thSort('vin','VIN')+thSort('year_make_model','Year/Make/Model')+
+    '<th>VIN</th>'+'<th>Year/Make/Model</th>'+
     '<th>Cab/Color</th><th>Bed</th>'+
-    thSort('yard','Yard')+thSort('state','State')+
+    '<th>Yard</th>'+'<th>State</th>'+
     '<th>Mileage</th><th>Repo Agent</th>'+
-    thSort('terminated_date','Terminated')+thSort('est_completion_date','Est. Completion')+
-    thSort('shop_status','Shop Status')+thSort('date_last_worked','Last Worked')+
-    thSort('days','Days')+'<th>Flags</th>'+
+    '<th>Terminated</th>'+'<th>Est. Completion</th>'+
+    '<th>Shop Status</th>'+'<th>Last Worked</th>'+
+    '<th>Days</th>'+'<th>Flags</th>'+
     '</tr></thead>'+
     '<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table></div></div>';
+
 }
 function mkRows(rows){
   if(!rows.length)return '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text2)">No trucks in this stage</td></tr>';
@@ -343,15 +344,20 @@ function doSearch(){
   if(q)rows=rows.filter(function(t){return (t.vin||'').toLowerCase().includes(q)||(t.year_make_model||'').toLowerCase().includes(q)||(t.yard||'').toLowerCase().includes(q)||(t.vendor_short_name||'').toLowerCase().includes(q)||(t.old_vendor_name||'').toLowerCase().includes(q);});
   if(sh)rows=rows.filter(function(t){return t.shop_status===sh;});
   if(fl)rows=rows.filter(function(t){return t[fl];});
-  if(_sortField){
+  var sf=document.getElementById('sortf')?document.getElementById('sortf').value:'';
+  var sd=document.getElementById('sortd')?document.getElementById('sortd').value:'asc';
+  if(sf){
     rows=rows.slice().sort(function(a,b){
-      var av=_sortField==='days'?getDaysSinceWorked(a):(a[_sortField]||'');
-      var bv=_sortField==='days'?getDaysSinceWorked(b):(b[_sortField]||'');
-      if(typeof av==='string')return _sortAsc?av.localeCompare(bv):bv.localeCompare(av);
-      return _sortAsc?av-bv:bv-av;
+      var av=sf==='days'?getDaysSinceWorked(a):(a[sf]||'');
+      var bv=sf==='days'?getDaysSinceWorked(b):(b[sf]||'');
+      var r=typeof av==='string'?av.localeCompare(bv):av-bv;
+      return sd==='desc'?-r:r;
     });
   }
-  var b=document.getElementById('tbl-body');if(b)b.innerHTML=mkRows(rows);
+  var b=document.getElementById('tbl-body');if(b){
+    b.innerHTML=mkRows(rows);
+
+  }
 }
 async function openDetail(id){
   window._lastTab=tab;truckId=id;
