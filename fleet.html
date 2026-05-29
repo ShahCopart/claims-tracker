@@ -437,16 +437,18 @@ async function loadRecentWorked(){
   var selectedUser=(userFilter&&userFilter.value)?userFilter.value:me.name;
   var limit=parseInt((document.getElementById('worked-period')||{value:'10'}).value)||10;
 
-  // If admin, populate user dropdown first time
-  if(isAdmin&&userFilter&&userFilter.options.length<=1){
+  // Populate user dropdown for admins
+  if(isAdmin&&userFilter&&userFilter.options.length<=2){
     var users=await db.from('users').select('name').order('name');
     if(users.data){
+      // Clear and rebuild
+      while(userFilter.options.length>2)userFilter.remove(2);
       users.data.forEach(function(u){
-        if(u.name!==me.name){
-          var o=document.createElement('option');
-          o.value=u.name;o.textContent=u.name;
-          userFilter.appendChild(o);
-        }
+        // Add separator then each user
+        var o=document.createElement('option');
+        o.value=u.name;
+        o.textContent=u.name+(u.name===me.name?' (me)':'');
+        userFilter.appendChild(o);
       });
     }
   }
@@ -557,7 +559,12 @@ function clickStage(stage){doTab(stage,document.querySelector('.ntab[data-tab="'
 function renderTab(){
   var m=document.getElementById('main');
   if(STAGES.includes(tab))renderList(tab,m);
-  else if(tab==='dashboard'){renderDash(m);loadRecentApprovals();loadRecentWorked();if(isAdmin)loadProductivity(false);}
+  else if(tab==='dashboard'){
+    renderDash(m);
+    loadRecentApprovals();
+    loadRecentWorked();
+    if(isAdmin)setTimeout(function(){loadProductivity(false);},100);
+  }
   else if(tab==='claims')renderClaims(m);
   else if(tab==='report')renderReport(m);
 }
@@ -1312,7 +1319,7 @@ function renderDash(m){
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
     '<div class="dc" data-action="showRecent" style="cursor:pointer;background:rgba(22,163,74,0.08);border-color:#14532d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#86efac">Recently Approved <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#22c55e" id="recent-count">—</div></div>'+
-    (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">—</div><div style="font-size:10px;color:var(--text3);margin-top:2px" id="prod-sub">files worked today</div></div>':'')+
+    (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">0</div><div style="font-size:10px;color:var(--text3);margin-top:2px" id="prod-sub">today</div></div>':'')+
     '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc" data-action="showReady" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Ready to Assign <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
 
