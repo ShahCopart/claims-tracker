@@ -304,6 +304,7 @@ function isOverdue(t){if(t.est_completion_date&&new Date(t.est_completion_date)>
 
 function flags(t){
   var f='';
+  if(t.needs_mgr_review)f+='<span class="flag" style="background:#f59e0b;width:10px;height:10px" title="Manager Review Needed"></span>';
   if(t.needs_approval)f+='<span class="flag" style="background:#06b6d4;width:10px;height:10px" title="Approval Needed"></span>';
   if(t.title_issue)f+='<span class="flag" style="background:#ef4444" title="Title Issue"></span>';
   if(t.has_claim)f+='<span class="flag" style="background:#f59e0b" title="Has Claim"></span>';
@@ -400,8 +401,10 @@ function globalSearch(q){
       (t.vendor_short_name||'').toLowerCase().includes(q)||
       (t.vendor_id||'').toLowerCase().includes(q)||
       (t.old_vendor_name||'').toLowerCase().includes(q)||
+      (t.old_vendor_short_name||'').toLowerCase().includes(q)||
       (t.yard||'').toLowerCase().includes(q)||
       (t.applicant_name||'').toLowerCase().includes(q)||
+      (t.leasing_company||'').toLowerCase().includes(q)||
       (t.year_make_model||'').toLowerCase().includes(q);
   });
   showTruckList('Search: "'+q+'" — '+results.length+' found',results);
@@ -458,6 +461,11 @@ function showOverdueTrucks(){
   document.body.appendChild(el);
 }
 
+function showMgrReviewTrucks(){
+  var at=trucks.filter(function(t){return t.needs_mgr_review;});
+  if(!at.length){toast('No trucks needing manager review','ok');return;}
+  showTruckList('👔 Manager Review Needed ('+at.length+')',at);
+}
 function showApprovalTrucks(){
   var at=trucks.filter(function(t){return t.needs_approval;});
   if(!at.length){toast('No trucks waiting for approval','ok');return;}
@@ -506,7 +514,7 @@ function buildForm(t){
   html+='<div class="fg"><label class="fl">Yard</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"></div>';
   html+='<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>';
   html+='<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>';
-  html+='<div class="fg s2"><label class="fl">Old Vendor Name (Previous Lessee)</label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" placeholder="Previous lessee company name"></div>';
+  html+='<div class="fg s2"><label class="fl">Old Vendor Name (Previous Lessee) <button class="btn btn-secondary btn-xs" id="oldvendor-lock" onclick="togLock('f-oldvendor','oldvendor-lock')">🔒</button></label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" readonly placeholder="Previous lessee company name"></div>';
   html+='</div></div>';
 
   // Status & Dates
@@ -528,7 +536,7 @@ function buildForm(t){
   html+='<div class="fg"><label class="fl">Assigned Date</label><input class="fi" type="date" id="f-assign" value="'+(t.assigned_date||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Vendor Short Name <button class="btn btn-secondary btn-xs" onclick="cpVal(\'f-vsn\')">📋</button></label><input class="fi" id="f-vsn" value="'+(t.vendor_short_name||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Vendor ID <button class="btn btn-secondary btn-xs" onclick="cpVal(\'f-vid\')">📋</button></label><input class="fi" id="f-vid" value="'+(t.vendor_id||'')+'"></div>';
-  html+='<div class="fg"><label class="fl">Old Vendor Short Name <button class="btn btn-secondary btn-xs" id="old-vsn-lock" onclick="togLock(\'f-oldvsn\',\'old-vsn-lock\')">🔒</button></label><input class="fi" id="f-oldvsn" value="'+(t.old_vendor_short_name||'')+'" readonly></div>';
+
   html+='<div class="fg"><label class="fl">Est. Payoff ($)</label><input class="fi" type="number" id="f-payoff" value="'+(t.estimated_payoff||'')+'" oninput="updLease()"></div>';
   html+='<div class="fg"><label class="fl">Balloon Payment ($)</label><input class="fi" type="number" id="f-balloon" value="'+(t.balloon_payment||'')+'" placeholder="0.00" oninput="updLease()"></div>';
   html+='<div class="fg"><label class="fl">Interest Rate (%)</label><input class="fi" type="number" id="f-rate" value="'+rate+'" oninput="updLease()"></div>';
@@ -550,6 +558,7 @@ function buildForm(t){
   html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-tl" '+(t.total_loss?'checked':'')+' style="width:15px;height:15px;accent-color:#a78bfa"><span style="color:#c4b5fd">💥 Total Loss</span></label>';
   html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>';
   html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-approval" '+(t.needs_approval?'checked':'')+' style="width:15px;height:15px;accent-color:#06b6d4"><span style="color:#67e8f9">⏳ Approval Needed</span></label>';
+  html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-mgr-review" '+(t.needs_mgr_review?'checked':'')+' style="width:15px;height:15px;accent-color:#f59e0b"><span style="color:#fcd34d">👔 Manager Review Needed</span></label>';
   html+='</div></div>';
 
   // Documents & Links
@@ -786,7 +795,7 @@ async function saveTruck(){
     assigned_date:getFormVal('f-assign')||null,pickup_date:getFormVal('f-pickup')||null,
     date_last_worked:today(),leasing_company:getFormVal('f-lco'),applicant_name:getFormVal('f-app'),
     vendor_short_name:getFormVal('f-vsn'),vendor_id:getFormVal('f-vid'),
-    old_vendor_name:getFormVal('f-oldvendor')||null,old_vendor_short_name:getFormVal('f-oldvsn')||null,
+    old_vendor_name:getFormVal('f-oldvendor')||null,
     estimated_payoff:parseFloat(getFormVal('f-payoff'))||null,
     balloon_payment:parseFloat(getFormVal('f-balloon'))||null,
     interest_rate:parseFloat(getFormVal('f-rate'))||9,
@@ -798,6 +807,7 @@ async function saveTruck(){
     misc_link:getFormVal('f-misclink')||null,
     title_issue:getFormCheck('f-ti'),total_loss:getFormCheck('f-tl'),has_claim:getFormCheck('f-hc'),
     needs_approval:getFormCheck('f-approval'),
+    needs_mgr_review:getFormCheck('f-mgr-review'),
     photos_taken:getFormCheck('f-ph'),pm_done:getFormCheck('f-pm'),batteries_installed:getFormCheck('f-bat'),
     windshield_done:getFormCheck('f-ws'),tires_changed:getFormCheck('f-tr'),electrical_issues:getFormCheck('f-el'),
     check_engine:getFormCheck('f-ce'),bed_works:getFormCheck('f-bw'),body_condition:getFormVal('f-bc')||null,
@@ -907,6 +917,7 @@ function renderDash(m){
   var overdue=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';}).length;
   var critical=trucks.filter(function(t){return getDaysSince(t)>=7&&t.stage!=='Reassignment Closed';}).length;
   var approval=trucks.filter(function(t){return t.needs_approval;}).length;
+  var mgrReview=trucks.filter(function(t){return t.needs_mgr_review;}).length;
   var activeClaims=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
 
   m.innerHTML=
@@ -923,6 +934,7 @@ function renderDash(m){
     STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')+
     '</div>'+
     '<div class="bk-card"><div class="bk-hdr">Alerts</div>'+
+    '<div class="bk-row" onclick="showMgrReviewTrucks()" style="cursor:pointer"><span>👔 Manager Review Needed</span><span class="bk-cnt" style="color:#f59e0b">'+mgrReview+'</span></div>'+
     '<div class="bk-row" onclick="showApprovalTrucks()" style="cursor:pointer"><span>⏳ Waiting Approval</span><span class="bk-cnt" style="color:#06b6d4">'+approval+'</span></div>'+
     '<div class="bk-row"><span>⚠ Title Issues</span><span class="bk-cnt" style="color:#ef4444">'+trucks.filter(function(t){return t.title_issue;}).length+'</span></div>'+
     '<div class="bk-row"><span>📋 Has Claim</span><span class="bk-cnt" style="color:#f59e0b">'+trucks.filter(function(t){return t.has_claim;}).length+'</span></div>'+
