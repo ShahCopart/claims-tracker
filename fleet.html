@@ -130,7 +130,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="app-title">🚛 Fleet Tracker</div>
       <span class="truck-count" id="total-count">0 trucks</span>
       <div class="user-badge" id="ubadge"></div>
-      <div class="admin-badge" id="admin-badge" style="display:none">👑 Admin</div>
+      <div class="admin-badge" id="admin-badge" style="display:none;cursor:pointer" onclick="showUserManager()">👑 Admin</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:240px" oninput="globalSearch(this.value)">
@@ -240,6 +240,9 @@ document.addEventListener('DOMContentLoaded',function(){
       if(act==='closeApproval'){var m=document.getElementById('approval-screen-modal');if(m)m.remove();}
       if(act==='closeRecent'){var mr=document.getElementById('recent-modal');if(mr)mr.remove();}
       if(act==='closeProd'){var pm=document.getElementById('prod-modal');if(pm)pm.remove();}
+      if(act==='closeUserMgr'){var um=document.getElementById('user-mgr-modal');if(um)um.remove();}
+      if(act==='promoteUser')promoteUser(tid,a2.getAttribute('data-user-name'));
+      if(act==='demoteUser')demoteUser(tid,a2.getAttribute('data-user-name'));
       if(act==='openFromRecent'){var mr2=document.getElementById('recent-modal');if(mr2)mr2.remove();openDetail(tid);}
       if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
       if(act==='approveEst')approveEstimate(tid);
@@ -1592,6 +1595,66 @@ async function runReport(){
         '<td style="color:#f59e0b">'+row.curDays+'d</td>'+
         '<td style="color:var(--text2)">'+row.stageCount+'</td></tr>';
     }).join('')+'</tbody></table></div></div>';
+}
+
+async function showUserManager(){
+  if(!isAdmin){toast('Admin access required','err');return;}
+  var old=document.getElementById('user-mgr-modal');if(old)old.remove();
+  var el=document.createElement('div');el.className='overlay-bg';el.id='user-mgr-modal';
+  el.innerHTML='<div class="overlay-box" style="max-width:600px">'+
+    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">👑 User Management</div>'+
+    '<button class="btn btn-secondary btn-sm" data-action2="closeUserMgr">✕</button></div>'+
+    '<div class="ov-body"><div id="user-list-content"><div class="spin"></div> Loading...</div></div>'+
+    '</div>';
+  document.body.appendChild(el);
+  loadUserList();
+}
+
+async function loadUserList(){
+  var el=document.getElementById('user-list-content');if(!el)return;
+  var res=await db.from('users').select('*').order('name');
+  if(!res.data||!res.data.length){el.innerHTML='<div style="color:var(--text2)">No users found</div>';return;}
+  el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:13px">'+
+    '<thead><tr style="background:var(--bg3)">'+
+    '<th style="padding:8px 12px;text-align:left">Name</th>'+
+    '<th style="padding:8px 12px;text-align:left">Email</th>'+
+    '<th style="padding:8px 12px;text-align:left">Role</th>'+
+    '<th style="padding:8px 12px;text-align:left">Action</th>'+
+    '</tr></thead><tbody>'+
+    res.data.map(function(u){
+      var isCurrentUser=me&&u.email===me.email;
+      var isAdminUser=u.role==='admin'||u.email===ADMIN_EMAIL;
+      var isPrimary=u.email===ADMIN_EMAIL;
+      return '<tr style="border-bottom:1px solid #111">'+
+        '<td style="padding:8px 12px;font-weight:'+(isCurrentUser?'700':'400')+'">'+u.name+(isCurrentUser?' (you)':'')+'</td>'+
+        '<td style="padding:8px 12px;color:var(--text2);font-size:12px">'+u.email+'</td>'+
+        '<td style="padding:8px 12px">'+
+        (isPrimary?'<span style="color:#86efac;font-size:12px">👑 Primary Admin</span>':
+         isAdminUser?'<span style="color:#86efac;font-size:12px">👑 Admin</span>':
+         '<span style="color:var(--text2);font-size:12px">👤 User</span>')+
+        '</td>'+
+        '<td style="padding:8px 12px">'+
+        (isPrimary||isCurrentUser?'<span style="color:var(--text3);font-size:11px">—</span>':
+         isAdminUser?
+         '<button class="btn btn-secondary btn-xs" data-action2="demoteUser" data-user-id="'+u.id+'" data-user-name="'+u.name+'">Remove Admin</button>':
+         '<button class="btn btn-primary btn-xs" data-action2="promoteUser" data-user-id="'+u.id+'" data-user-name="'+u.name+'">Make Admin</button>')+
+        '</td></tr>';
+    }).join('')+
+    '</tbody></table>';
+}
+
+async function promoteUser(id,name){
+  if(!confirm('Make '+name+' an admin?'))return;
+  var res=await db.from('users').update({role:'admin'}).eq('id',id);
+  if(!res.error){toast(name+' is now an admin','ok');loadUserList();}
+  else toast('Error: '+res.error.message,'err');
+}
+
+async function demoteUser(id,name){
+  if(!confirm('Remove admin role from '+name+'?'))return;
+  var res=await db.from('users').update({role:null}).eq('id',id);
+  if(!res.error){toast(name+' is now a regular user','ok');loadUserList();}
+  else toast('Error: '+res.error.message,'err');
 }
 
 function toast(msg,type){
