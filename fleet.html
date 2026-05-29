@@ -806,12 +806,7 @@ function showApprovalTrucks(){
 
   var rows=at.map(function(t){
     var expTotal=0; // Will load individually
-    var links='';
-    if(t.estimates_link)links+='<a href="'+t.estimates_link+'" target="_blank" class="link-btn" style="font-size:11px;background:rgba(6,182,212,0.15);border-color:#06b6d4">📋 Estimates Folder</a> ';
-    if(t.photo_link)links+='<a href="'+t.photo_link+'" target="_blank" class="link-btn" style="font-size:11px">📷 Photos Folder</a> ';
-    if(t.inspections_link)links+='<a href="'+t.inspections_link+'" target="_blank" class="link-btn" style="font-size:11px">📁 Inspections</a> ';
-    if(t.invoice_link)links+='<a href="'+t.invoice_link+'" target="_blank" class="link-btn" style="font-size:11px">📁 Invoices</a> ';
-    if(t.misc_link)links+='<a href="'+t.misc_link+'" target="_blank" class="link-btn" style="font-size:11px">📎 Misc</a> ';
+    // Links will be loaded dynamically by loadApprovalData
     return '<div class="approval-card" id="acard-'+t.id+'" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:14px">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
       '<div>'+
@@ -821,13 +816,12 @@ function showApprovalTrucks(){
       '<div style="display:flex;gap:8px;align-items:center">'+
       '<span class="sbadge" style="background:rgba(6,182,212,0.2);color:#67e8f9;font-size:11px">⏳ Pending Approval</span>'+
       '</div></div>'+
-      // Links row
-      (links?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+links+'</div>':'')+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:32px" id="links-'+t.id+'"><span style="color:var(--text3);font-size:12px">Loading links...</span></div>'+
       // Financials row
       '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">'+
       '<div style="background:rgba(6,182,212,0.1);border:1px solid #06b6d4;border-radius:6px;padding:10px">'+
       '<div style="font-size:10px;color:#67e8f9;margin-bottom:4px;font-weight:600">💰 ESTIMATE PRICE</div>'+
-      '<div style="font-size:20px;font-weight:700;color:#06b6d4">'+(t.estimate_price?'$'+parseFloat(t.estimate_price).toLocaleString():'Not set')+'</div></div>'+
+      '<div style="font-size:20px;font-weight:700" id="est-price-'+t.id+'">Loading...</div></div>'+
       '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
       '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Total Spent to Date</div>'+
       '<div style="font-size:15px;font-weight:700;color:#f59e0b" id="exp-total-'+t.id+'">Loading...</div></div>'+
@@ -851,7 +845,7 @@ function showApprovalTrucks(){
       '</div>';
   }).join('');
 
-  el.innerHTML='<div class="overlay-box" style="max-width:860px">'+
+  el.innerHTML='<div class="overlay-box" style="max-width:1100px;width:95vw">'+
     '<div class="ov-hdr">'+
     '<div><div style="font-size:16px;font-weight:700">⏳ Waiting for Approval ('+at.length+')</div>'+
     '<div style="font-size:12px;color:var(--text2);margin-top:2px">Review estimates and approve repairs below</div></div>'+
@@ -867,6 +861,33 @@ function showApprovalTrucks(){
 }
 
 async function loadApprovalData(id){
+  // Fetch fresh truck data to get estimate_price and links
+  var tr=await db.from('trucks').select('*').eq('id',id).single();
+  var t=tr.data||{};
+  
+  // Update estimate price display
+  var epEl=document.getElementById('est-price-'+id);
+  if(epEl){
+    if(t.estimate_price){
+      epEl.textContent='$'+parseFloat(t.estimate_price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      epEl.style.color='#06b6d4';
+    } else {
+      epEl.textContent='Not set';
+    }
+  }
+
+  // Update links
+  var linksEl=document.getElementById('links-'+id);
+  if(linksEl){
+    var links='';
+    if(t.estimates_link)links+='<a href="'+t.estimates_link+'" target="_blank" class="link-btn" style="font-size:12px;background:rgba(6,182,212,0.15);border-color:#06b6d4">📋 Estimates Folder</a> ';
+    if(t.photo_link)links+='<a href="'+t.photo_link+'" target="_blank" class="link-btn" style="font-size:12px">📷 Photos Folder</a> ';
+    if(t.inspections_link)links+='<a href="'+t.inspections_link+'" target="_blank" class="link-btn" style="font-size:12px">📁 Inspections</a> ';
+    if(t.invoice_link)links+='<a href="'+t.invoice_link+'" target="_blank" class="link-btn" style="font-size:12px">📁 Invoices</a> ';
+    if(t.misc_link)links+='<a href="'+t.misc_link+'" target="_blank" class="link-btn" style="font-size:12px">📎 Misc</a> ';
+    linksEl.innerHTML=links||'<span style="color:var(--text3);font-size:12px">No OneDrive links saved for this truck</span>';
+  }
+
   // Load expenses
   var er=await db.from('expenses').select('amount').eq('truck_id',id);
   var total=(er.data||[]).reduce(function(sum,e){return sum+parseFloat(e.amount||0);},0);
