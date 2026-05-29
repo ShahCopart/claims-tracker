@@ -226,6 +226,16 @@ document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('.ntab').forEach(function(el){
     el.addEventListener('click',function(){doTab(this.getAttribute('data-tab'),this);});
   });
+  document.body.addEventListener('click',function(e){
+    var a2=e.target.closest('[data-action2]');
+    if(a2){
+      var act=a2.getAttribute('data-action2');
+      var tid=a2.getAttribute('data-truck-id');
+      if(act==='closeApproval'){var m=document.getElementById('approval-screen-modal');if(m)m.remove();}
+      if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
+      if(act==='approveEst')approveEstimate(tid);
+    }
+  });
   document.getElementById('main').addEventListener('click',function(e){
     var row=e.target.closest('.truck-row');
     if(row&&row.getAttribute('data-id'))openDetail(row.getAttribute('data-id'));
@@ -238,14 +248,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(action==='showApproval')showApprovalTrucks();
       if(action==='showMgrReview')showMgrReviewTrucks();
     }
-    var a2=e.target.closest('[data-action2]');
-    if(a2){
-      var act=a2.getAttribute('data-action2');
-      var tid=a2.getAttribute('data-truck-id');
-      if(act==='closeApproval'){var m=document.getElementById('approval-screen-modal');if(m)m.remove();}
-      if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
-      if(act==='approveEst')approveEstimate(tid);
-    }
+    // data-action2 handled by body listener
   });
 });
 
