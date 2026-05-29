@@ -80,7 +80,7 @@ tbody tr:last-child td{border-bottom:none}
 .exp-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
 .exp-row input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-size:12px}
 .stage-sel{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px}
-.dash-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px}
+.dash-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px}
 .dc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
 .dc-num{font-size:28px;font-weight:700;margin:4px 0}.dc-lbl{font-size:11px;color:var(--text2)}
 .bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -103,7 +103,7 @@ tbody tr:last-child td{border-bottom:none}
 .s-shop{background:#3b2a1a;color:#fcd34d}.s-insp{background:#1a3b3b;color:#67e8f9}
 .s-ready{background:#1a3b1a;color:#86efac}.s-leas{background:#2a3b1a;color:#bef264}
 .s-hold{background:#3b3b1a;color:#fde68a}.s-tl{background:#3b1a2a;color:#f9a8d4}
-.s-closed{background:#2a2a2a;color:#9ca3af}.s-lm{background:#1a2a3b;color:#7dd3fc}.s-va{background:#2a1a3b;color:#d8b4fe}
+.s-closed{background:#2a2a2a;color:#9ca3af}.s-totals{background:#1a1a1a;color:#6b7280}.s-lm{background:#1a2a3b;color:#7dd3fc}.s-va{background:#2a1a3b;color:#d8b4fe}
 .overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:400;display:flex;align-items:center;justify-content:center}
 .overlay-box{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:92vw;max-width:960px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column}
 .ov-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg2);z-index:1}
@@ -154,6 +154,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="ntab" data-tab="Hold 4 Cars">Hold 4 Cars <span class="nbadge" id="c-Hold_4_Cars">0</span></div>
     <div class="ntab" data-tab="Total Loss">Total Loss <span class="nbadge" id="c-Total_Loss">0</span></div>
     <div class="ntab" data-tab="Reassignment Closed">Reassignment Closed <span class="nbadge" id="c-Reassignment_Closed">0</span></div>
+    <div class="ntab" data-tab="Closed - Totals Only">Totals Only <span class="nbadge" id="c-Closed_-_Totals_Only">0</span></div>
     <div class="ntab" data-tab="claims">Claims <span class="nbadge" id="c-claims">0</span></div>
     <div class="ntab" data-tab="report">Reports</div>
   </div>
@@ -182,7 +183,7 @@ tbody tr:last-child td{border-bottom:none}
         <option>Epika</option><option>At Shop</option><option>Final Inspection</option>
         <option>Ready to Assign</option><option>In Leasing</option>
         <option>Leased Trucks Maintenance</option><option>Vendor Assist</option>
-        <option>Hold 4 Cars</option><option>Total Loss</option><option>Reassignment Closed</option>
+        <option>Hold 4 Cars</option><option>Total Loss</option><option>Reassignment Closed</option><option>Closed - Totals Only</option>
       </select>
       <button class="btn btn-secondary btn-sm" onclick="emailTruck()">📧 Email</button>
       <button class="btn btn-danger btn-sm" id="del-btn" onclick="delTruck()" style="display:none">🗑 Delete</button>
@@ -213,11 +214,11 @@ var me=null,tab='dashboard',truckId=null,isAdmin=false;
 var trucks=[],claims=[],notes=[],exps=[],hist=[];
 var _sortField=null,_sortAsc=true;
 
-const STAGES=['Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Leased Trucks Maintenance','Vendor Assist','Hold 4 Cars','Total Loss','Reassignment Closed'];
+const STAGES=['Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Leased Trucks Maintenance','Vendor Assist','Hold 4 Cars','Total Loss','Reassignment Closed','Closed - Totals Only'];
 const AUTO_DATE_STAGES=['Intake','Manager Review','Final Inspection'];
 const SHOP_ST=['Under Review','Dispatched to Shop','Arrived at Shop','Waiting for Estimate','Pending Approval','Approved - Work Requested','Work in Progress','Work Complete','Dispatched Back to Yard','Arrived - Needs Wash & Inspection','Transit Pros'];
 const CLAIM_ST=['Open','In Progress','Pending','Under Review','Urgent Review','Approved','Denied','On Hold','Follow Up','Follow Up with GM','Follow Up with Maintenance','Following Up with Insurance','Follow Up on Documents','Follow Up with Leasing CO','Pending Total Loss','Pending Completion','Pending Check','Pending Rejection','Pending Estimate','Pending Pay Off','Pending Pictures','Pending Legal','Pending Complete','Shah Working On','Complete','Done'];
-const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'s-epika','At Shop':'s-shop','Final Inspection':'s-insp','Ready to Assign':'s-ready','In Leasing':'s-leas','Leased Trucks Maintenance':'s-lm','Vendor Assist':'s-va','Hold 4 Cars':'s-hold','Total Loss':'s-tl','Reassignment Closed':'s-closed'};
+const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'s-epika','At Shop':'s-shop','Final Inspection':'s-insp','Ready to Assign':'s-ready','In Leasing':'s-leas','Leased Trucks Maintenance':'s-lm','Vendor Assist':'s-va','Hold 4 Cars':'s-hold','Total Loss':'s-tl','Reassignment Closed':'s-closed','Closed - Totals Only':'s-totals'};
 
 document.addEventListener('DOMContentLoaded',function(){
   document.querySelectorAll('.ntab').forEach(function(el){
@@ -270,10 +271,11 @@ async function refreshAll(){await loadData();renderTab();toast('Refreshed','ok')
 
 function updateBadges(){
   var t=trucks.length;
-  document.getElementById('total-count').textContent=t+' truck'+(t!==1?'s':'');
+  var activeCount=trucks.filter(function(x){return !['Reassignment Closed','Closed - Totals Only'].includes(x.stage)&&!x.is_archived;}).length;
+  document.getElementById('total-count').textContent=activeCount+' active | '+trucks.length+' total';
   STAGES.forEach(function(s){
     var el=document.getElementById('c-'+s.replace(/ /g,'_'));
-    if(el)el.textContent=trucks.filter(function(x){return x.stage===s;}).length;
+    if(el)el.textContent=trucks.filter(function(x){return x.stage===s&&!x.is_archived;}).length;
   });
   var cl=document.getElementById('c-claims');
   if(cl)cl.textContent=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
@@ -435,7 +437,7 @@ function showTruckList(title,list){
 }
 
 function showOverdueTrucks(){
-  var ot=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';});
+  var CLOSED=['Reassignment Closed','Closed - Totals Only'];var ot=trucks.filter(function(t){return isOverdue(t)&&!CLOSED.includes(t.stage)&&!t.is_archived;});
   if(!ot.length){toast('No overdue trucks!','ok');return;}
   var el=document.createElement('div');el.className='overlay-bg';el.id='overdue-modal';
   var rows=ot.map(function(t){
@@ -914,15 +916,19 @@ function emailTruck(){
 
 function renderDash(m){
   var sc={};STAGES.forEach(function(s){sc[s]=trucks.filter(function(t){return t.stage===s;}).length;});
-  var overdue=trucks.filter(function(t){return isOverdue(t)&&t.stage!=='Reassignment Closed';}).length;
-  var critical=trucks.filter(function(t){return getDaysSince(t)>=7&&t.stage!=='Reassignment Closed';}).length;
+  var CLOSED_STAGES=['Reassignment Closed','Closed - Totals Only'];
+  var active=trucks.filter(function(t){return !CLOSED_STAGES.includes(t.stage)&&!t.is_archived;});
+  var closed=trucks.filter(function(t){return CLOSED_STAGES.includes(t.stage)||t.is_archived;});
+  var overdue=active.filter(function(t){return isOverdue(t);}).length;
+  var critical=active.filter(function(t){return getDaysSince(t)>=7;}).length;
   var approval=trucks.filter(function(t){return t.needs_approval;}).length;
   var mgrReview=trucks.filter(function(t){return t.needs_mgr_review;}).length;
   var activeClaims=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
 
   m.innerHTML=
     '<div class="dash-grid">'+
-    '<div class="dc" onclick="showTruckList(\'All Trucks\',trucks)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Total in System <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+trucks.length+'</div></div>'+
+    '<div class="dc" onclick="showTruckList('Active Trucks',active)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
+    '<div class="dc" onclick="showTruckList('Closed',closed)" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '<div class="dc" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc"><div class="dc-lbl">Ready to Assign</div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
     '<div class="dc" style="cursor:pointer" onclick="showOverdueTrucks()"><div class="dc-lbl" style="display:flex;justify-content:space-between">Needs Attention <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#ef4444">'+overdue+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">2+ days no activity</div></div>'+
