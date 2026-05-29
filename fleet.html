@@ -387,7 +387,7 @@ async function loadProductivity(modal){
 
   // Update top card count
   var pc=document.getElementById('prod-count');
-  if(pc)pc.textContent=sorted.length+' users';
+  if(pc&&!modal)pc.textContent=sorted.length+(sorted.length===1?' user':' users');
   el.innerHTML=sorted.map(function(u){
     var pct=Math.round((u.trucks/max)*100);
     var isMe=me&&u.name===me.name;
@@ -409,58 +409,84 @@ async function loadRecentWorked(){
   var el=document.getElementById('recent-worked');
   if(!el||!me)return;
   el.innerHTML='<div style="color:var(--text3);padding:8px 0">Loading...</div>';
-  // Get trucks this user has added notes to recently
-  var res=await db.from('notes')
-    .select('truck_id,created_at,trucks(id,vin,year_make_model,stage)')
-    .eq('user_name',me.name)
-    .not('content','ilike','%STAGE CHANGE%')
+
+  // Get user filter (admin only)
+  var userFilter=document.getElementById('worked-user-filter');
+  var selectedUser=userFilter&&userFilter.value?userFilter.value:me.name;
+  var limit=parseInt((document.getElementById('worked-period')||{value:'10'}).value)||10;
+
+  // If admin, populate user dropdown first time
+  if(isAdmin&&userFilter&&userFilter.options.length<=1){
+    var users=await db.from('users').select('name').order('name');
+    if(users.data){
+      users.data.forEach(function(u){
+        if(u.name!==me.name){
+          var o=document.createElement('option');
+          o.value=u.name;o.textContent=u.name;
+          userFilter.appendChild(o);
+        }
+      });
+    }
+  }
+
+  var query=db.from('notes')
+    .select('truck_id,created_at,user_name,trucks(id,vin,year_make_model,stage)')
+    .eq('user_name',selectedUser)
+    .not('content','ilike','%[STAGE CHANGE]%')
+    .not('content','ilike','%[SHOP STATUS]%')
     .order('created_at',{ascending:false})
-    .limit(50);
+    .limit(limit*3);
+
+  var res=await query;
   if(!res.data||!res.data.length){
-    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity — trucks you work on will appear here</div>';
+    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity for '+selectedUser+'</div>';
     return;
   }
+
   // Deduplicate by truck_id
   var seen={};var recent=[];
   res.data.forEach(function(n){
     if(n.trucks&&n.trucks.id&&!seen[n.truck_id]){
-      seen[n.truck_id]=true;
-      recent.push(n);
+      seen[n.truck_id]=true;recent.push(n);
     }
   });
-  recent=recent.slice(0,10);
+  recent=recent.slice(0,limit);
+
   if(!recent.length){
-    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity found</div>';
+    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No activity found</div>';
     return;
   }
-  el.innerHTML=recent.map(function(n){
-    var t=n.trucks||{};
-    var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
-    var when=days===0?'Today':days===1?'Yesterday':days+'d ago';
-    return '<div data-action2="openFromRecent" data-truck-id="'+(t.id||n.truck_id)+'" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer">'+
-      '<div>'+
-      '<span style="font-family:monospace;font-weight:600;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
-      '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
-      '</div>'+
-      '<div style="display:flex;align-items:center;gap:10px">'+
-      '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
-      '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
-      '</div>'+
-      '</div>';
-  }).join('');
+
+  el.innerHTML=
+    '<div style="font-size:11px;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">'+
+    'Showing '+recent.length+' most recent trucks worked on by <strong style="color:var(--text)">'+selectedUser+'</strong></div>'+
+    recent.map(function(n){
+      var t=n.trucks||{};
+      var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
+      var when=days===0?'Today':days===1?'Yesterday':days+'d ago';
+      return '<div data-action2="openFromRecent" data-truck-id="'+(t.id||n.truck_id)+'" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer">'+
+        '<div>'+
+        '<span style="font-family:monospace;font-weight:600;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
+        '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+        '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
+        '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
+        '</div>'+
+        '</div>';
+    }).join('');
 }
 
 async function loadRecentApprovals(){
-  var el=document.getElementById('recent-approvals');
-  if(!el)return;
-  // Update count badge in dashboard card
-  var rc=document.getElementById('recent-count');
+  // Always update the count card regardless
   var res=await db.from('notes')
     .select('content,created_at,user_name,truck_id,trucks(vin,year_make_model,stage)')
     .ilike('content','%APPROVED%')
     .order('created_at',{ascending:false})
     .limit(20);
   var rc2=document.getElementById('recent-count');if(rc2)rc2.textContent=(res.data||[]).length;
+  var el=document.getElementById('recent-approvals');
+  if(!el)return;
   if(!res.data||!res.data.length){el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No approvals yet</div>';return;}
   el.innerHTML=res.data.map(function(n){
     var t=n.trucks||{};
@@ -1291,14 +1317,13 @@ function renderDash(m){
     (isAdmin?
     '<div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">'+
     '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
-    '<span>👑 Team Productivity — Files Worked Today</span>'+
-    '<select id="prod-filter" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadProductivity()">'+
-    '<option value="today">Today</option>'+
-    '<option value="week">This Week</option>'+
-    '<option value="month">This Month</option>'+
-    '</select>'+
+    '<span>🕐 Recently Worked On</span>'+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    (isAdmin?'<select id="worked-user-filter" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadRecentWorked()"><option value="">My Activity</option></select>':'')+ 
+    '<select id="worked-period" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadRecentWorked()"><option value="10">Last 10</option><option value="20">Last 20</option><option value="50">Last 50</option></select>'+
     '</div>'+
-    '<div id="productivity-list" style="padding:10px 14px;color:var(--text2);font-size:12px;min-height:50px">Loading...</div>'+
+    '</div>'+
+    '<div id="recent-worked" style="padding:10px 14px;color:var(--text2);font-size:12px;min-height:50px">Loading...</div>'+
     '</div>':'')+
     '';
 }
