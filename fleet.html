@@ -325,6 +325,98 @@ async function showRecentApprovalsList(){
   document.body.appendChild(el);
 }
 
+async function loadProductivity(){
+  var el=document.getElementById('productivity-list');
+  if(!el||!isAdmin)return;
+  var filter=document.getElementById('prod-filter')?document.getElementById('prod-filter').value:'today';
+  var since=new Date();
+  if(filter==='today'){since.setHours(0,0,0,0);}
+  else if(filter==='week'){since.setDate(since.getDate()-since.getDay());since.setHours(0,0,0,0);}
+  else if(filter==='month'){since.setDate(1);since.setHours(0,0,0,0);}
+
+  var res=await db.from('notes')
+    .select('user_name,truck_id,created_at')
+    .gte('created_at',since.toISOString())
+    .order('created_at',{ascending:false});
+
+  if(!res.data||!res.data.length){
+    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No activity in this period</div>';
+    return;
+  }
+
+  // Count unique trucks worked per user
+  var byUser={};
+  res.data.forEach(function(n){
+    if(!n.user_name)return;
+    if(!byUser[n.user_name])byUser[n.user_name]={trucks:new Set(),notes:0};
+    byUser[n.user_name].trucks.add(n.truck_id);
+    byUser[n.user_name].notes++;
+  });
+
+  // Sort by trucks worked desc
+  var sorted=Object.keys(byUser).map(function(name){
+    return {name:name,trucks:byUser[name].trucks.size,notes:byUser[name].notes};
+  }).sort(function(a,b){return b.trucks-a.trucks;});
+
+  var max=sorted[0]?sorted[0].trucks:1;
+
+  el.innerHTML=sorted.map(function(u){
+    var pct=Math.round((u.trucks/max)*100);
+    var isMe=me&&u.name===me.name;
+    return '<div style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+      '<span style="font-size:12px;font-weight:'+(isMe?'700':'400')+';color:'+(isMe?'var(--accent)':'var(--text)')+'">'+u.name+(isMe?' (you)':'')+'</span>'+
+      '<div style="display:flex;gap:12px;font-size:11px;color:var(--text2)">'+
+      '<span style="color:var(--accent);font-weight:600">'+u.trucks+' truck'+(u.trucks!==1?'s':'')+'</span>'+
+      '<span>'+u.notes+' action'+(u.notes!==1?'s':'')+'</span>'+
+      '</div></div>'+
+      '<div style="background:var(--bg3);border-radius:4px;height:6px;overflow:hidden">'+
+      '<div style="background:var(--accent);height:100%;width:'+pct+'%;border-radius:4px;transition:width 0.3s"></div>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+}
+
+async function loadRecentWorked(){
+  var el=document.getElementById('recent-worked');
+  if(!el||!me)return;
+  // Get most recent notes/saves by this user
+  var res=await db.from('notes')
+    .select('truck_id,created_at,content,trucks(vin,year_make_model,stage)')
+    .eq('user_name',me.name)
+    .order('created_at',{ascending:false})
+    .limit(30);
+  if(!res.data||!res.data.length){
+    el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No recent activity</div>';
+    return;
+  }
+  // Deduplicate by truck_id, keep most recent
+  var seen={};
+  var recent=[];
+  res.data.forEach(function(n){
+    if(!seen[n.truck_id]&&n.trucks){
+      seen[n.truck_id]=true;
+      recent.push(n);
+    }
+  });
+  recent=recent.slice(0,10);
+  el.innerHTML=recent.map(function(n){
+    var t=n.trucks||{};
+    var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
+    var when=days===0?'Today':days===1?'Yesterday':days+'d ago';
+    return '<div data-action2="openFromRecent" data-truck-id="'+n.truck_id+'" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer">'+
+      '<div>'+
+      '<span style="font-family:monospace;font-weight:600;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
+      '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+      '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
+      '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+}
+
 async function loadRecentApprovals(){
   var el=document.getElementById('recent-approvals');
   if(!el)return;
@@ -1052,7 +1144,7 @@ async function saveTruck(){
     document.getElementById('d-sbadge').textContent=res.data.stage||'';
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[res.data.stage]||'s-intake');
     document.getElementById('d-flags').innerHTML=flags(res.data);
-    renderNotes();toast('Saved!','ok');
+    renderNotes();toast('Saved!','ok');if(tab==='dashboard')loadRecentWorked();
   }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
 
@@ -1162,6 +1254,18 @@ function renderDash(m){
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🚨 Critical (7+ days)</span><span class="bk-cnt" style="color:#dc2626">'+critical+'</span></div>'+
     '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
     '</div></div>'+
+    (isAdmin?
+    '<div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">'+
+    '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span>👑 Team Productivity — Files Worked Today</span>'+
+    '<select id="prod-filter" class="fsel" style="font-size:11px;padding:3px 8px" onchange="loadProductivity()">'+
+    '<option value="today">Today</option>'+
+    '<option value="week">This Week</option>'+
+    '<option value="month">This Month</option>'+
+    '</select>'+
+    '</div>'+
+    '<div id="productivity-list" style="padding:10px 14px;color:var(--text2);font-size:12px;min-height:50px">Loading...</div>'+
+    '</div>':'')+
     '';
 }
 
