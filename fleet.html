@@ -1108,13 +1108,13 @@ function renderDash(m){
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
     '<div class="dc" data-action="showRecent" style="cursor:pointer;background:rgba(22,163,74,0.08);border-color:#14532d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#86efac">Recently Approved <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#22c55e" id="recent-count">—</div></div>'+
-    '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc" data-action="showReady" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Ready to Assign <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
 
     '<div class="dc" data-action="showApproval" style="cursor:pointer;background:rgba(6,182,212,0.08);border-color:#164e63"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#67e8f9">Waiting Approval <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#06b6d4">'+approval+'</div></div>'+
     '<div class="dc" data-action="showClaims" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Claims <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#a78bfa">'+activeClaims+'</div></div>'+
     '<div class="dc" data-action="showMgrReview" style="cursor:pointer;background:rgba(245,158,11,0.08);border-color:#78350f"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fcd34d">Mgr Review Needed <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#f59e0b">'+mgrReview+'</div></div>'+
+    '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '</div>'+
     '<div class="bk-grid">'+
     '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+
@@ -1131,13 +1131,7 @@ function renderDash(m){
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🚨 Critical (7+ days)</span><span class="bk-cnt" style="color:#dc2626">'+critical+'</span></div>'+
     '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
     '</div></div>'+
-    '<div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">'+
-    '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
-    '<span>✅ Recently Approved (Last 20)</span>'+
-    '<span style="font-size:10px;color:var(--text2);font-weight:400">Estimates approved by managers</span>'+
-    '</div>'+
-    '<div id="recent-approvals" style="padding:10px 14px;color:var(--text2);font-size:12px;min-height:60px">Loading...</div>'+
-    '</div>';
+    '';
 }
 
 function renderClaims(m){
