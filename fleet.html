@@ -495,15 +495,28 @@ async function loadRecentWorked(){
       var t=n.trucks||{};
       var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
       var when=days===0?'Today':days===1?'Yesterday':days+'d ago';
-      return '<div data-action2="openFromRecent" data-truck-id="'+(t.id||n.truck_id)+'" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer">'+
-        '<div>'+
-        '<span style="font-family:monospace;font-weight:600;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
-        '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
-        '</div>'+
-        '<div style="display:flex;align-items:center;gap:10px">'+
+      // Summarize the action
+      var action=n.content||'';
+      var actionLabel='';
+      if(action.startsWith('[STAGE CHANGE]'))actionLabel='📦 '+action.replace('[STAGE CHANGE]','').trim();
+      else if(action.startsWith('[SHOP STATUS]'))actionLabel='🔧 '+action.replace('[SHOP STATUS]','').trim();
+      else if(action.startsWith('[STAGE'))actionLabel='📦 Stage updated';
+      else if(action.toLowerCase().includes('approv'))actionLabel='✅ Approved estimate';
+      else if(action.trim().length>0)actionLabel='📝 '+action.substring(0,50).trim()+(action.length>50?'...':'');
+      else actionLabel='📝 Note added';
+
+      return '<div data-action2="openFromRecent" data-truck-id="'+(t.id||n.truck_id)+'" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #111;cursor:pointer">'+
+        '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'+
+        '<span style="font-family:monospace;font-weight:700;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
+        '<span style="color:var(--text2);font-size:11px">'+(t.year_make_model||'')+'</span>'+
         '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
-        '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:700px">'+actionLabel+'</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px">'+
         (selectedUser==='__all__'?'<span style="font-size:10px;color:var(--text2);background:var(--bg3);padding:2px 6px;border-radius:4px">'+n.user_name+'</span>':'')+ 
+        '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
         '</div>'+
         '</div>';
     }).join('');
@@ -1337,7 +1350,8 @@ function emailTruck(){
   var vin=getFormVal('f-vin')||t.vin||'';
   var ymm=getFormVal('f-ymm')||t.year_make_model||'';
   var stage=getFormVal('f-stage')||t.stage||'';
-  var subject='Fleet Update | VIN: '+vin+' | '+ymm+' | '+stage;
+  var oldVendor=getFormVal('f-oldvendor')||t.old_vendor_name||'';
+  var subject='Fleet Update | VIN: '+vin+' | '+ymm+' | '+stage+(oldVendor?' | Prev: '+oldVendor:'');
   var body='Hello,\n\nVIN: '+vin+'\nVehicle: '+ymm+'\nStage: '+stage;
   var sh=getFormVal('f-shopst')||t.shop_status;if(sh)body+='\nShop Status: '+sh;
   var ec=getFormVal('f-estcomp')||t.est_completion_date;if(ec)body+='\nEst. Completion: '+ec;
