@@ -514,7 +514,7 @@ function buildForm(t){
   html+='<div class="fg"><label class="fl">Yard</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"></div>';
   html+='<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>';
   html+='<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>';
-  html+='<div class="fg s2"><label class="fl">Old Vendor Name (Previous Lessee) <button class="btn btn-secondary btn-xs" id="oldvendor-lock" onclick="togLock('f-oldvendor','oldvendor-lock')">🔒</button></label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" readonly placeholder="Previous lessee company name"></div>';
+  html+='<div class="fg s2"><label class="fl">Old Vendor Name (Previous Lessee) <button class="btn btn-secondary btn-xs" id="oldvendor-lock" onclick="togLock(&quot;f-oldvendor&quot;,&quot;oldvendor-lock&quot;)">🔒</button></label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" readonly placeholder="Previous lessee company name"></div>';
   html+='</div></div>';
 
   // Status & Dates
