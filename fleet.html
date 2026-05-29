@@ -284,6 +284,9 @@ function flags(t){
   return f;
 }
 var _sortField=null,_sortAsc=true;
+function thSort(field,label){
+  return '<th onclick="sortList(\'' + field + '\')" style="cursor:pointer">'+label+' ↕</th>';
+}
 function sortList(field){
   if(_sortField===field)_sortAsc=!_sortAsc;
   else{_sortField=field;_sortAsc=true;}
@@ -300,17 +303,13 @@ function renderList(stage,m){
     '</div>'+
     '<div class="tbl-wrap"><div class="tbl-scroll">'+
     '<table><thead><tr>'+
-    '<th onclick="sortList('vin')" style="cursor:pointer">VIN ↕</th>'+
-    '<th onclick="sortList('year_make_model')" style="cursor:pointer">Year/Make/Model ↕</th>'+
+    thSort('vin','VIN')+thSort('year_make_model','Year/Make/Model')+
     '<th>Cab/Color</th><th>Bed</th>'+
-    '<th onclick="sortList('yard')" style="cursor:pointer">Yard ↕</th>'+
-    '<th onclick="sortList('state')" style="cursor:pointer">State ↕</th>'+
+    thSort('yard','Yard')+thSort('state','State')+
     '<th>Mileage</th><th>Repo Agent</th>'+
-    '<th onclick="sortList('terminated_date')" style="cursor:pointer">Terminated ↕</th>'+
-    '<th onclick="sortList('est_completion_date')" style="cursor:pointer">Est. Completion ↕</th>'+
-    '<th onclick="sortList('shop_status')" style="cursor:pointer">Shop Status ↕</th>'+
-    '<th onclick="sortList('date_last_worked')" style="cursor:pointer">Last Worked ↕</th>'+
-    '<th onclick="sortList('days')" style="cursor:pointer">Days ↕</th><th>Flags</th>'+
+    thSort('terminated_date','Terminated')+thSort('est_completion_date','Est. Completion')+
+    thSort('shop_status','Shop Status')+thSort('date_last_worked','Last Worked')+
+    thSort('days','Days')+'<th>Flags</th>'+
     '</tr></thead>'+
     '<tbody id="tbl-body">'+mkRows(rows)+'</tbody></table></div></div>';
 }
