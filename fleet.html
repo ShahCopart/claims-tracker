@@ -509,6 +509,7 @@ async function loadRecentWorked(){async function loadRecentWorked(){
     }).join('');
 }
 
+}
 async function loadAvgCycleTime(){
   var el=document.getElementById('avg-cycle');if(!el)return;
   // Get stage history entries from Intake to Ready to Assign
@@ -1579,7 +1580,6 @@ function toast(msg,type){
   t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);
 }
 
-}
 var u=localStorage.getItem('ft_user');
 if(u){me=JSON.parse(u);isAdmin=(me.email===ADMIN_EMAIL||(me&&me.role==='admin'));bootApp();}
 </script>
