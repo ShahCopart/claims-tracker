@@ -237,6 +237,8 @@ document.addEventListener('DOMContentLoaded',function(){
       var act=a2.getAttribute('data-action2');
       var tid=a2.getAttribute('data-truck-id');
       if(act==='closeApproval'){var m=document.getElementById('approval-screen-modal');if(m)m.remove();}
+      if(act==='closeRecent'){var mr=document.getElementById('recent-modal');if(mr)mr.remove();}
+      if(act==='openFromRecent'){var mr2=document.getElementById('recent-modal');if(mr2)mr2.remove();openDetail(tid);}
       if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
       if(act==='approveEst')approveEstimate(tid);
     }
@@ -298,7 +300,29 @@ async function showRecentApprovalsList(){
     .order('created_at',{ascending:false})
     .limit(20);
   var data=res.data||[];
-  showTruckList('Recently Approved ('+data.length+')',data.map(function(n){return n.trucks||{};}));
+  var rc=document.getElementById('recent-count');if(rc)rc.textContent=data.length;
+  if(!data.length){toast('No approvals yet','err');return;}
+  // Build a richer popup showing VIN, vehicle, who approved, when
+  var el=document.createElement('div');el.className='overlay-bg';el.id='recent-modal';
+  var rows=data.map(function(n){
+    var t=n.trucks||{};
+    return '<tr data-action2="openFromRecent" data-truck-id="'+n.truck_id+'" style="cursor:pointer;border-bottom:1px solid #111">'+
+      '<td style="padding:8px 12px;font-family:monospace;font-weight:600">'+(t.vin||'—')+'</td>'+
+      '<td style="padding:8px 12px">'+(t.year_make_model||'—')+'</td>'+
+      '<td style="padding:8px 12px"><span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:11px">'+(t.stage||'—')+'</span></td>'+
+      '<td style="padding:8px 12px;color:#86efac;font-size:11px">'+n.user_name+'</td>'+
+      '<td style="padding:8px 12px;color:var(--text2);font-size:11px">'+new Date(n.created_at).toLocaleDateString()+'</td>'+
+      '</tr>';
+  }).join('');
+  el.innerHTML='<div class="overlay-box" style="max-width:900px">'+
+    '<div class="ov-hdr"><div style="font-size:15px;font-weight:600">✅ Recently Approved ('+data.length+')</div>'+
+    '<button class="btn btn-secondary btn-sm" data-action2="closeRecent">✕ Close</button></div>'+
+    '<div style="overflow-y:auto;max-height:70vh"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr style="background:var(--bg3)"><th style="padding:8px 12px;text-align:left">VIN</th><th style="padding:8px 12px;text-align:left">Vehicle</th><th style="padding:8px 12px;text-align:left">Stage</th><th style="padding:8px 12px;text-align:left">Approved By</th><th style="padding:8px 12px;text-align:left">Date</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>'+
+    '<div class="ov-ftr"><button class="btn btn-secondary btn-sm" data-action2="closeRecent">Close</button></div>'+
+    '</div>';
+  document.body.appendChild(el);
 }
 
 async function loadRecentApprovals(){
@@ -649,6 +673,13 @@ async function approveEstimate(id){
   }
 
   updateBadges();
+  // Update recently approved count on dashboard card
+  var rc=document.getElementById('recent-count');
+  if(rc){
+    var cur=parseInt(rc.textContent)||0;
+    rc.textContent=cur+1;
+  }
+  // Full reload if on dashboard
   if(tab==='dashboard')loadRecentApprovals();
   toast('✅ Approved! Note saved.','ok');
 }
