@@ -807,9 +807,9 @@ function showApprovalTrucks(){
   var rows=at.map(function(t){
     var expTotal=0; // Will load individually
     var links='';
+    if(t.estimates_link)links+='<a href="'+t.estimates_link+'" target="_blank" class="link-btn" style="font-size:11px;background:rgba(6,182,212,0.15);border-color:#06b6d4">📋 Estimates Folder</a> ';
+    if(t.photo_link)links+='<a href="'+t.photo_link+'" target="_blank" class="link-btn" style="font-size:11px">📷 Photos Folder</a> ';
     if(t.inspections_link)links+='<a href="'+t.inspections_link+'" target="_blank" class="link-btn" style="font-size:11px">📁 Inspections</a> ';
-    if(t.photo_link)links+='<a href="'+t.photo_link+'" target="_blank" class="link-btn" style="font-size:11px">📷 Photos</a> ';
-    if(t.estimates_link)links+='<a href="'+t.estimates_link+'" target="_blank" class="link-btn" style="font-size:11px">📋 Estimates</a> ';
     if(t.invoice_link)links+='<a href="'+t.invoice_link+'" target="_blank" class="link-btn" style="font-size:11px">📁 Invoices</a> ';
     if(t.misc_link)links+='<a href="'+t.misc_link+'" target="_blank" class="link-btn" style="font-size:11px">📎 Misc</a> ';
     return '<div class="approval-card" id="acard-'+t.id+'" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:14px">'+
@@ -824,13 +824,16 @@ function showApprovalTrucks(){
       // Links row
       (links?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+links+'</div>':'')+
       // Financials row
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">'+
-      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
-      '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Est. Payoff</div>'+
-      '<div style="font-size:15px;font-weight:700;color:var(--accent)">'+(t.estimated_payoff?'$'+parseFloat(t.estimated_payoff).toLocaleString():'—')+'</div></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">'+
+      '<div style="background:rgba(6,182,212,0.1);border:1px solid #06b6d4;border-radius:6px;padding:10px">'+
+      '<div style="font-size:10px;color:#67e8f9;margin-bottom:4px;font-weight:600">💰 ESTIMATE PRICE</div>'+
+      '<div style="font-size:20px;font-weight:700;color:#06b6d4">'+(t.estimate_price?'$'+parseFloat(t.estimate_price).toLocaleString():'Not set')+'</div></div>'+
       '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
       '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Total Spent to Date</div>'+
       '<div style="font-size:15px;font-weight:700;color:#f59e0b" id="exp-total-'+t.id+'">Loading...</div></div>'+
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
+      '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Est. Payoff</div>'+
+      '<div style="font-size:15px;font-weight:700;color:var(--accent)">'+(t.estimated_payoff?'$'+parseFloat(t.estimated_payoff).toLocaleString():'—')+'</div></div>'+
       '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
       '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Shop Status</div>'+
       '<div style="font-size:13px;font-weight:600;color:#fcd34d">'+(t.shop_status||'—')+'</div></div>'+
@@ -870,20 +873,26 @@ async function loadApprovalData(id){
   var etEl=document.getElementById('exp-total-'+id);
   if(etEl)etEl.textContent='$'+total.toFixed(2);
 
-  // Load recent notes
-  var nr=await db.from('notes').select('user_name,content,created_at').eq('truck_id',id).order('created_at',{ascending:false}).limit(3);
+  // Load notes - prioritize approval request notes
+  var nr=await db.from('notes').select('user_name,content,created_at').eq('truck_id',id).order('created_at',{ascending:false}).limit(10);
   var nEl=document.getElementById('notes-'+id);
   if(nEl){
     if(nr.data&&nr.data.length){
       nEl.style.fontStyle='normal';
-      nEl.innerHTML=nr.data.map(function(n){
-        return '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg);border-radius:4px">'+
-          '<div style="font-size:10px;color:var(--text2);margin-bottom:2px">'+n.user_name+' · '+new Date(n.created_at).toLocaleDateString()+'</div>'+
-          '<div style="font-size:12px;color:var(--text);line-height:1.4">'+n.content.substring(0,200)+(n.content.length>200?'...':'')+'</div>'+
+      // Show approval-related notes first, then recent notes
+      var approvalNotes=nr.data.filter(function(n){return n.content.toLowerCase().includes('approval')||n.content.toLowerCase().includes('estimate')||n.content.toLowerCase().includes('approve');});
+      var otherNotes=nr.data.filter(function(n){return !n.content.toLowerCase().includes('approval')&&!n.content.toLowerCase().includes('estimate')&&!n.content.toLowerCase().includes('approve');}).slice(0,2);
+      var displayNotes=approvalNotes.length?approvalNotes.concat(otherNotes):nr.data.slice(0,3);
+      nEl.innerHTML=displayNotes.map(function(n){
+        var isApprovalNote=n.content.toLowerCase().includes('approval')||n.content.toLowerCase().includes('estimate');
+        return '<div style="margin-bottom:6px;padding:8px 10px;background:'+(isApprovalNote?'rgba(6,182,212,0.08)':'var(--bg)')+';border:1px solid '+(isApprovalNote?'#06b6d4':'var(--border)')+';border-radius:4px">'+
+          '<div style="font-size:10px;color:'+(isApprovalNote?'#67e8f9':'var(--text2)')+';margin-bottom:4px;font-weight:600">'+
+          (isApprovalNote?'📋 ':'')+ n.user_name+' · '+new Date(n.created_at).toLocaleDateString()+'</div>'+
+          '<div style="font-size:12px;color:var(--text);line-height:1.5">'+n.content.substring(0,300)+(n.content.length>300?'...':'')+'</div>'+
           '</div>';
       }).join('');
     }else{
-      nEl.textContent='No notes yet';
+      nEl.innerHTML='<div style="color:var(--text3);font-style:italic">No notes yet — add details about this estimate before requesting approval</div>';
     }
   }
 }
@@ -971,6 +980,7 @@ function buildForm(t){
   // Status & Dates
   html+='<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">';
   html+='<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>';
+  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price||'')+'" placeholder="0.00"></div>';
   html+='<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>';
   html+='<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>';
@@ -1389,6 +1399,14 @@ function renderDash(m){
     '<div class="dc" data-action="showMgrReview" style="cursor:pointer;background:rgba(245,158,11,0.08);border-color:#78350f"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fcd34d">Mgr Review Needed <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#f59e0b">'+mgrReview+'</div></div>'+
     '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '</div>'+
+    '<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">'+
+    '<label style="font-size:12px;color:var(--text2)">🏭 Filter by Yard:</label>'+
+    '<select id="yard-dash-filter" class="fsel" style="width:160px" onchange="filterDashByYard()">'+
+    '<option value="">All Yards</option>'+
+    Array.from(new Set(trucks.map(function(t){return t.yard;}).filter(Boolean))).sort(function(a,b){return (parseInt(a.replace(/\D/g,''))||0)-(parseInt(b.replace(/\D/g,''))||0);}).map(function(y){return '<option>'+y+'</option>';}).join('')+
+    '</select>'+
+    '<span id="yard-filter-count" style="font-size:12px;color:var(--text2)"></span>'+
+    '</div>'+
     '<div class="bk-grid">'+
     '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+
     STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')+
@@ -1657,6 +1675,27 @@ async function demoteUser(email,name){
   if(res.error){toast('Error: '+res.error.message,'err');return;}
   toast(name+' is now a regular user — they need to sign out and back in','ok');
   loadUserList();
+}
+
+function filterDashByYard(){
+  var yard=document.getElementById('yard-dash-filter')?document.getElementById('yard-dash-filter').value:'';
+  var countEl=document.getElementById('yard-filter-count');
+  if(!yard){
+    if(countEl)countEl.textContent='';
+    // Reset stage rows to normal counts
+    STAGES.forEach(function(s){
+      var el=document.getElementById('bk-stage-'+s.replace(/ /g,'_'));
+      if(el)el.textContent=trucks.filter(function(t){return t.stage===s&&!t.is_archived;}).length;
+    });
+    return;
+  }
+  var yardTrucks=trucks.filter(function(t){return t.yard===yard;});
+  if(countEl)countEl.textContent=yardTrucks.length+' trucks in '+yard;
+  // Update stage row counts for this yard
+  STAGES.forEach(function(s){
+    var el=document.getElementById('bk-stage-'+s.replace(/ /g,'_'));
+    if(el)el.textContent=yardTrucks.filter(function(t){return t.stage===s;}).length;
+  });
 }
 
 function toast(msg,type){
