@@ -462,8 +462,9 @@ function buildForm(t){
     '<div class="fg" style="margin-bottom:10px">'+
     '<label class="fl">📁 Invoice Folder</label>'+
     '<div style="display:flex;gap:8px;align-items:center">'+
-    '<input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste invoice folder link..." '+(t.invoice_link?'readonly style="opacity:0.6"':'')+'>'+
-    (t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-sm">📁 Open</a><button class="btn btn-secondary btn-xs" onclick="unlockField('f-invoicelink')">🔓</button>':'')+'</div></div>'+
+    '<input class="fi" id="f-invoicelink" value="'+(t.invoice_link||'')+'" placeholder="Paste invoice folder link...">'+
+    (t.invoice_link?'<a href="'+t.invoice_link+'" target="_blank" class="btn btn-secondary btn-sm">📁 Open</a>':'')+
+    '</div></div>'+
     '<div class="exp-total" id="etotal"></div></div>'+
     '<div class="sec"><div class="sec-title"><span>Stage History & Cycle Time</span></div><div id="hlist"></div></div>';
 }
