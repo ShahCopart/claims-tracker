@@ -227,6 +227,11 @@ document.addEventListener('DOMContentLoaded',function(){
     el.addEventListener('click',function(){doTab(this.getAttribute('data-tab'),this);});
   });
   document.body.addEventListener('click',function(e){
+    var a3=e.target.closest('[data-action3]');
+    if(a3&&a3.getAttribute('data-action3')==='goStage'){
+      var stage=a3.getAttribute('data-stage');
+      if(stage)clickStage(stage);
+    }
     var a2=e.target.closest('[data-action2]');
     if(a2){
       var act=a2.getAttribute('data-action2');
@@ -283,6 +288,30 @@ async function bootApp(){
   doTab(lastTab,null);
 }
 
+async function loadRecentApprovals(){
+  var el=document.getElementById('recent-approvals');
+  if(!el)return;
+  var res=await db.from('notes')
+    .select('content,created_at,user_name,truck_id,trucks(vin,year_make_model,stage)')
+    .ilike('content','%APPROVED%')
+    .order('created_at',{ascending:false})
+    .limit(20);
+  if(!res.data||!res.data.length){el.innerHTML='<div style="padding:8px 0;color:var(--text3)">No approvals yet</div>';return;}
+  el.innerHTML=res.data.map(function(n){
+    var t=n.trucks||{};
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #111;cursor:pointer" data-stage="'+(t.stage||'')+'" data-action3="goStage">'+
+      '<div>'+
+      '<span style="font-family:monospace;font-weight:600;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
+      '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+      '<div style="font-size:11px;color:#86efac">'+n.user_name+'</div>'+
+      '<div style="font-size:10px;color:var(--text3)">'+new Date(n.created_at).toLocaleDateString()+'</div>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+}
+
 async function loadData(){
   var r1=await db.from('trucks').select('*').order('created_at',{ascending:false});
   var r2=await db.from('claims').select('*').order('created_at',{ascending:false});
@@ -315,7 +344,7 @@ function clickStage(stage){doTab(stage,document.querySelector('.ntab[data-tab="'
 function renderTab(){
   var m=document.getElementById('main');
   if(STAGES.includes(tab))renderList(tab,m);
-  else if(tab==='dashboard')renderDash(m);
+  else if(tab==='dashboard'){renderDash(m);loadRecentApprovals();}
   else if(tab==='claims')renderClaims(m);
   else if(tab==='report')renderReport(m);
 }
@@ -604,6 +633,7 @@ async function approveEstimate(id){
   }
 
   updateBadges();
+  if(tab==='dashboard')loadRecentApprovals();
   toast('✅ Approved! Note saved.','ok');
 }
 
@@ -1083,6 +1113,14 @@ function renderDash(m){
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🔴 Overdue (2+ days)</span><span class="bk-cnt" style="color:#ef4444">'+overdue+'</span></div>'+
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🚨 Critical (7+ days)</span><span class="bk-cnt" style="color:#dc2626">'+critical+'</span></div>'+
     '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
+    '</div></div>'+
+    '<div style="margin-top:16px">'+
+    '<div class="bk-card">'+
+    '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span>✅ Recently Approved (Last 20)</span>'+
+    '<span style="font-size:10px;color:var(--text2);font-weight:400">Estimates approved by managers</span>'+
+    '</div>'+
+    '<div id="recent-approvals" style="padding:10px 14px;color:var(--text2);font-size:12px">Loading...</div>'+
     '</div></div>';
 }
 
