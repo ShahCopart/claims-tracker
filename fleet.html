@@ -238,6 +238,14 @@ document.addEventListener('DOMContentLoaded',function(){
       if(action==='showApproval')showApprovalTrucks();
       if(action==='showMgrReview')showMgrReviewTrucks();
     }
+    var a2=e.target.closest('[data-action2]');
+    if(a2){
+      var act=a2.getAttribute('data-action2');
+      var tid=a2.getAttribute('data-truck-id');
+      if(act==='closeApproval'){var m=document.getElementById('approval-screen-modal');if(m)m.remove();}
+      if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
+      if(act==='approveEst')approveEstimate(tid);
+    }
   });
 });
 
@@ -481,8 +489,119 @@ function showMgrReviewTrucks(){
 }
 function showApprovalTrucks(){
   var at=trucks.filter(function(t){return t.needs_approval;});
-  if(!at.length){toast('No trucks waiting for approval','ok');return;}
-  showTruckList('⏳ Waiting for Approval ('+at.length+')',at);
+  if(!at.length){toast('No trucks needing approval','ok');return;}
+  var old=document.getElementById('approval-screen-modal');if(old)old.remove();
+  var el=document.createElement('div');el.className='overlay-bg';el.id='approval-screen-modal';
+
+  var rows=at.map(function(t){
+    var expTotal=0; // Will load individually
+    var links='';
+    if(t.inspections_link)links+='<a href="'+t.inspections_link+'" target="_blank" class="link-btn" style="font-size:11px">📁 Inspections</a> ';
+    if(t.photo_link)links+='<a href="'+t.photo_link+'" target="_blank" class="link-btn" style="font-size:11px">📷 Photos</a> ';
+    if(t.estimates_link)links+='<a href="'+t.estimates_link+'" target="_blank" class="link-btn" style="font-size:11px">📋 Estimates</a> ';
+    if(t.invoice_link)links+='<a href="'+t.invoice_link+'" target="_blank" class="link-btn" style="font-size:11px">📁 Invoices</a> ';
+    if(t.misc_link)links+='<a href="'+t.misc_link+'" target="_blank" class="link-btn" style="font-size:11px">📎 Misc</a> ';
+    return '<div class="approval-card" id="acard-'+t.id+'" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
+      '<div>'+
+      '<div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--text)">'+t.vin+'</div>'+
+      '<div style="font-size:12px;color:var(--text2);margin-top:2px">'+(t.year_make_model||'')+(t.yard?' | '+t.yard:'')+(t.stage?' | <span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+t.stage+'</span>':'')+'</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;align-items:center">'+
+      '<span class="sbadge" style="background:rgba(6,182,212,0.2);color:#67e8f9;font-size:11px">⏳ Pending Approval</span>'+
+      '</div></div>'+
+      // Links row
+      (links?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+links+'</div>':'')+
+      // Financials row
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">'+
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
+      '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Est. Payoff</div>'+
+      '<div style="font-size:15px;font-weight:700;color:var(--accent)">'+(t.estimated_payoff?'$'+parseFloat(t.estimated_payoff).toLocaleString():'—')+'</div></div>'+
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
+      '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Total Spent to Date</div>'+
+      '<div style="font-size:15px;font-weight:700;color:#f59e0b" id="exp-total-'+t.id+'">Loading...</div></div>'+
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px">'+
+      '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">Shop Status</div>'+
+      '<div style="font-size:13px;font-weight:600;color:#fcd34d">'+(t.shop_status||'—')+'</div></div>'+
+      '</div>'+
+      // Notes
+      '<div style="margin-bottom:12px">'+
+      '<div style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Recent Notes</div>'+
+      '<div id="notes-'+t.id+'" style="font-size:12px;color:var(--text2);font-style:italic">Loading...</div>'+
+      '</div>'+
+      // Approve button
+      '<div style="display:flex;gap:8px;justify-content:flex-end">'+
+      '<button class="btn btn-secondary btn-sm" data-truck-id="'+t.id+'" data-action2="viewApproval">View Full Record</button>'+
+      '<button class="btn btn-primary" data-truck-id="'+t.id+'" data-action2="approveEst" style="background:#16a34a;border-color:#15803d">✅ Approve</button>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+
+  el.innerHTML='<div class="overlay-box" style="max-width:860px">'+
+    '<div class="ov-hdr">'+
+    '<div><div style="font-size:16px;font-weight:700">⏳ Waiting for Approval ('+at.length+')</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:2px">Review estimates and approve repairs below</div></div>'+
+    '<button class="btn btn-secondary btn-sm" data-action2="closeApproval">✕ Close</button>'+
+    '</div>'+
+    '<div class="ov-body" style="max-height:75vh;overflow-y:auto">'+rows+'</div>'+
+    '</div>';
+
+  document.body.appendChild(el);
+
+  // Load expenses and notes for each truck
+  at.forEach(function(t){loadApprovalData(t.id);});
+}
+
+async function loadApprovalData(id){
+  // Load expenses
+  var er=await db.from('expenses').select('amount').eq('truck_id',id);
+  var total=(er.data||[]).reduce(function(sum,e){return sum+parseFloat(e.amount||0);},0);
+  var etEl=document.getElementById('exp-total-'+id);
+  if(etEl)etEl.textContent='$'+total.toFixed(2);
+
+  // Load recent notes
+  var nr=await db.from('notes').select('user_name,content,created_at').eq('truck_id',id).order('created_at',{ascending:false}).limit(3);
+  var nEl=document.getElementById('notes-'+id);
+  if(nEl){
+    if(nr.data&&nr.data.length){
+      nEl.style.fontStyle='normal';
+      nEl.innerHTML=nr.data.map(function(n){
+        return '<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg);border-radius:4px">'+
+          '<div style="font-size:10px;color:var(--text2);margin-bottom:2px">'+n.user_name+' · '+new Date(n.created_at).toLocaleDateString()+'</div>'+
+          '<div style="font-size:12px;color:var(--text);line-height:1.4">'+n.content.substring(0,200)+(n.content.length>200?'...':'')+'</div>'+
+          '</div>';
+      }).join('');
+    }else{
+      nEl.textContent='No notes yet';
+    }
+  }
+}
+
+async function approveEstimate(id){
+  var t=trucks.find(function(x){return x.id===id;});
+  if(!t)return;
+  var approverName=me?me.name:'Manager';
+  var timestamp=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  var noteContent='✅ APPROVED by '+approverName+' on '+timestamp+' — Estimate approved. Work authorized to proceed.';
+
+  // Insert approval note
+  await db.from('notes').insert({truck_id:id,user_name:approverName,content:noteContent});
+  // Remove needs_approval flag
+  await db.from('trucks').update({needs_approval:false,updated_at:new Date().toISOString()}).eq('id',id);
+  // Update local cache
+  var idx=trucks.findIndex(function(x){return x.id===id;});
+  if(idx>=0)trucks[idx].needs_approval=false;
+
+  // Remove card from modal
+  var card=document.getElementById('acard-'+id);
+  if(card){
+    card.style.opacity='0.5';
+    card.innerHTML='<div style="text-align:center;padding:20px;color:#86efac;font-size:14px;font-weight:600">✅ Approved! Note added to truck record.</div>';
+    setTimeout(function(){card.remove();},2000);
+  }
+
+  updateBadges();
+  toast('✅ Approved! Note saved.','ok');
 }
 
 async function openDetail(id){
