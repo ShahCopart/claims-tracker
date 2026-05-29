@@ -1646,15 +1646,17 @@ async function loadUserList(){
 async function promoteUser(email,name){
   if(!confirm('Make '+name+' an admin?'))return;
   var res=await db.from('users').update({role:'admin'}).eq('email',email);
-  if(!res.error){toast(name+' is now an admin','ok');loadUserList();}
-  else toast('Error: '+res.error.message,'err');
+  if(res.error){toast('Error: '+res.error.message,'err');return;}
+  toast(name+' is now an admin ✅ — they need to sign out and back in','ok');
+  loadUserList();
 }
 
 async function demoteUser(email,name){
   if(!confirm('Remove admin role from '+name+'?'))return;
   var res=await db.from('users').update({role:null}).eq('email',email);
-  if(!res.error){toast(name+' is now a regular user','ok');loadUserList();}
-  else toast('Error: '+res.error.message,'err');
+  if(res.error){toast('Error: '+res.error.message,'err');return;}
+  toast(name+' is now a regular user — they need to sign out and back in','ok');
+  loadUserList();
 }
 
 function toast(msg,type){
