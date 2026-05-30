@@ -1585,6 +1585,8 @@ async function saveTruck(closeAfter){
     document.getElementById('d-flags').innerHTML=flags(res.data);
     var nn=document.getElementById('nnote');if(nn&&nn.value.trim())nn.value='';
   renderNotes();toast('Saved!','ok');if(tab==='dashboard')loadRecentWorked();if(closeAfter)closeDetail();
+  // Refresh dashboard counts so cards update immediately after any save
+  if(tab==='dashboard'){var dm=document.getElementById('main');if(dm)renderDash(dm);}
   }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
 
