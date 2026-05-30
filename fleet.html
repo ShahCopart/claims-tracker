@@ -1370,9 +1370,12 @@ async function saveTruck(closeAfter){
   else{res=await db.from('trucks').insert(data).select().single();truckId=res.data?res.data.id:null;if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});}
 
   if(res.data){
+    // Auto-save any pending note in the textarea (e.g. estimate notes)
+    var pendingNote=document.getElementById('nnote')?document.getElementById('nnote').value.trim():'';
     var autoNotes=[];
     if(prevTruck.stage&&prevTruck.stage!==data.stage&&data.stage)autoNotes.push('[STAGE CHANGE] '+prevTruck.stage+' -> '+data.stage);
     if(prevTruck.shop_status!==data.shop_status&&data.shop_status)autoNotes.push('[SHOP STATUS] Changed to: '+data.shop_status);
+    if(pendingNote)autoNotes.push(pendingNote);
     if(autoNotes.length){
       await db.from('notes').insert(autoNotes.map(function(c){return {truck_id:truckId,user_name:me.name,content:c};}));
       var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
@@ -1381,12 +1384,19 @@ async function saveTruck(closeAfter){
     var i=trucks.findIndex(function(t){return t.id===truckId;});
     if(i>=0)trucks[i]=res.data;else trucks.unshift(res.data);
     updateBadges();
+    // Update estimate price orig value so form stays in sync
+    var ep2=document.getElementById('f-estprice');
+    if(ep2&&res.data.estimate_price){
+      ep2.setAttribute('data-orig-price',res.data.estimate_price);
+      ep2.value=parseFloat(res.data.estimate_price).toFixed(2);
+    }
     document.getElementById('d-vin').textContent=res.data.vin||'-';
     document.getElementById('d-ymm').textContent=res.data.year_make_model||'';
     document.getElementById('d-sbadge').textContent=res.data.stage||'';
     document.getElementById('d-sbadge').className='sbadge '+(SCSS[res.data.stage]||'s-intake');
     document.getElementById('d-flags').innerHTML=flags(res.data);
-    renderNotes();toast('Saved!','ok');if(tab==='dashboard')loadRecentWorked();if(closeAfter)closeDetail();
+    var nn=document.getElementById('nnote');if(nn&&nn.value.trim())nn.value='';
+  renderNotes();toast('Saved!','ok');if(tab==='dashboard')loadRecentWorked();if(closeAfter)closeDetail();
   }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
 
