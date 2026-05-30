@@ -1242,6 +1242,9 @@ function buildForm(t){
   html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-hc" '+(t.has_claim?'checked':'')+' style="width:15px;height:15px;accent-color:var(--amber)"><span style="color:#fcd34d">📋 Has Insurance Claim</span></label>';
   html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-approval" '+(t.needs_approval?'checked':'')+' style="width:15px;height:15px;accent-color:#06b6d4"><span style="color:#67e8f9">⏳ Approval Needed</span></label>';
   html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-mgr-review" '+(t.needs_mgr_review?'checked':'')+' style="width:15px;height:15px;accent-color:#f59e0b"><span style="color:#fcd34d">👔 Manager Review Needed</span></label>';
+  if(isAdmin){
+    html+='<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="f-archived" '+(t.is_archived?'checked':'')+' style="width:15px;height:15px;accent-color:#6b7280"><span style="color:#9ca3af">🗄 Archived</span></label>';
+  }
   html+='</div></div>';
 
   // Documents & Links
@@ -1508,6 +1511,7 @@ async function saveTruck(closeAfter){
     title_issue:getFormCheck('f-ti'),total_loss:getFormCheck('f-tl'),has_claim:getFormCheck('f-hc'),
     needs_approval:getFormCheck('f-approval'),
     needs_mgr_review:getFormCheck('f-mgr-review'),
+    is_archived:isAdmin?getFormCheck('f-archived'):(trucks.find(function(t){return t.id===truckId;})||{}).is_archived||false,
     photos_taken:getFormCheck('f-ph'),pm_done:getFormCheck('f-pm'),batteries_installed:getFormCheck('f-bat'),
     windshield_done:getFormCheck('f-ws'),tires_changed:getFormCheck('f-tr'),electrical_issues:getFormCheck('f-el'),
     check_engine:getFormCheck('f-ce'),bed_works:getFormCheck('f-bw'),body_condition:getFormVal('f-bc')||null,
