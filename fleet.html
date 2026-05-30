@@ -1821,7 +1821,7 @@ function showEstimateNotePrompt(price,input){
   el.innerHTML=
     '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:28px;width:560px;max-width:95vw">'+
     '<div style="font-size:16px;font-weight:700;margin-bottom:6px">📋 Estimate Note Required</div>'+
-    '<div style="font-size:13px;color:var(--text2);margin-bottom:20px">You entered an estimate of <strong style="color:#06b6d4;font-size:15px">$'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong></div>'+
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:20px">You entered an estimate of <strong style="color:#06b6d4;font-size:15px">$'+parseFloat(price).toFixed(2)+'</strong></div>'+
     '<div style="margin-bottom:14px">'+
     '<label style="font-size:12px;color:var(--text2);font-weight:600;display:block;margin-bottom:6px">Describe this estimate — what work is needed and who provided it?</label>'+
     '<textarea id="est-note-text" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;min-height:100px" placeholder="e.g. Estimate from Epika for $'+parseFloat(price).toFixed(2)+' — includes front suspension repair, windshield replacement, and PM service. Estimate doc attached in OneDrive."></textarea>'+
@@ -1842,20 +1842,22 @@ function showEstimateNotePrompt(price,input){
     '<button class="btn btn-primary" id="est-save-btn" style="padding:8px 18px;background:#16a34a">✅ Save Note & Continue</button>'+
     '</div>'+
     '</div>';
+  el.setAttribute('data-price', price);
   document.body.appendChild(el);
-  document.getElementById('est-cancel-btn').onclick=function(){cancelEstimateNote(price);};
-  document.getElementById('est-save-btn').onclick=function(){saveEstimateNote(price);};
+  document.getElementById('est-cancel-btn').onclick=cancelEstimateNote;
+  document.getElementById('est-save-btn').onclick=saveEstimateNote;
   setTimeout(function(){var ta=document.getElementById('est-note-text');if(ta)ta.focus();},100);
 }
 
-function cancelEstimateNote(price){
-  // Revert the price field to original value
+function cancelEstimateNote(){
   var inp=document.getElementById('f-estprice');
   if(inp){inp.value=inp.getAttribute('data-orig-price')||'';}
   var m=document.getElementById('est-note-modal');if(m)m.remove();
 }
 
-async function saveEstimateNote(price){
+async function saveEstimateNote(){
+  var modal=document.getElementById('est-note-modal');
+  var price=modal?parseFloat(modal.getAttribute('data-price'))||0:0;
   var noteText=document.getElementById('est-note-text').value.trim();
   var confirmed=document.getElementById('est-onedrive-confirm').checked;
   var errEl=document.getElementById('est-note-err');
@@ -1873,7 +1875,7 @@ async function saveEstimateNote(price){
 
   // Build the full note
   var d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
-  var priceStr=parseFloat(price).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  var priceStr=price.toFixed(2);
   var fullNote=d+' - ESTIMATE $'+priceStr+'\n'+noteText+'\n[Estimate document saved to OneDrive]';
 
   // Add note to the note textarea so it gets saved with the truck
