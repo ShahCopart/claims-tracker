@@ -1279,7 +1279,9 @@ async function saveTruck(closeAfter){
   var data={
     vin:getFormVal('f-vin'),year_make_model:getFormVal('f-ymm'),cab_color:getFormVal('f-cab'),
     bed:getFormVal('f-bed'),mileage:getFormVal('f-mil'),yard:getFormVal('f-yard'),state:getFormVal('f-state'),
-    stage:newStage,shop_status:newShop,repo_agent:getFormVal('f-repoagent')||null,
+    stage:newStage,shop_status:newShop,
+    estimate_price:parseFloat(getFormVal('f-estprice'))||null,
+    repo_agent:getFormVal('f-repoagent')||null,
     terminated_date:getFormVal('f-termdate')||null,recovery_date:getFormVal('f-recov')||null,
     est_completion_date:estComp,intake_date:intakeDate,ready_date:getFormVal('f-ready')||null,
     assigned_date:getFormVal('f-assign')||null,pickup_date:getFormVal('f-pickup')||null,
