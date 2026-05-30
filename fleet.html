@@ -1491,6 +1491,7 @@ async function saveTruck(closeAfter){
   var vap=document.getElementById('f-vapayer');if(vap)data.va_payer=vap.value||null;
   var vad=document.getElementById('f-vadesc');if(vad)data.va_description=vad.value.trim()||null;
 
+  console.log('sublot value being saved:', data.sublot, 'from checkbox:', document.getElementById('f-sublot')?document.getElementById('f-sublot').checked:'no element');
   var res;
   if(truckId){res=await db.from('trucks').update(data).eq('id',truckId).select().single();}
   else{res=await db.from('trucks').insert(data).select().single();truckId=res.data?res.data.id:null;if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});}
