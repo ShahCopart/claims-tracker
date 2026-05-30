@@ -19,11 +19,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .login-btn:hover{background:var(--accent2)}
 .login-err{color:#f87171;font-size:12px;margin-top:8px}
 .app{display:none;flex-direction:column;min-height:100vh}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.app-title{font-size:16px;font-weight:700;color:var(--accent)}
-.truck-count{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--text2);margin-left:10px}
-.user-badge{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--text2)}
-.admin-badge{background:#1a3a1a;border:1px solid #166534;border-radius:20px;padding:4px 10px;font-size:11px;color:#86efac;margin-left:6px}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 12px;min-height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:6px}
+.app-title{font-size:14px;font-weight:700;color:var(--accent)}
+.truck-count{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text2);margin-left:6px}
+.user-badge{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text2)}
+.admin-badge{background:#1a3a1a;border:1px solid #166534;border-radius:20px;padding:2px 8px;font-size:11px;color:#86efac;margin-left:4px}
 .nav{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;padding:0 20px;overflow-x:auto}
 .nav::-webkit-scrollbar{height:3px}.nav::-webkit-scrollbar-thumb{background:#333}
 .ntab{padding:10px 14px;cursor:pointer;font-size:12px;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s}
@@ -133,12 +133,12 @@ tbody tr:last-child td{border-bottom:none}
       <div class="admin-badge" id="admin-badge" style="display:none;cursor:pointer" onclick="showUserManager()">👑 Admin</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:220px" oninput="globalSearch(this.value)">
-      <input type="text" id="yard-search" placeholder="Search by Yard #..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:160px" oninput="yardSearch(this.value)" list="yard-list">
-      <button class="btn btn-secondary btn-sm" onclick="refreshAll()">🔄 Refresh</button>
-      <span id="last-refresh" style="font-size:11px;color:var(--text3)"></span>
-      <button class="btn btn-primary btn-sm" onclick="openNewTruck()">+ Add Truck</button>
-      <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sign Out</button>
+      <input type="text" id="global-search" placeholder="Search VIN, vendor..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--text);font-size:12px;width:180px" oninput="globalSearch(this.value)">
+      <input type="text" id="yard-search" placeholder="Yard #..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--text);font-size:12px;width:90px" oninput="yardSearch(this.value)" list="yard-list">
+      <button class="btn btn-secondary btn-sm" onclick="refreshAll()" style="padding:4px 10px">🔄</button>
+      <span id="last-refresh" style="font-size:10px;color:var(--text3)"></span>
+      <button class="btn btn-primary btn-sm" onclick="openNewTruck()" style="padding:4px 10px">+ Add</button>
+      <button class="btn btn-secondary btn-sm" onclick="doLogout()" style="padding:4px 10px">Sign Out</button>
     </div>
   </div>
   <div class="nav" id="main-nav">
