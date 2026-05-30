@@ -1009,7 +1009,7 @@ function buildForm(t){
   // Status & Dates
   html+='<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">';
   html+='<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>';
-  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price?parseFloat(t.estimate_price).toFixed(2):'')+'" placeholder="0.00" step="0.01"></div>';
+  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price?parseFloat(t.estimate_price).toFixed(2):'')+'" placeholder="0.00" step="0.01" data-orig-price="'+(t.estimate_price||'')+'" onchange="checkEstimatePrice(this)"></div>';
   html+='<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>';
   html+='<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>';
@@ -1727,6 +1727,87 @@ function filterDashByYard(){
     var el=document.getElementById('bk-stage-'+s.replace(/ /g,'_'));
     if(el)el.textContent=yardTrucks.filter(function(t){return t.stage===s;}).length;
   });
+}
+
+function checkEstimatePrice(input){
+  var newVal=parseFloat(input.value)||0;
+  var origVal=parseFloat(input.getAttribute('data-orig-price'))||0;
+  if(newVal>0&&newVal!==origVal){
+    // Price was changed - show prompt
+    showEstimateNotePrompt(newVal,input);
+  }
+}
+
+function showEstimateNotePrompt(price,input){
+  var old=document.getElementById('est-note-modal');if(old)old.remove();
+  var el=document.createElement('div');el.className='overlay-bg';el.id='est-note-modal';
+  el.style.zIndex='500';
+  el.innerHTML=
+    '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:28px;width:560px;max-width:95vw">'+
+    '<div style="font-size:16px;font-weight:700;margin-bottom:6px">📋 Estimate Note Required</div>'+
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:20px">You entered an estimate of <strong style="color:#06b6d4;font-size:15px">$'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong></div>'+
+    '<div style="margin-bottom:14px">'+
+    '<label style="font-size:12px;color:var(--text2);font-weight:600;display:block;margin-bottom:6px">Describe this estimate — what work is needed and who provided it?</label>'+
+    '<textarea id="est-note-text" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;min-height:100px" placeholder="e.g. Estimate from Epika for $'+parseFloat(price).toFixed(2)+' — includes front suspension repair, windshield replacement, and PM service. Estimate doc attached in OneDrive."></textarea>'+
+    '<div id="est-note-err" style="color:#f87171;font-size:12px;margin-top:4px;display:none">Please add a note before continuing.</div>'+
+    '</div>'+
+    '<div style="background:rgba(245,158,11,0.1);border:1px solid #d97706;border-radius:8px;padding:12px;margin-bottom:18px">'+
+    '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">'+
+    '<input type="checkbox" id="est-onedrive-confirm" style="width:16px;height:16px;margin-top:2px;accent-color:#f59e0b;flex-shrink:0">'+
+    '<span><strong style="color:#fcd34d">⚠ I confirm</strong> that I have saved or will save the estimate document to the <strong>OneDrive Estimates folder</strong> for this truck before requesting approval.</span>'+
+    '</label>'+
+    '</div>'+
+    '<div style="display:flex;gap:10px;justify-content:flex-end">'+
+    '<button class="btn btn-secondary" id="est-cancel-btn" style="padding:8px 18px">Cancel — Revert Price</button>'+
+    '<button class="btn btn-primary" id="est-save-btn" style="padding:8px 18px;background:#16a34a">✅ Save Note & Continue</button>'+
+    '</div>'+
+    '</div>';
+  document.body.appendChild(el);
+  document.getElementById('est-cancel-btn').onclick=function(){cancelEstimateNote(price);};
+  document.getElementById('est-save-btn').onclick=function(){saveEstimateNote(price);};
+  setTimeout(function(){var ta=document.getElementById('est-note-text');if(ta)ta.focus();},100);
+}
+
+function cancelEstimateNote(price){
+  // Revert the price field to original value
+  var inp=document.getElementById('f-estprice');
+  if(inp){inp.value=inp.getAttribute('data-orig-price')||'';}
+  var m=document.getElementById('est-note-modal');if(m)m.remove();
+}
+
+async function saveEstimateNote(price){
+  var noteText=document.getElementById('est-note-text').value.trim();
+  var confirmed=document.getElementById('est-onedrive-confirm').checked;
+  var errEl=document.getElementById('est-note-err');
+
+  if(!noteText){
+    errEl.style.display='block';
+    errEl.textContent='Please add a note describing this estimate.';
+    return;
+  }
+  if(!confirmed){
+    errEl.style.display='block';
+    errEl.textContent='Please confirm you have saved the estimate to OneDrive.';
+    return;
+  }
+
+  // Build the full note
+  var d=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  var priceStr=parseFloat(price).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  var fullNote=d+' - ESTIMATE $'+priceStr+'\n'+noteText+'\n[Estimate document saved to OneDrive]';
+
+  // Add note to the note textarea so it gets saved with the truck
+  var noteTa=document.getElementById('nnote');
+  if(noteTa){
+    noteTa.value=fullNote;
+  }
+
+  // Update data-orig-price so prompt doesn't fire again
+  var inp=document.getElementById('f-estprice');
+  if(inp)inp.setAttribute('data-orig-price',price);
+
+  var m=document.getElementById('est-note-modal');if(m)m.remove();
+  toast('Note added — click Save to save the truck record','ok');
 }
 
 function toast(msg,type){
