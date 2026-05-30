@@ -2171,44 +2171,85 @@ async function geocodeAddr(addr){
   return data&&data.length?{lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon),display:data[0].display_name}:null;
 }
 
+function renderShopResults(geo,merged,resultsEl,isPartial){
+  if(!merged.length&&!isPartial){
+    resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No truck repair shops found within 50 miles.<br><a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(geo.display)+'" target="_blank" style="color:var(--accent)">Search Google Maps instead →</a></div>';
+    return;
+  }
+  resultsEl.innerHTML=
+    '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">📍 Near: '+geo.display.split(',').slice(0,3).join(',')+(isPartial?'<span style="margin-left:8px;color:var(--text3)">⏳ Loading more nearby shops...</span>':'')+'</div>'+
+    '<div style="display:flex;flex-direction:column;gap:8px">'+
+    merged.map(function(v,i){
+      var dist=v.dist===null||v.dist===undefined?'':v.dist<1?(v.dist*5280).toFixed(0)+' ft':v.dist.toFixed(1)+' mi';
+      var mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(v.name+(v.addr?' '+v.addr:''));
+      var border=v.isMaint?'#7c3aed':v.isLeasing?'#f59e0b':v.isKnown?'#22c55e':'var(--border)';
+      return '<div style="background:var(--bg3);border:1px solid '+border+';border-radius:6px;padding:10px 14px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
+        (v.isMaint?'<span style="background:#2d1b69;color:#c4b5fd;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600">🔧 Currently Used</span>':'')+ 
+        (v.isLeasing?'<span style="background:#3b2a00;color:#fcd34d;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600">⭐ Preferred Vendor</span>':'')+ 
+        (v.isKnown?'<span style="background:#0f2a1a;color:#86efac;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600">✓ Known Vendor</span>':'')+
+        '<span style="font-weight:600;font-size:13px">'+(i+1)+'. '+v.name+'</span>'+
+        '</div>'+
+        '<span style="color:var(--accent);font-weight:600;font-size:12px;white-space:nowrap;margin-left:8px">'+dist+'</span>'+
+        '</div>'+
+        (v.addr?'<div style="font-size:11px;color:var(--text2);margin-top:4px">📍 '+v.addr+'</div>':'')+
+        '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+        '<a href="'+mapsUrl+'" target="_blank" class="btn btn-secondary btn-xs">🗺 Open in Maps</a>'+
+        (v.phone?'<a href="tel:'+v.phone+'" class="btn btn-secondary btn-xs">📞 '+v.phone+'</a>':'')+
+        (v.website?'<a href="'+v.website+'" target="_blank" class="btn btn-secondary btn-xs">🌐 Website</a>':'')+
+        '</div>'+
+        '</div>';
+    }).join('')+
+    '</div>';
+}
+
 async function searchShops(){
   var addr=document.getElementById('shop-addr').value.trim();
   var resultsEl=document.getElementById('shop-results');
   if(!addr){toast('Enter an address first','err');return;}
-  resultsEl.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--text2)"><div class="spin"></div>Searching...</div>';
+  resultsEl.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--text2)"><div class="spin"></div>Finding your location...</div>';
+
+  var MAX_DIST=50; // miles hard cap
 
   try{
-    // Step 1: Geocode
+    // Step 1: Geocode the yard address
     var geo=await geocodeAddr(addr);
     if(!geo){
       resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:#f87171">Could not find location. Try city, state format.</div>';
       return;
     }
 
-    // Step 2: Find nearby leasing vendors (primary source - already vetted)
-    var nearbyVendors=LEASING_VENDORS.map(function(v){
-      return Object.assign({},v,{_source:'leasing'});
-    }).filter(function(v){
-      return v.state&&v.city;
-    });
+    // Step 2: Instantly show leasing vendors within 50 miles (we have their city/state so geocode them)
+    // Use LEASING_VENDORS which have full addresses - geocode up to 8 in parallel for speed
+    var stateAbbr=addr.toUpperCase().split(',').pop().trim().substring(0,2);
+    var sameStateVendors=LEASING_VENDORS.filter(function(v){return v.state&&v.state.toUpperCase()===stateAbbr;});
+    var vendorGeos=await Promise.all(sameStateVendors.slice(0,8).map(async function(v){
+      try{
+        var g=await geocodeAddr(v.address+', '+v.city+', '+v.state);
+        if(!g)return null;
+        var d=calcDist(geo.lat,geo.lon,g.lat,g.lon);
+        if(d>MAX_DIST)return null;
+        return {name:v.name,phone:v.phone,website:'',addr:v.address+', '+v.city+', '+v.state,dist:d,isLeasing:true,isKnown:false,source:'leasing'};
+      }catch(e){return null;}
+    }));
+    var nearbyLeasing=vendorGeos.filter(Boolean).sort(function(a,b){return a.dist-b.dist;}).slice(0,5);
 
-    // Geocode vendor locations using city+state match (fast, no API calls)
-    // Filter to same state first
-    var stateMatch=nearbyVendors.filter(function(v){
-      return v.state.toUpperCase()===addr.toUpperCase().split(',').pop().trim().substring(0,2)||
-             v.state.toUpperCase()===addr.toUpperCase().split(' ').pop().trim().substring(0,2)||
-             addr.toUpperCase().includes(v.state.toUpperCase());
-    });
+    // Show leasing vendors immediately (fast, ~2-3 sec)
+    if(nearbyLeasing.length){
+      renderShopResults(geo,nearbyLeasing,resultsEl,true);
+    } else {
+      resultsEl.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text2)"><div class="spin"></div>Searching nearby shops via OpenStreetMap...</div>';
+    }
 
-    // Step 3: Overpass search for truck-specific shops only
-    var radius=80467; // 50 miles
-    var overpassQuery='[out:json][timeout:30];('+
+    // Step 3: Overpass OSM query in background (strict 50 mi = 80467m)
+    var radius=80467;
+    var overpassQuery='[out:json][timeout:25];('+
       'node["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      'node["name"~"truck|peterbilt|kenworth|international|freightliner|volvo|mack|hino|isuzu|diesel|fleet|commercial",i]["shop"="car_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      'node["name"~"truck|peterbilt|kenworth|international|freightliner|volvo|mack|hino|isuzu|diesel|fleet|commercial",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+      'node["amenity"="fuel"]["name"~"truck|diesel|peterbilt|kenworth|freightliner|mack|volvo|international",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+      'node["name"~"truck repair|peterbilt|kenworth|international|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
       'way["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      'way["name"~"truck|peterbilt|kenworth|international|freightliner|volvo|mack|hino",i]["shop"="car_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      ');out body center 30;';
+      ');out body center 20;';
 
     var ovRes=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(overpassQuery)});
     var ovData=await ovRes.json();
@@ -2217,92 +2258,39 @@ async function searchShops(){
       var elat=e.lat||(e.center&&e.center.lat);
       var elon=e.lon||(e.center&&e.center.lon);
       e._dist=elat&&elon?calcDist(geo.lat,geo.lon,elat,elon):999;
-      e._lat=elat;e._lon=elon;
-      e._source='osm';
     });
+    // Strict 50 mile filter on OSM results
+    osmShops=osmShops.filter(function(e){return e._dist<=MAX_DIST;});
     osmShops.sort(function(a,b){return a._dist-b._dist;});
 
-    // Check if any leasing vendor name matches OSM results
-    var allResults=osmShops.slice(0,15).map(function(e){
+    var osmResults=osmShops.slice(0,8).map(function(e){
       var tags=e.tags||{};
       var name=tags.name||'';
-      var isLeasing=LEASING_VENDORS.some(function(v){
-        return name.toUpperCase().includes(v.name.split(' ')[0].toUpperCase())||
-               v.name.toUpperCase().includes(name.toUpperCase().split(' ')[0]);
-      });
-      var isKnownInSystem=trucks.some(function(t){
-        return (t.vendor_short_name||'').toLowerCase().includes(name.toLowerCase().split(' ')[0]);
-      });
       return {
         name:name,
         phone:tags.phone||tags['contact:phone']||'',
         website:tags.website||tags['contact:website']||'',
         addr:[tags['addr:housenumber'],tags['addr:street'],tags['addr:city'],tags['addr:state']].filter(Boolean).join(' '),
         dist:e._dist,
-        isLeasing:isLeasing,
-        isKnown:isKnownInSystem,
+        isLeasing:false,
+        isKnown:false,
         source:'osm'
       };
     });
 
-    // Tier 1: Maintenance sheet shops (currently used)
-    var maintShops=MAINTENANCE_SHOPS.map(function(s){
-      return {name:s.name,phone:'',website:'',addr:s.address,dist:null,isLeasing:false,isKnown:true,isMaint:true,source:'maintenance'};
-    }).filter(function(s){
-      // Show all maintenance shops - they're all relevant
-      return true;
-    }).slice(0,5);
-
-    // Tier 2: Leasing vendors from same state
-    var leasingInState=LEASING_VENDORS.filter(function(v){
-      return addr.toUpperCase().includes(v.state.toUpperCase())||
-             v.state.toUpperCase()===addr.toUpperCase().replace(/[^,]*,\s*/,'').trim().substring(0,2);
-    }).slice(0,3).map(function(v){
-      return {name:v.name,phone:v.phone,website:'',addr:v.address,dist:null,isLeasing:true,isKnown:false,source:'leasing'};
-    });
-
-    // Merge: maintenance first, then leasing, then OSM
+    // Merge: leasing first (already geocoded & within 50mi), then OSM (also within 50mi)
     var merged=[];
-    maintShops.forEach(function(v){merged.push(v);});
-    leasingInState.forEach(function(v){
-      if(!merged.some(function(m){return m.name.toUpperCase()===v.name.toUpperCase();}))merged.push(v);
-    });
-    allResults.forEach(function(v){
+    nearbyLeasing.forEach(function(v){merged.push(v);});
+    osmResults.forEach(function(v){
       if(!merged.some(function(m){return m.name.toUpperCase()===v.name.toUpperCase();}))merged.push(v);
     });
     merged=merged.slice(0,10);
 
+    renderShopResults(geo,merged,resultsEl,false);
+
     if(!merged.length){
       resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No truck repair shops found within 50 miles.<br><a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Search Google Maps instead →</a></div>';
-      return;
     }
-
-    resultsEl.innerHTML=
-      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">📍 Near: '+geo.display.split(',').slice(0,3).join(',')+'</div>'+
-      '<div style="display:flex;flex-direction:column;gap:8px">'+
-      merged.map(function(v,i){
-        var dist=v.dist===null?'Same state':v.dist<1?(v.dist*5280).toFixed(0)+' ft':v.dist.toFixed(1)+' mi';
-        var mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(v.name+(v.addr?' '+v.addr:''));
-        var border=v.isMaint?'#7c3aed':v.isLeasing?'#f59e0b':v.isKnown?'#22c55e':'var(--border)';
-        return '<div style="background:var(--bg3);border:1px solid '+border+';border-radius:6px;padding:10px 14px">'+
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
-          '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
-          (v.isMaint?'<span style="background:#2d1b69;color:#c4b5fd;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600">🔧 Currently Used</span>':'')+ 
-          (v.isLeasing?'<span style="background:#3b2a00;color:#fcd34d;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600">⭐ Preferred Vendor</span>':'')+ 
-          (v.isKnown?'<span style="background:#0f2a1a;color:#86efac;font-size:10px;padding:1px 6px;border-radius:3px;font-weight:600">✓ Known Vendor</span>':'')+
-          '<span style="font-weight:600;font-size:13px">'+(i+1)+'. '+v.name+'</span>'+
-          '</div>'+
-          '<span style="color:var(--accent);font-weight:600;font-size:12px;white-space:nowrap;margin-left:8px">'+dist+'</span>'+
-          '</div>'+
-          (v.addr?'<div style="font-size:11px;color:var(--text2);margin-top:4px">📍 '+v.addr+'</div>':'')+
-          '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
-          '<a href="'+mapsUrl+'" target="_blank" class="btn btn-secondary btn-xs">🗺 Open in Maps</a>'+
-          (v.phone?'<a href="tel:'+v.phone+'" class="btn btn-secondary btn-xs">📞 '+v.phone+'</a>':'')+
-          (v.website?'<a href="'+v.website+'" target="_blank" class="btn btn-secondary btn-xs">🌐 Website</a>':'')+
-          '</div>'+
-          '</div>';
-      }).join('')+
-      '</div>';
   }catch(err){
     resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:#f87171">Error searching. <a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Try Google Maps →</a></div>';
     console.error(err);
