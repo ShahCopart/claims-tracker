@@ -190,6 +190,7 @@ tbody tr:last-child td{border-bottom:none}
         <option>Hold 4 Cars</option><option>Total Loss</option><option>Reassignment Closed</option><option>Closed - Totals Only</option>
       </select>
       <button class="btn btn-secondary btn-sm" onclick="emailTruck()">📧 Email</button>
+      <button class="btn btn-secondary btn-sm" onclick="findShop()" style="background:rgba(6,182,212,0.1);border-color:#06b6d4;color:#67e8f9">🔧 Find Shop</button>
       <button class="btn btn-danger btn-sm" id="del-btn" onclick="delTruck()" style="display:none">🗑 Delete</button>
     </div>
     <div style="display:flex;gap:8px">
@@ -245,6 +246,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(act==='closeRecent'){var mr=document.getElementById('recent-modal');if(mr)mr.remove();}
       if(act==='closeRecentApproved'){var ra=document.getElementById('recent-approved-modal');if(ra)ra.remove();}
       if(act==='closeProd'){var pm=document.getElementById('prod-modal');if(pm)pm.remove();}
+      if(act==='closeFindShop'){var fs=document.getElementById('find-shop-modal');if(fs)fs.remove();}
       if(act==='closeUserMgr'){var um=document.getElementById('user-mgr-modal');if(um)um.remove();}
       if(act==='promoteUser')promoteUser(tid,a2.getAttribute('data-user-name'));
       if(act==='demoteUser')demoteUser(tid,a2.getAttribute('data-user-name'));
@@ -2051,6 +2053,170 @@ async function saveEstimateNote(){
   // Auto-save the truck immediately
   toast('Saving...','ok');
   await saveTruck(false);
+}
+
+const YARD_ADDRESSES={"WI - MILWAUKEE NORTH": {"address": "9201 N 107TH ST, MILWAUKEE, WISCONSIN", "city": "MILWAUKEE", "state": "WISCONSIN"}, "ND - BISMARCK": {"address": "3700 APPLE CREEK RD, BISMARCK, NORTH DAKOTA", "city": "BISMARCK", "state": "NORTH DAKOTA"}, "MD - BALTIMORE EAST": {"address": "601 W PATAPSCO AVE, BALTIMORE, MARYLAND", "city": "BALTIMORE", "state": "MARYLAND"}, "KY - EARLINGTON": {"address": "700 N SANDCUT RD, EARLINGTON, KENTUCKY", "city": "EARLINGTON", "state": "KENTUCKY"}, "TX - HOUSTON EAST": {"address": "15706 BEAUMONT HWY, HOUSTON, TEXAS", "city": "HOUSTON", "state": "TEXAS"}, "AL - MOBILE SOUTH": {"address": "9401 OLD PASCAGOULA RD, THEODORE, ALABAMA", "city": "THEODORE", "state": "ALABAMA"}, "AL - DOTHAN": {"address": "10428 WEST US 84, NEWTON, ALABAMA", "city": "NEWTON", "state": "ALABAMA"}, "CA - ADELANTO": {"address": "10429 PANSY RD, ADELANTO, CALIFORNIA", "city": "ADELANTO", "state": "CALIFORNIA"}, "NC - RALEIGH NORTH": {"address": "1900 OLD CREWS RD, KNIGHTDALE, NORTH CAROLINA", "city": "KNIGHTDALE", "state": "NORTH CAROLINA"}, "NC - GASTONIA": {"address": "3060 FAIRVIEW DR, GASTONIA, NORTH CAROLINA", "city": "GASTONIA", "state": "NORTH CAROLINA"}, "GA - AUGUSTA": {"address": "3810 HENSLEY RD, AUGUSTA, GEORGIA", "city": "AUGUSTA", "state": "GEORGIA"}, "MA - FREETOWN": {"address": "170 S MAIN ST, ASSONET, MASSACHUSETTS", "city": "ASSONET", "state": "MASSACHUSETTS"}, "IA - CEDAR RAPIDS": {"address": "4000 6TH STREET SOUTHWEST, CEDAR RAPIDS, IOWA", "city": "CEDAR RAPIDS", "state": "IOWA"}, "MO - COLUMBIA": {"address": "8485 RICHLAND RD, COLUMBIA, MISSOURI", "city": "COLUMBIA", "state": "MISSOURI"}, "MO - SPRINGFIELD": {"address": "2889 E. US HIGHWAY 60, ROGERSVILLE, MISSOURI", "city": "ROGERSVILLE", "state": "MISSOURI"}, "MO - SIKESTON": {"address": "687 E OUTER ROAD, SIKESTON, MISSOURI", "city": "SIKESTON", "state": "MISSOURI"}, "MN - ST. CLOUD": {"address": "200 COUNTY ROAD 159, AVON, MINNESOTA", "city": "AVON", "state": "MINNESOTA"}, "MO - ST. LOUIS": {"address": "13033 TAUSSIG AVE, BRIDGETON, MISSOURI", "city": "BRIDGETON", "state": "MISSOURI"}, "IA - DES MOINES": {"address": "3300 VANDALIA ROAD, DES MOINES, IOWA", "city": "DES MOINES", "state": "IOWA"}, "IA - DAVENPORT": {"address": "3601 S 1ST STREET, ELDRIDGE, IOWA", "city": "ELDRIDGE", "state": "IOWA"}, "MN - MINNEAPOLIS NORTH": {"address": "1526 BUNKER LAKE BLVD, HAM LAKE, MINNESOTA", "city": "HAM LAKE", "state": "MINNESOTA"}, "NE - LINCOLN": {"address": "13603 238TH STREET, GREENWOOD, NEBRASKA", "city": "GREENWOOD", "state": "NEBRASKA"}, "WI - APPLETON": {"address": "2500 AMERICAN DRIVE, APPLETON, WISCONSIN", "city": "APPLETON", "state": "WISCONSIN"}, "MN - MINNEAPOLIS": {"address": "10588 CENTRAL AVE NE, BLAINE, MINNESOTA", "city": "BLAINE", "state": "MINNESOTA"}, "WA - SPOKANE": {"address": "11019 WEST MCFARLANE ROAD, AIRWAY HEIGHTS, WASHINGTON", "city": "AIRWAY HEIGHTS", "state": "WASHINGTON"}, "NV - LAS VEGAS WEST": {"address": "3441 CLAYTON STREET, NORTH LAS VEGAS, NEVADA", "city": "NORTH LAS VEGAS", "state": "NEVADA"}, "WA - PASCO": {"address": "3333 N. RAILROAD AVENUE, PASCO, WASHINGTON", "city": "PASCO", "state": "WASHINGTON"}, "UT - SALT LAKE CITY": {"address": "7320 WEST 2100 SOUTH, MAGNA, UTAH", "city": "MAGNA", "state": "UTAH"}, "AK - ANCHORAGE": {"address": "401 W CHIPPERFIELD DR, ANCHORAGE, ALASKA", "city": "ANCHORAGE", "state": "ALASKA"}, "OR - PORTLAND NORTH": {"address": "6900 NORTHEAST CORNFOOT ROAD, PORTLAND, OREGON", "city": "PORTLAND", "state": "OREGON"}, "MT - HELENA": {"address": "3333 BOZEMAN AVENUE, HELENA, MONTANA", "city": "HELENA", "state": "MONTANA"}, "NV - 57 Storage": {"address": "4810 N. LAMB BLVD, LAS VEGAS, NEVADA", "city": "LAS VEGAS", "state": "NEVADA"}, "NV - LAS VEGAS": {"address": "4810 N. LAMB BLVD, LAS VEGAS, NEVADA", "city": "LAS VEGAS", "state": "NEVADA"}, "OR - EUGENE": {"address": "29815 ENID ROAD EAST, EUGENE, OREGON", "city": "EUGENE", "state": "OREGON"}, "OR - PORTLAND SOUTH": {"address": "2885 NATIONAL WAY, WOODBURN, OREGON", "city": "WOODBURN", "state": "OREGON"}, "HI - HONOLULU": {"address": "91-542 AWAKUMOKU ST, KAPOLEI, HAWAII", "city": "KAPOLEI", "state": "HAWAII"}, "MT - BILLINGS": {"address": "1090 ISLAND PARK ROAD, BILLINGS, MONTANA", "city": "BILLINGS", "state": "MONTANA"}, "WA - NORTH SEATTLE": {"address": "16701 51ST AVE NE, ARLINGTON, WASHINGTON", "city": "ARLINGTON", "state": "WASHINGTON"}, "NV - RENO": {"address": "9915 NORTH VIRGINIA STREET, RENO, NEVADA", "city": "RENO", "state": "NEVADA"}, "UT - OGDEN": {"address": "3586 NORTH 2000 WEST, FARR WEST, UTAH", "city": "FARR WEST", "state": "UTAH"}, "ID - BOISE": {"address": "3716 NORTH MIDDLETON ROAD, NAMPA, IDAHO", "city": "NAMPA", "state": "IDAHO"}, "FL - FT. PIERCE": {"address": "2601 CENTER ROAD, FORT PIERCE, FLORIDA", "city": "FORT PIERCE", "state": "FLORIDA"}, "FL - TALLAHASSEE": {"address": "1825 COMMERCE BLVD, MIDWAY, FLORIDA", "city": "MIDWAY", "state": "FLORIDA"}, "FL - TAMPA SOUTH": {"address": "12020 US HIGHWAY 301 SOUTH, RIVERVIEW, FLORIDA", "city": "RIVERVIEW", "state": "FLORIDA"}, "FL - MIAMI NORTH": {"address": "12850 NW 27TH AVE., OPA LOCKA, FLORIDA", "city": "OPA LOCKA", "state": "FLORIDA"}, "FL - MIAMI SOUTH": {"address": "24301 SW 137TH AVE, HOMESTEAD, FLORIDA", "city": "HOMESTEAD", "state": "FLORIDA"}, "FL - WEST PALM BEACH": {"address": "7876 W. BELVEDERE ROAD, WEST PALM BEACH, FLORIDA", "city": "WEST PALM BEACH", "state": "FLORIDA"}, "FL - JACKSONVILLE NORTH": {"address": "10200 ALTON BOX RD, JACKSONVILLE, FLORIDA", "city": "JACKSONVILLE", "state": "FLORIDA"}, "FL - OCALA": {"address": "7100 NW 44 AVE, OCALA, FLORIDA", "city": "OCALA", "state": "FLORIDA"}, "FL - MIAMI CENTRAL": {"address": "11858 NW 36TH AVE, MIAMI, FLORIDA", "city": "MIAMI", "state": "FLORIDA"}, "FL - ORLANDO SOUTH": {"address": "307 EAST LANDSTREET ROAD, ORLANDO, FLORIDA", "city": "ORLANDO", "state": "FLORIDA"}, "FL - ORLANDO NORTH": {"address": "3352 W ORANGE BLOSSOM TRAIL, APOPKA, FLORIDA", "city": "APOPKA", "state": "FLORIDA"}, "MI - DETROIT": {"address": "21000 HAYDEN DRIVE, WOODHAVEN, MICHIGAN", "city": "WOODHAVEN", "state": "MICHIGAN"}, "MI - FLINT": {"address": "5000 N STATE ROAD, DAVISON, MICHIGAN", "city": "DAVISON", "state": "MICHIGAN"}, "IN - FORT WAYNE": {"address": "3600 E. WASHINGTON BLVD., FORT WAYNE, INDIANA", "city": "FORT WAYNE", "state": "INDIANA"}, "IL - CHICAGO NORTH": {"address": "1475 BLUFF CITY BLVD, ELGIN, ILLINOIS", "city": "ELGIN", "state": "ILLINOIS"}, "IL - SOUTHERN ILLINOIS": {"address": "99 RACEHORSE DRIVE, CAHOKIA HEIGHTS, ILLINOIS", "city": "CAHOKIA HEIGHTS", "state": "ILLINOIS"}, "IN - INDIANAPOLIS": {"address": "4040 OFFICE PLAZA BLVD, INDIANAPOLIS, INDIANA", "city": "INDIANAPOLIS", "state": "INDIANA"}, "IL - WHEELING": {"address": "110 EAST PALATINE ROAD, WHEELING, ILLINOIS", "city": "WHEELING", "state": "ILLINOIS"}, "MI - LANSING": {"address": "3902 SOUTH CANAL RD, LANSING, MICHIGAN", "city": "LANSING", "state": "MICHIGAN"}, "MI - KINCHELOE": {"address": "5030 W KINCHELOE ROAD, KINCHELOE, MICHIGAN", "city": "KINCHELOE", "state": "MICHIGAN"}, "IL - PEORIA": {"address": "350 VETERANS DRIVE, PEKIN, ILLINOIS", "city": "PEKIN", "state": "ILLINOIS"}, "MI - IONIA": {"address": "8460 S STATE ROAD, PORTLAND, MICHIGAN", "city": "PORTLAND", "state": "MICHIGAN"}, "IN - CICERO": {"address": "1461 E 226TH STREET, CICERO, INDIANA", "city": "CICERO", "state": "INDIANA"}, "IL - CHICAGO SOUTH": {"address": "1301 STATE STREET, CHICAGO HEIGHTS, ILLINOIS", "city": "CHICAGO HEIGHTS", "state": "ILLINOIS"}, "IN - DYER": {"address": "641 JOLIET ST, DYER, INDIANA", "city": "DYER", "state": "INDIANA"}, "KY - LOUISVILLE": {"address": "3100 POND STATION ROAD, LOUISVILLE, KENTUCKY", "city": "LOUISVILLE", "state": "KENTUCKY"}, "VA - HAMPTON": {"address": "16 NETTLES LANE, HAMPTON, VIRGINIA", "city": "HAMPTON", "state": "VIRGINIA"}, "VA - RICHMOND": {"address": "5701 WHITESIDE RD, SANDSTON, VIRGINIA", "city": "SANDSTON", "state": "VIRGINIA"}, "KY - WALTON": {"address": "13273 DIXIE HIGHWAY, WALTON, KENTUCKY", "city": "WALTON", "state": "KENTUCKY"}, "KY - LEXINGTON EAST": {"address": "5921 ATHENS BOONESBORO ROAD, LEXINGTON, KENTUCKY", "city": "LEXINGTON", "state": "KENTUCKY"}, "KY - LEXINGTON WEST": {"address": "1051 INDUSTRY ROAD, LAWRENCEBURG, KENTUCKY", "city": "LAWRENCEBURG", "state": "KENTUCKY"}, "WV - CHARLESTON": {"address": "1746 US ROUTE 60, HURRICANE, WEST VIRGINIA", "city": "HURRICANE", "state": "WEST VIRGINIA"}, "VA - FREDERICKSBURG": {"address": "4717 MASSAPONAX CHURCH ROAD, FREDERICKSBURG, VIRGINIA", "city": "FREDERICKSBURG", "state": "VIRGINIA"}, "DC - WASHINGTON DC": {"address": "11055 BILLINGSLEY ROAD, WALDORF, MARYLAND", "city": "WALDORF", "state": "MARYLAND"}, "MD - BALTIMORE": {"address": "2251 OLD WESTMINSTER PIKE, FINKSBURG, MARYLAND", "city": "FINKSBURG", "state": "MARYLAND"}, "VA - DANVILLE": {"address": "12360 US. HWY 29, CHATHAM, VIRGINIA", "city": "CHATHAM", "state": "VIRGINIA"}, "DE - SEAFORD": {"address": "26029 BETHEL CONCORD ROAD, SEAFORD, DELAWARE", "city": "SEAFORD", "state": "DELAWARE"}, "VA - RICHMOND EAST": {"address": "6300 CHAMBERS ROAD, CHARLES CITY, VIRGINIA", "city": "CHARLES CITY", "state": "VIRGINIA"}, "CRASHEDTOYS DALLAS": {"address": "7777 JOHN W CARPENTER FREEWAY, DALLAS, TEXAS", "city": "DALLAS", "state": "TEXAS"}, "TX - SAN ANTONIO": {"address": "11130 APPLEWHITE RD, SAN ANTONIO, TEXAS", "city": "SAN ANTONIO", "state": "TEXAS"}, "TX - DALLAS SOUTH": {"address": "1701 EAST BELTLINE RD, WILMER, TEXAS", "city": "WILMER", "state": "TEXAS"}, "TX - FT. WORTH": {"address": "950 BLUE MOUND ROAD WEST, HASLET, TEXAS", "city": "HASLET", "state": "TEXAS"}, "TX - ABILENE": {"address": "2630 FARM TO MARKET ROAD 3034, ABILENE, TEXAS", "city": "ABILENE", "state": "TEXAS"}, "TX - LUFKIN": {"address": "3700 OLD UNION ROAD, LUFKIN, TEXAS", "city": "LUFKIN", "state": "TEXAS"}, "TX - AUSTIN": {"address": "8725 N INTERSTATE 35, NEW BRAUNFELS, TEXAS", "city": "NEW BRAUNFELS", "state": "TEXAS"}, "TX - EL PASO": {"address": "501 VALLEY CHILI RD, ANTHONY, TEXAS", "city": "ANTHONY", "state": "TEXAS"}, "TX - MCALLEN": {"address": "301 MILE 1 EAST, MERCEDES, TEXAS", "city": "MERCEDES", "state": "TEXAS"}, "TX - AMARILLO": {"address": "3999 S LOOP 335 E, AMARILLO, TEXAS", "city": "AMARILLO", "state": "TEXAS"}, "TX - CORPUS CHRISTI": {"address": "3200 AGNES STREET, CORPUS CHRISTI, TEXAS", "city": "CORPUS CHRISTI", "state": "TEXAS"}, "TX - ANDREWS": {"address": "1975 SOUTH WEST 860, ANDREWS, TEXAS", "city": "ANDREWS", "state": "TEXAS"}, "TX - WACO": {"address": "7201 N GENERAL BRUCE DR, TEMPLE, TEXAS", "city": "TEMPLE", "state": "TEXAS"}, "TX - HOUSTON": {"address": "1655 RANKIN ROAD, HOUSTON, TEXAS", "city": "HOUSTON", "state": "TEXAS"}, "TX - LONGVIEW": {"address": "3046 HIGHWAY 322 SOUTH, LONGVIEW, TEXAS", "city": "LONGVIEW", "state": "TEXAS"}, "TX - DALLAS": {"address": "505 IDLEWILD ROAD, GRAND PRAIRIE, TEXAS", "city": "GRAND PRAIRIE", "state": "TEXAS"}, "TN - NASHVILLE": {"address": "865 STUMPY LANE, LEBANON, TENNESSEE", "city": "LEBANON", "state": "TENNESSEE"}, "TN - KNOXVILLE": {"address": "6355 B HIGHWAY 411, MADISONVILLE, TENNESSEE", "city": "MADISONVILLE", "state": "TENNESSEE"}, "AL - TANNER": {"address": "20760 SANDY ROAD, TANNER, ALABAMA", "city": "TANNER", "state": "ALABAMA"}, "LA - SHREVEPORT": {"address": "5235 GREENWOOD RD, SHREVEPORT, LOUISIANA", "city": "SHREVEPORT", "state": "LOUISIANA"}, "MS - JACKSON": {"address": "205 SOUTH RANKIN INDUSTRIAL DR, FLORENCE, MISSISSIPPI", "city": "FLORENCE", "state": "MISSISSIPPI"}, "LA - BATON ROUGE": {"address": "21595 GREENWELL SPRINGS ROAD, GREENWELL SPRINGS, LOUISIANA", "city": "GREENWELL SPRINGS", "state": "LOUISIANA"}, "AL - MOBILE": {"address": "4763 LOTT ROAD, EIGHT MILE, ALABAMA", "city": "EIGHT MILE", "state": "ALABAMA"}, "TN - MEMPHIS": {"address": "5545 SWINNEA ROAD, MEMPHIS, TENNESSEE", "city": "MEMPHIS", "state": "TENNESSEE"}, "LA - NEW ORLEANS": {"address": "14600 OLD GENTILLY ROAD, NEW ORLEANS, LOUISIANA", "city": "NEW ORLEANS", "state": "LOUISIANA"}, "AL - MONTGOMERY": {"address": "6044 TROY HIGHWAY, MONTGOMERY, ALABAMA", "city": "MONTGOMERY", "state": "ALABAMA"}, "AL - BIRMINGHAM": {"address": "3101 DAVEY ALLISON BOULEVARD, HUEYTOWN, ALABAMA", "city": "HUEYTOWN", "state": "ALABAMA"}, "PA - PHILADELPHIA EAST-SUBLOT": {"address": "77 BRISTOL ROAD, CHALFONT, PENNSYLVANIA", "city": "CHALFONT", "state": "PENNSYLVANIA"}, "PA - PHILADELPHIA": {"address": "2704 GERYVILLE PIKE, PENNSBURG, PENNSYLVANIA", "city": "PENNSBURG", "state": "PENNSYLVANIA"}, "PA - SCRANTON": {"address": "210 MCALPINE STREET, DURYEA, PENNSYLVANIA", "city": "DURYEA", "state": "PENNSYLVANIA"}, "PA - HARRISBURG": {"address": "8 PARK DRIVE, GRANTVILLE, PENNSYLVANIA", "city": "GRANTVILLE", "state": "PENNSYLVANIA"}, "NJ - GLASSBORO WEST": {"address": "781 JACOB HARRIS AVENUE, GLASSBORO, NEW JERSEY", "city": "GLASSBORO", "state": "NEW JERSEY"}, "PA - PITTSBURGH WEST": {"address": "1451 LEBANON SCHOOL ROAD, WEST MIFFLIN, PENNSYLVANIA", "city": "WEST MIFFLIN", "state": "PENNSYLVANIA"}, "NJ - GLASSBORO EAST": {"address": "200 GROVE ST., GLASSBORO, NEW JERSEY", "city": "GLASSBORO", "state": "NEW JERSEY"}, "NJ - SOMERVILLE": {"address": "2124 WEST CAMPLAIN ROAD, HILLSBOROUGH, NEW JERSEY", "city": "HILLSBOROUGH", "state": "NEW JERSEY"}, "PA - PITTSBURGH NORTH": {"address": "2000 RIVER ROAD, ELLWOOD CITY, PENNSYLVANIA", "city": "ELLWOOD CITY", "state": "PENNSYLVANIA"}, "OH - CLEVELAND EAST": {"address": "286 EAST TWINSBURG ROAD, NORTHFIELD, OHIO", "city": "NORTHFIELD", "state": "OHIO"}, "OH - DAYTON": {"address": "4691 SPRINGBORO PIKE, MORAINE, OHIO", "city": "MORAINE", "state": "OHIO"}, "PA - CHAMBERSBURG": {"address": "2962 LINCOLN WAY WEST, CHAMBERSBURG, PENNSYLVANIA", "city": "CHAMBERSBURG", "state": "PENNSYLVANIA"}, "NJ - TRENTON": {"address": "108 NORTH MAIN STREET, WINDSOR, NEW JERSEY", "city": "WINDSOR", "state": "NEW JERSEY"}, "OH - COLUMBUS": {"address": "1680 WILLIAMS ROAD, COLUMBUS, OHIO", "city": "COLUMBUS", "state": "OHIO"}, "OH - CLEVELAND WEST": {"address": "34417 E. ROYALTON ROAD, COLUMBIA STATION, OHIO", "city": "COLUMBIA STATION", "state": "OHIO"}, "PA - PITTSBURGH SOUTH": {"address": "526 THOMPSON RUN RD, WEST MIFFLIN, PENNSYLVANIA", "city": "WEST MIFFLIN", "state": "PENNSYLVANIA"}, "PA - YORK HAVEN": {"address": "795 SIPE RD, YORK HAVEN, PENNSYLVANIA", "city": "YORK HAVEN", "state": "PENNSYLVANIA"}, "PA - ALTOONA": {"address": "4007 ADMIRAL PEARY HWY, EBENSBURG, PENNSYLVANIA", "city": "EBENSBURG", "state": "PENNSYLVANIA"}, "CA - HAYWARD": {"address": "1964 SABRE STREET, HAYWARD, CALIFORNIA", "city": "HAYWARD", "state": "CALIFORNIA"}, "CA - RANCHO CUCAMONGA": {"address": "12167 ARROW ROUTE, RANCHO CUCAMONGA, CALIFORNIA", "city": "RANCHO CUCAMONGA", "state": "CALIFORNIA"}, "CA - FRESNO": {"address": "1255 EAST CENTRAL, FRESNO, CALIFORNIA", "city": "FRESNO", "state": "CALIFORNIA"}, "CA - SACRAMENTO": {"address": "8600 MORRISON CREEK DR, SACRAMENTO, CALIFORNIA", "city": "SACRAMENTO", "state": "CALIFORNIA"}, "CA - BAKERSFIELD": {"address": "2216 COY AVENUE, BAKERSFIELD, CALIFORNIA", "city": "BAKERSFIELD", "state": "CALIFORNIA"}, "CA - SAN JOSE": {"address": "13895 LLAGAS AVE, SAN MARTIN, CALIFORNIA", "city": "SAN MARTIN", "state": "CALIFORNIA"}, "CA - VAN NUYS": {"address": "7519 WOODMAN AVE., VAN NUYS, CALIFORNIA", "city": "VAN NUYS", "state": "CALIFORNIA"}, "CA - NAPA": {"address": "1660 GREEN ISLAND ROAD, AMERICAN CANYON, CALIFORNIA", "city": "AMERICAN CANYON", "state": "CALIFORNIA"}, "CA - SO SACRAMENTO": {"address": "8687 WEYAND AVE, SACRAMENTO, CALIFORNIA", "city": "SACRAMENTO", "state": "CALIFORNIA"}, "CA - SUN VALLEY": {"address": "11409 PENROSE STREET, SUN VALLEY, CALIFORNIA", "city": "SUN VALLEY", "state": "CALIFORNIA"}, "CA - SAN DIEGO": {"address": "7847 AIRWAY RD, SAN DIEGO, CALIFORNIA", "city": "SAN DIEGO", "state": "CALIFORNIA"}, "CA - MARTINEZ": {"address": "2701 WATERFRONT ROAD, MARTINEZ, CALIFORNIA", "city": "MARTINEZ", "state": "CALIFORNIA"}, "CA - REDDING": {"address": "4603 LOCUST ROAD, ANDERSON, CALIFORNIA", "city": "ANDERSON", "state": "CALIFORNIA"}, "CA - VALLEJO": {"address": "282 FIFTH STREET, VALLEJO, CALIFORNIA", "city": "VALLEJO", "state": "CALIFORNIA"}, "CA - LOS ANGELES": {"address": "8423 SOUTH ALAMEDA, LOS ANGELES, CALIFORNIA", "city": "LOS ANGELES", "state": "CALIFORNIA"}, "CA - ANTELOPE": {"address": "8650 ANTELOPE NORTH ROAD, ANTELOPE, CALIFORNIA", "city": "ANTELOPE", "state": "CALIFORNIA"}, "CA - LONG BEACH": {"address": "1000 E. LOMITA BLVD., WILMINGTON, CALIFORNIA", "city": "WILMINGTON", "state": "CALIFORNIA"}, "CA - SAN BERNARDINO": {"address": "1203 S. RANCHO AVE, COLTON, CALIFORNIA", "city": "COLTON", "state": "CALIFORNIA"}, "AR - LITTLE ROCK": {"address": "703 MAIN STREET, CONWAY, ARKANSAS", "city": "CONWAY", "state": "ARKANSAS"}, "CO - DENVER CENTRAL": {"address": "6464 DOWNING STREET, DENVER, COLORADO", "city": "DENVER", "state": "COLORADO"}, "KS - WICHITA": {"address": "4510 SOUTH MADISON AVENUE, WICHITA, KANSAS", "city": "WICHITA", "state": "KANSAS"}, "CO - DENVER SOUTH": {"address": "8300 BLAKELAND DRIVE, LITTLETON, COLORADO", "city": "LITTLETON", "state": "COLORADO"}, "CO - DENVER": {"address": "1281 COUNTY ROAD 27, BRIGHTON, COLORADO", "city": "BRIGHTON", "state": "COLORADO"}, "AR - FAYETTEVILLE": {"address": "15976 BILL CAMPBELL ROAD, PRAIRIE GROVE, ARKANSAS", "city": "PRAIRIE GROVE", "state": "ARKANSAS"}, "NM - ALBUQUERQUE": {"address": "7705 BROADWAY SE, ALBUQUERQUE, NEW MEXICO", "city": "ALBUQUERQUE", "state": "NEW MEXICO"}, "CO - COLORADO SPRINGS": {"address": "640 WINTERS DRIVE, COLORADO SPRINGS, COLORADO", "city": "COLORADO SPRINGS", "state": "COLORADO"}, "OK - TULSA": {"address": "2408 W 21ST STREET, TULSA, OKLAHOMA", "city": "TULSA", "state": "OKLAHOMA"}, "AZ - TUCSON": {"address": "5600 S. ARCADIA AVE, TUCSON, ARIZONA", "city": "TUCSON", "state": "ARIZONA"}, "OK - OKLAHOMA CITY": {"address": "2829 SE 15TH ST, OKLAHOMA CITY, OKLAHOMA", "city": "OKLAHOMA CITY", "state": "OKLAHOMA"}, "AZ - PHOENIX": {"address": "615 SO. 51ST AVENUE, PHOENIX, ARIZONA", "city": "PHOENIX", "state": "ARIZONA"}, "GA - ATLANTA WEST": {"address": "2568 OLD ALABAMA ROAD, AUSTELL, GEORGIA", "city": "AUSTELL", "state": "GEORGIA"}, "NC - MOCKSVILLE": {"address": "2668 HIGHWAY 601 SOUTH, MOCKSVILLE, NORTH CAROLINA", "city": "MOCKSVILLE", "state": "NORTH CAROLINA"}, "NC - RALEIGH": {"address": "310 COPART ROAD, DUNN, NORTH CAROLINA", "city": "DUNN", "state": "NORTH CAROLINA"}, "SC - SPARTANBURG": {"address": "1922 NAZARETH CHURCH ROAD, SPARTANBURG, SOUTH CAROLINA", "city": "SPARTANBURG", "state": "SOUTH CAROLINA"}, "GA - SAVANNAH": {"address": "5510 SILK HOPE ROAD, SAVANNAH, GEORGIA", "city": "SAVANNAH", "state": "GEORGIA"}, "GA - ATLANTA NORTH": {"address": "1602 ATHENS HIGHWAY, GAINESVILLE, GEORGIA", "city": "GAINESVILLE", "state": "GEORGIA"}, "GA - ATLANTA SOUTH": {"address": "761 CLARK DRIVE, ELLENWOOD, GEORGIA", "city": "ELLENWOOD", "state": "GEORGIA"}, "GA - MACON": {"address": "304 SMITH ROAD, BYRON, GEORGIA", "city": "BYRON", "state": "GEORGIA"}, "GA - ATLANTA EAST": {"address": "6089 HIGHWAY 20, LOGANVILLE, GEORGIA", "city": "LOGANVILLE", "state": "GEORGIA"}, "NC - CONCORD": {"address": "7940 U.S. HIGHWAY 601 S., CONCORD, NORTH CAROLINA", "city": "CONCORD", "state": "NORTH CAROLINA"}, "NC - CHINA GROVE": {"address": "1081 RECOVERY ROAD, CHINA GROVE, NORTH CAROLINA", "city": "CHINA GROVE", "state": "NORTH CAROLINA"}, "NC - MEBANE": {"address": "1870 US 70 HWY, MEBANE, NORTH CAROLINA", "city": "MEBANE", "state": "NORTH CAROLINA"}, "SC - NORTH CHARLESTON": {"address": "120 COMMERCE DRIVE, HARLEYVILLE, SOUTH CAROLINA", "city": "HARLEYVILLE", "state": "SOUTH CAROLINA"}, "GA - FAIRBURN": {"address": "6737 ROOSEVELT HWY, FAIRBURN, GEORGIA", "city": "FAIRBURN", "state": "GEORGIA"}, "GA - CARTERSVILLE": {"address": "1880 GEORGIA 113, CARTERSVILLE, GEORGIA", "city": "CARTERSVILLE", "state": "GEORGIA"}, "SC - COLUMBIA": {"address": "700 SOUTHBOUND ROAD, GASTON, SOUTH CAROLINA", "city": "GASTON", "state": "SOUTH CAROLINA"}, "GA - TIFTON": {"address": "399 OAKRIDGE CHURCH ROAD, TIFTON, GEORGIA", "city": "TIFTON", "state": "GEORGIA"}, "NC - LUMBERTON": {"address": "4019 NC 72 HWY W, LUMBERTON, NORTH CAROLINA", "city": "LUMBERTON", "state": "NORTH CAROLINA"}, "NH - CANDIA": {"address": "134 RAYMOND ROAD, CANDIA, NEW HAMPSHIRE", "city": "CANDIA", "state": "NEW HAMPSHIRE"}, "CT - HARTFORD": {"address": "138 CHRISTIAN LANE, NEW BRITAIN, CONNECTICUT", "city": "NEW BRITAIN", "state": "CONNECTICUT"}, "MA - WEST WARREN": {"address": "600 OLD WEST WARREN ROAD, WEST WARREN, MASSACHUSETTS", "city": "WEST WARREN", "state": "MASSACHUSETTS"}, "NY - NEWBURGH": {"address": "91 RIVERVIEW DRIVE, MARLBORO, NEW YORK", "city": "MARLBORO", "state": "NEW YORK"}, "ME - LYMAN": {"address": "136 KENNEBUNK POND ROAD, LYMAN, MAINE", "city": "LYMAN", "state": "MAINE"}, "MA - NORTH BOSTON": {"address": "55R HIGH STREET, NORTH BILLERICA, MASSACHUSETTS", "city": "NORTH BILLERICA", "state": "MASSACHUSETTS"}, "NY - ROCHESTER": {"address": "4 WEST AVE, LEROY, NEW YORK", "city": "LEROY", "state": "NEW YORK"}, "CT - HARTFORD SPRINGFIELD": {"address": "49 RUSSELL ROAD, EAST GRANBY, CONNECTICUT", "city": "EAST GRANBY", "state": "CONNECTICUT"}, "NY - ALBANY": {"address": "1916 CENTRAL AVENUE, ALBANY, NEW YORK", "city": "ALBANY", "state": "NEW YORK"}, "NY - SYRACUSE": {"address": "46 ZUK-PIERCE RD, CENTRAL SQUARE, NEW YORK", "city": "CENTRAL SQUARE", "state": "NEW YORK"}, "NY - BUFFALO": {"address": "8418 SOUTHWESTERN BLVD., ANGOLA, NEW YORK", "city": "ANGOLA", "state": "NEW YORK"}, "MA - SOUTH BOSTON": {"address": "82 CAPE ROAD, MENDON, MASSACHUSETTS", "city": "MENDON", "state": "MASSACHUSETTS"}, "NY - LONG ISLAND": {"address": "1983 MONTAUK HIGHWAY, BROOKHAVEN, NEW YORK", "city": "BROOKHAVEN", "state": "NEW YORK"}, "RI - EXETER": {"address": "10 INDUSTRIAL DRIVE, EXETER, RHODE ISLAND", "city": "EXETER", "state": "RHODE ISLAND"}, "FL - CLEWISTON": {"address": "4545 COUNTY ROAD 835, CLEWISTON, FLORIDA", "city": "CLEWISTON", "state": "FLORIDA"}, "AL - CUSSETA": {"address": "1070 COUNTY ROAD 79, CUSSETA, ALABAMA", "city": "CUSSETA", "state": "ALABAMA"}, "ME - WINDHAM": {"address": "11 BEDROCK TERRACE, WINDHAM, MAINE", "city": "WINDHAM", "state": "MAINE"}, "MD - LAUREL": {"address": "7131 VIRGINIA MANOR COURT, LAUREL, MARYLAND", "city": "LAUREL", "state": "MARYLAND"}, "AZ - PHOENIX NORTH": {"address": "24125 NORTH 7TH AVENUE, PHOENIX, ARIZONA", "city": "PHOENIX", "state": "ARIZONA"}, "MS - GRENADA": {"address": "15673 HIGHWAY 8, GRENADA, MISSISSIPPI", "city": "GRENADA", "state": "MISSISSIPPI"}, "CA - MENTONE": {"address": "801 OPAL AVENUE, MENTONE, CALIFORNIA", "city": "MENTONE", "state": "CALIFORNIA"}, "NC - LAGRANGE": {"address": "7100 U.S. 70, LA GRANGE, NORTH CAROLINA", "city": "LA GRANGE", "state": "NORTH CAROLINA"}, "LA - VINTON": {"address": "5690 FABACHER ROAD, SULPHUR, LOUISIANA", "city": "SULPHUR", "state": "LOUISIANA"}, "MI - WAYLAND": {"address": "1261 142ND AVENUE, WAYLAND, MICHIGAN", "city": "WAYLAND", "state": "MICHIGAN"}, "OH - AKRON": {"address": "745 NORTON AVENUE, BARBERTON, OHIO", "city": "BARBERTON", "state": "OHIO"}, "VT - RUTLAND": {"address": "29 OLD ROUTE 4A, CENTER RUTLAND, VERMONT", "city": "CENTER RUTLAND", "state": "VERMONT"}, "KS - KANSAS CITY": {"address": "8440 GIBBS ROAD, KANSAS CITY, KANSAS", "city": "KANSAS CITY", "state": "KANSAS"}, "TX - NORTH AUSTIN": {"address": "22225 US HIGHWAY 79, TAYLOR, TEXAS", "city": "TAYLOR", "state": "TEXAS"}, "SD - RAPID CITY": {"address": "2170 SEGER DRIVE, RAPID CITY, SOUTH DAKOTA", "city": "RAPID CITY", "state": "SOUTH DAKOTA"}, "WI - MADISON SOUTH": {"address": "3925 LUDS CT, MCFARLAND, WISCONSIN", "city": "MCFARLAND", "state": "WISCONSIN"}, "WI - MILWAUKEE SOUTH": {"address": "10020 SOUTH 124TH STREET, FRANKLIN, WISCONSIN", "city": "FRANKLIN", "state": "WISCONSIN"}, "WY - CASPER": {"address": "2600 SALT CREEK HIGHWAY, CASPER, WYOMING", "city": "CASPER", "state": "WYOMING"}, "WA - SPANAWAY": {"address": "18515 PACIFIC AVENUE SOUTH, SPANAWAY, WASHINGTON", "city": "SPANAWAY", "state": "WASHINGTON"}, "FL - TAMPA NORTH": {"address": "12511 N US HWY 301, THONOTOSASSA, FLORIDA", "city": "THONOTOSASSA", "state": "FLORIDA"}, "FL - PUNTA GORDA": {"address": "10175 U.S. 17, ARCADIA, FLORIDA", "city": "ARCADIA", "state": "FLORIDA"}};
+
+async function findShop(){
+  var t=trucks.find(function(x){return x.id===truckId;})||{};
+  var yard=getFormVal('f-yard')||t.yard||'';
+  var state=getFormVal('f-state')||t.state||'';
+  
+  // Try to find yard address
+  var yardAddr=null;
+  var yardKey=Object.keys(YARD_ADDRESSES).find(function(k){
+    return k.toUpperCase().includes((state||'').toUpperCase().substring(0,2)) ||
+           YARD_ADDRESSES[k].state.toUpperCase().includes((state||'').toUpperCase());
+  });
+  
+  // Try to match by city/state from yard field
+  if(yard){
+    // Extract yard number
+    var yardNum=(yard.match(/\d+/)||[''])[0];
+    // Find matching yard by searching all addresses
+    yardKey=Object.keys(YARD_ADDRESSES).find(function(k){
+      var ya=YARD_ADDRESSES[k];
+      return ya.state.toUpperCase()===state.toUpperCase();
+    });
+    if(yardKey)yardAddr=YARD_ADDRESSES[yardKey].address;
+  }
+
+  // Show modal
+  var old=document.getElementById('find-shop-modal');if(old)old.remove();
+  var el=document.createElement('div');el.className='overlay-bg';el.id='find-shop-modal';
+  el.innerHTML='<div class="overlay-box" style="max-width:800px">'+
+    '<div class="ov-hdr">'+
+    '<div><div style="font-size:15px;font-weight:600">🔧 Find Nearby Repair Shop</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:2px">Truck: '+(t.vin||'')+(yard?' | '+yard:'')+(state?' | '+state:'')+'</div></div>'+
+    '<button class="btn btn-secondary btn-sm" data-action2="closeFindShop">✕</button>'+
+    '</div>'+
+    '<div class="ov-body">'+
+    '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
+    '<input id="shop-addr" class="fi" placeholder="Enter address or city, state..." value="'+(yardAddr||city_from_state(state)||'')+'" style="flex:1;min-width:200px">'+
+    '<select id="shop-type" class="fsel2" style="width:180px">'+
+    '<option value="truck_repair">Truck Repair</option>'+
+    '<option value="diesel_mechanic">Diesel Mechanic</option>'+
+    '<option value="auto_repair">Auto Repair</option>'+
+    '<option value="tire_shop">Tire Shop</option>'+
+    '<option value="body_shop">Body Shop</option>'+
+    '</select>'+
+    '<button class="btn btn-primary" id="shop-search-btn">🔍 Search</button>'+
+    '</div>'+
+    '<div id="shop-results" style="min-height:100px;color:var(--text2);font-size:12px">'+
+    '<div style="text-align:center;padding:20px;color:var(--text3)">Enter an address and click Search to find nearby shops</div>'+
+    '</div>'+
+    '</div>'+
+    '</div>';
+  document.body.appendChild(el);
+  document.getElementById('shop-search-btn').onclick=searchShops;
+  // Auto-search if we have an address
+  if(yardAddr||city_from_state(state)){setTimeout(searchShops,300);}
+}
+
+function city_from_state(state){
+  if(!state)return '';
+  // Find a yard in this state
+  var key=Object.keys(YARD_ADDRESSES).find(function(k){
+    return YARD_ADDRESSES[k].state.toUpperCase()===state.toUpperCase();
+  });
+  return key?YARD_ADDRESSES[key].city+', '+state:'';
+}
+
+async function searchShops(){
+  var addr=document.getElementById('shop-addr').value.trim();
+  var type=document.getElementById('shop-type').value;
+  var resultsEl=document.getElementById('shop-results');
+  if(!addr){toast('Enter an address first','err');return;}
+  
+  resultsEl.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--text2)"><div class="spin"></div>Searching for nearby shops...</div>';
+
+  try{
+    // Step 1: Geocode the address using Nominatim
+    var geoRes=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(addr),{
+      headers:{'Accept-Language':'en','User-Agent':'FleetTracker/1.0'}
+    });
+    var geoData=await geoRes.json();
+    if(!geoData||!geoData.length){
+      resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:#f87171">Could not find location. Try a more specific address.</div>';
+      return;
+    }
+    var lat=parseFloat(geoData[0].lat);
+    var lon=parseFloat(geoData[0].lon);
+    var foundAddr=geoData[0].display_name;
+
+    // Step 2: Search Overpass for nearby shops
+    var tagMap={
+      truck_repair:'["shop"="truck_repair"],["repair"="truck"],["craft"="hvac"],["amenity"="truck_repair"]',
+      diesel_mechanic:'["shop"="car_repair"]["diesel"="yes"],["name"~"diesel",i]',
+      auto_repair:'["shop"="car_repair"],["shop"="vehicle"],["amenity"="car_repair"]',
+      tire_shop:'["shop"="tyres"],["shop"="tire"]',
+      body_shop:'["shop"="bodywork"],["name"~"body",i]["shop"="car_repair"]'
+    };
+
+    // Use a broader search for better results
+    var radius=48280; // ~30 miles
+    var overpassQuery='[out:json][timeout:25];(node["shop"="car_repair"](around:'+radius+','+lat+','+lon+');node["shop"="truck_repair"](around:'+radius+','+lat+','+lon+');node["repair"="yes"](around:'+radius+','+lat+','+lon+');way["shop"="car_repair"](around:'+radius+','+lat+','+lon+'););out body center 20;';
+
+    var ovRes=await fetch('https://overpass-api.de/api/interpreter',{
+      method:'POST',
+      body:'data='+encodeURIComponent(overpassQuery)
+    });
+    var ovData=await ovRes.json();
+    var elements=(ovData.elements||[]).filter(function(e){return e.tags&&e.tags.name;});
+
+    // Calculate distances and sort
+    elements.forEach(function(e){
+      var elat=e.lat||e.center&&e.center.lat;
+      var elon=e.lon||e.center&&e.center.lon;
+      if(elat&&elon){
+        var dlat=(elat-lat)*Math.PI/180;
+        var dlon=(elon-lon)*Math.PI/180;
+        var a=Math.sin(dlat/2)*Math.sin(dlat/2)+Math.cos(lat*Math.PI/180)*Math.cos(elat*Math.PI/180)*Math.sin(dlon/2)*Math.sin(dlon/2);
+        var c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        e._dist=3958.8*c; // miles
+        e._lat=elat;e._lon=elon;
+      } else {e._dist=999;}
+    });
+    elements.sort(function(a,b){return a._dist-b._dist;});
+    var top=elements.slice(0,10);
+
+    if(!top.length){
+      resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No repair shops found within 30 miles. Try a different address or type.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML=
+      '<div style="font-size:11px;color:var(--text2);margin-bottom:10px">📍 Searching near: '+foundAddr.split(',').slice(0,3).join(',')+'</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px">'+
+      top.map(function(e,i){
+        var tags=e.tags||{};
+        var name=tags.name||'Unknown Shop';
+        var phone=tags.phone||tags['contact:phone']||'';
+        var website=tags.website||tags['contact:website']||'';
+        var addrStr=[tags['addr:housenumber'],tags['addr:street'],tags['addr:city'],tags['addr:state']].filter(Boolean).join(' ');
+        var dist=e._dist<1?(e._dist*5280).toFixed(0)+' ft':(e._dist).toFixed(1)+' mi';
+        var mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(name+(addrStr?' '+addrStr:''));
+        var isKnown=trucks.some(function(t){return (t.vendor_short_name||'').toLowerCase().includes(name.toLowerCase().split(' ')[0]);});
+        return '<div style="background:var(--bg3);border:1px solid '+(isKnown?'#22c55e':'var(--border)')+';border-radius:6px;padding:10px 14px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+          '<div>'+
+          (isKnown?'<span style="background:#0f2a1a;color:#86efac;font-size:10px;padding:1px 6px;border-radius:3px;margin-right:6px">✓ Known Vendor</span>':'')+
+          '<span style="font-weight:600;font-size:13px">'+(i+1)+'. '+name+'</span>'+
+          '</div>'+
+          '<span style="color:var(--accent);font-weight:600;font-size:12px">'+dist+'</span>'+
+          '</div>'+
+          (addrStr?'<div style="font-size:11px;color:var(--text2);margin-top:4px">📍 '+addrStr+'</div>':'')+
+          '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+          '<a href="'+mapsUrl+'" target="_blank" class="btn btn-secondary btn-xs">🗺 Open in Maps</a>'+
+          (phone?'<a href="tel:'+phone+'" class="btn btn-secondary btn-xs">📞 '+phone+'</a>':'')+
+          (website?'<a href="'+website+'" target="_blank" class="btn btn-secondary btn-xs">🌐 Website</a>':'')+
+          '</div>'+
+          '</div>';
+      }).join('')+
+      '</div>';
+  }catch(err){
+    resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:#f87171">Error: '+err.message+'<br><br>Try again or use <a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Google Maps directly</a></div>';
+  }
 }
 
 function toast(msg,type){
