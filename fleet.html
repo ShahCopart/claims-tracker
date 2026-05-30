@@ -222,7 +222,7 @@ var _sortField=null,_sortAsc=true;
 
 const STAGES=['Repo','Intake','Manager Review','Epika','At Shop','Final Inspection','Ready to Assign','In Leasing','Leased Trucks Maintenance','Vendor Assist','Hold 4 Cars','Total Loss','Reassignment Closed','Closed - Totals Only'];
 const AUTO_DATE_STAGES=['Intake','Manager Review','Final Inspection'];
-const SHOP_ST=['Under Review','Dispatched to Shop','Arrived at Shop','Waiting for Estimate','Pending Approval','Approved - Work Requested','Work in Progress','Work Complete','Dispatched Back to Yard','Arrived - Needs Wash & Inspection','Transit Pros'];
+const SHOP_ST=['Enroute to Shop','Enroute to Yard','Under Review','Dispatched to Shop','Arrived at Shop','Waiting for Estimate','Pending Approval','Approved - Work Requested','Work in Progress','Work Complete','Dispatched Back to Yard','Arrived - Needs Wash & Inspection','Transit Pros'];
 const CLAIM_ST=['Open','In Progress','Pending','Under Review','Urgent Review','Approved','Denied','On Hold','Follow Up','Follow Up with GM','Follow Up with Maintenance','Following Up with Insurance','Follow Up on Documents','Follow Up with Leasing CO','Pending Total Loss','Pending Completion','Pending Check','Pending Rejection','Pending Estimate','Pending Pay Off','Pending Pictures','Pending Legal','Pending Complete','Shah Working On','Complete','Done'];
 const SCSS={Repo:'s-repo',Intake:'s-intake','Manager Review':'s-manager',Epika:'s-epika','At Shop':'s-shop','Final Inspection':'s-insp','Ready to Assign':'s-ready','In Leasing':'s-leas','Leased Trucks Maintenance':'s-lm','Vendor Assist':'s-va','Hold 4 Cars':'s-hold','Total Loss':'s-tl','Reassignment Closed':'s-closed','Closed - Totals Only':'s-totals'};
 
@@ -272,6 +272,8 @@ document.addEventListener('DOMContentLoaded',function(){
       if(action==='showRecent')showRecentApprovalsList();
       if(action==='showRecentApprovedModal')showRecentApprovedModal();
       if(action==='showClaims')doTab('claims',null);
+      if(action==='showEnrouteShop'){var es=trucks.filter(function(t){return t.shop_status==='Enroute to Shop'&&!t.is_archived;});showTruckList('🚛 Enroute to Shop ('+es.length+')',es);}
+      if(action==='showEnrouteYard'){var ey=trucks.filter(function(t){return t.shop_status==='Enroute to Yard'&&!t.is_archived;});showTruckList('🏠 Enroute to Yard ('+ey.length+')',ey);}
     }
     // data-action2 handled by body listener
   });
@@ -1181,6 +1183,12 @@ function buildForm(t){
   // Status & Dates
   html+='<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">';
   html+='<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>';
+  // Shop Contact Info
+  var shopPhoneDisplay=t.shop_phone?'<a href="tel:'+t.shop_phone.replace(/\D/g,'')+'" style="color:#4ade80;font-size:11px;margin-left:6px">📞 Call</a>':'';
+  html+='<div class="fg s2"><label class="fl">Shop Name'+shopPhoneDisplay+'</label><input class="fi" id="f-shopname" value="'+(t.shop_name||'')+'" placeholder="Shop / mechanic name"></div>';
+  html+='<div class="fg"><label class="fl">Shop Phone</label><input class="fi" id="f-shopphone" value="'+(t.shop_phone||'')+'" placeholder="(555) 000-0000" oninput="updateShopPhoneLink(this.value)"></div>';
+  html+='<div class="fg"><label class="fl">Shop Email</label><input class="fi" id="f-shopemail" value="'+(t.shop_email||'')+'" placeholder="shop@example.com"></div>';
+  html+='<div class="fg s2"><label class="fl">Shop Address</label><input class="fi" id="f-shopaddr" value="'+(t.shop_address||'')+'" placeholder="Street, City, State"></div>';
   html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price?parseFloat(t.estimate_price).toFixed(2):'')+'" placeholder="0.00" step="0.01" data-orig-price="'+(t.estimate_price||'')+'" onblur="checkEstimatePrice(this)"></div>';
   html+='<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>';
   html+='<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>';
@@ -1464,6 +1472,10 @@ async function saveTruck(closeAfter){
     vin:getFormVal('f-vin'),year_make_model:getFormVal('f-ymm'),cab_color:getFormVal('f-cab'),
     bed:getFormVal('f-bed'),mileage:getFormVal('f-mil'),yard:getFormVal('f-yard'),state:getFormVal('f-state'),sublot:getFormCheck('f-sublot'),
     stage:newStage,shop_status:newShop,
+    shop_name:getFormVal('f-shopname')||null,
+    shop_phone:getFormVal('f-shopphone')||null,
+    shop_email:getFormVal('f-shopemail')||null,
+    shop_address:getFormVal('f-shopaddr')||null,
     estimate_price:parseFloat(getFormVal('f-estprice'))||null,
     repo_agent:getFormVal('f-repoagent')||null,
     terminated_date:getFormVal('f-termdate')||null,recovery_date:getFormVal('f-recov')||null,
@@ -1654,6 +1666,9 @@ function renderDash(m){
   var mgrReview=trucks.filter(function(t){return t.needs_mgr_review;}).length;
   var activeClaims=claims.filter(function(c){return c.status!=='Done'&&c.status!=='Complete';}).length;
 
+  var enrouteShop=trucks.filter(function(t){return t.shop_status==='Enroute to Shop'&&!t.is_archived;}).length;
+  var enrouteYard=trucks.filter(function(t){return t.shop_status==='Enroute to Yard'&&!t.is_archived;}).length;
+
   m.innerHTML=
     '<div class="dash-grid">'+
     '<div class="dc" data-action="showActive" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Trucks <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#3b82f6">'+active.length+'</div></div>'+
@@ -1662,10 +1677,11 @@ function renderDash(m){
     (isAdmin?'<div class="dc" data-action="showProductivity" style="cursor:pointer;background:rgba(124,58,237,0.08);border-color:#4c1d95"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#c4b5fd">Team Productivity <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#7c3aed" id="prod-count">0</div><div style="font-size:10px;color:var(--text3);margin-top:2px" id="prod-sub">today</div></div>':'')+
     '<div class="dc" data-action="showOverdue" style="cursor:pointer;background:rgba(220,38,38,0.08);border-color:#7f1d1d"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fca5a5">Critical (7+ days) <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#dc2626">'+critical+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">No activity 7+ days</div></div>'+
     '<div class="dc" data-action="showReady" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Ready to Assign <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#86efac">'+(sc['Ready to Assign']||0)+'</div></div>'+
-
     '<div class="dc" data-action="showApproval" style="cursor:pointer;background:rgba(6,182,212,0.08);border-color:#164e63"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#67e8f9">Waiting Approval <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#06b6d4">'+approval+'</div></div>'+
     '<div class="dc" data-action="showClaims" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Active Claims <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#a78bfa">'+activeClaims+'</div></div>'+
     '<div class="dc" data-action="showMgrReview" style="cursor:pointer;background:rgba(245,158,11,0.08);border-color:#78350f"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fcd34d">Mgr Review Needed <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#f59e0b">'+mgrReview+'</div></div>'+
+    '<div class="dc" data-action="showEnrouteShop" style="cursor:pointer;background:rgba(234,179,8,0.08);border-color:#713f12"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fde68a">🚛 Enroute to Shop <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#eab308">'+enrouteShop+'</div></div>'+
+    '<div class="dc" data-action="showEnrouteYard" style="cursor:pointer;background:rgba(20,184,166,0.08);border-color:#134e4a"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#99f6e4">🏠 Enroute to Yard <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#14b8a6">'+enrouteYard+'</div></div>'+
     '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '</div>'+
 
@@ -2156,6 +2172,34 @@ const LEASING_VENDORS=[{"id": "PAU605UA", "name": "UTICA GENERAL PETERBUILT", "a
 
 const MAINTENANCE_SHOPS=[{"name": "P & H Mobile Trucking", "address": "", "source": "maintenance_sheet"}, {"name": "Mike Cassata", "address": "", "source": "maintenance_sheet"}, {"name": "Rush Truck Center", "address": "1440 Texas St\nGary, IN 46402\n219-240-2300", "source": "maintenance_sheet"}, {"name": "Newlons International", "address": "16 Ward Road\nElkins, WV 26241\n304-636-4561", "source": "maintenance_sheet"}, {"name": "Floyd's Truck Center", "address": "1900 Opportunity Blvd\nCasper, WY 82601\n307-237-8600\ncasperservice@floydstrucks.com", "source": "maintenance_sheet"}, {"name": "Tri-County Truck Center", "address": "113 Dort Hwy\nFlint, MI 48503\n810-234-5686", "source": "maintenance_sheet"}, {"name": "R&F Motors", "address": "dispatch@rfmotors.com", "source": "maintenance_sheet"}, {"name": "Miller Industries", "address": "8503 Hilltop Dr\nCollegedale, TN 37363\n423-238-4171\nlcurry@millerind.com", "source": "maintenance_sheet"}, {"name": "Cummins Sales & Service", "address": "7585 Northfield Rd\nCleveland, OH 44146\n440-439-6800", "source": "maintenance_sheet"}, {"name": "Snider Fleet Solutions", "address": "2533 N Chester St\nGastonia, NC 28052\n704-874-0426\npmarshall@sniderfleet.com", "source": "maintenance_sheet"}, {"name": "Allegiance Trucks", "address": "115 Lindberg Ave\nMethuen, MA 01844\n978-686-1800", "source": "maintenance_sheet"}, {"name": "Sunflower Tow Service", "address": "lauren@sunflowertowservice.com", "source": "maintenance_sheet"}, {"name": "The Truck Shop", "address": "1702 E Street NE\nAuburn, WA 98002\n253-736-6770\nFSW", "source": "maintenance_sheet"}, {"name": "TDI Repair & Towing", "address": "50 Babbie Blvd\nSwanton, VT 05488\n802-868-5270\nadam@tdirepair.com", "source": "maintenance_sheet"}, {"name": "MHC Kenworth", "address": "136 N N Cass St NW\nAdairsville, GA 30103\n770-727-7056\nlandon.hamilton@mhc.com", "source": "maintenance_sheet"}, {"name": "PRS Truck Repair", "address": "112 Starpointe Blvd\nBurgettstown, PA 15021\n724-260-6340\nPOC: Gary\nowen@prstrucks.com", "source": "maintenance_sheet"}, {"name": "Wasatch Truck Equipment", "address": "9529 South 500 West #6B\nSandy, Utah 84070\n801-571-8761\nwasatchtrk@aol.com", "source": "maintenance_sheet"}, {"name": "Southern California Tow Equip", "address": "1334 N Norwood Cir\nAnaheim, CA 92801", "source": "maintenance_sheet"}, {"name": "Worldwide Equipment", "address": "945 Nandino Blvd\nLexington, KY 40514\n859-281-5152\njeff.pennington@thetruckpeople.com", "source": "maintenance_sheet"}, {"name": "Bruckner Truck Center", "address": "8101 Daytona Road NW\nAlbuquerque, NM 87121\n877-999-2451\njosh.fraschilla@brucknertruck.com", "source": "maintenance_sheet"}, {"name": "Penn Power", "address": "dbeegle@pennpowergroup.com", "source": "maintenance_sheet"}, {"name": "Fleet Sales West", "address": "2175 N Pacific Hwy\nWoodburn, OR 97071\n503-982-5095", "source": "maintenance_sheet"}, {"name": "Chevron West", "address": "3030 Power Inn Rd\nSacramento, CA 95826\n800-869-8757", "source": "maintenance_sheet"}, {"name": "Truckmax", "address": "6516 E Adamo Dr\nTampa, FL 33619", "source": "maintenance_sheet"}, {"name": "TM Miami", "address": "", "source": "maintenance_sheet"}, {"name": "Zip's Truck Equipment", "address": "27265 Wick Rd\nTaylor, MI 48180\n800-222-6047\nbobp@zips.com", "source": "maintenance_sheet"}, {"name": "Zips Truck Equipment", "address": "", "source": "maintenance_sheet"}, {"name": "EPIKA", "address": "", "source": "maintenance_sheet"}, {"name": "EdgeTec", "address": "9100 Ambassador Row\nDallas, TX 75247\n214-742-5218", "source": "maintenance_sheet"}, {"name": "Texas Collision Center", "address": "", "source": "maintenance_sheet"}, {"name": "Premier Truck Group", "address": "4200 Port Blvd\nDallas, TX 75241\n972-225-4300", "source": "maintenance_sheet"}, {"name": "Snider Tire 5/29", "address": "Yard - Final Images", "source": "maintenance_sheet"}, {"name": "Epika 6/2", "address": "Pomps", "source": "maintenance_sheet"}, {"name": "GlassUSA 5/5", "address": "", "source": "maintenance_sheet"}, {"name": "Epika 6/5", "address": "", "source": "maintenance_sheet"}, {"name": "Epika 5/21", "address": "", "source": "maintenance_sheet"}, {"name": "STM 5/29", "address": "", "source": "maintenance_sheet"}, {"name": "Epika 5/26", "address": "STM 5/27", "source": "maintenance_sheet"}, {"name": "Epika 5/28", "address": "", "source": "maintenance_sheet"}, {"name": "CHEVRON", "address": "", "source": "maintenance_sheet"}, {"name": "Epika for Service", "address": "Chevron for Bed & Cosmetics", "source": "maintenance_sheet"}, {"name": "Epika 6/1", "address": "", "source": "maintenance_sheet"}, {"name": "STM 5/28", "address": "", "source": "maintenance_sheet"}, {"name": "Interstate Powersystems", "address": "13015 W Custer Ave\nButler, WI 53007\n262-781-7100\nmatthew.proite@istate.com", "source": "maintenance_sheet"}, {"name": "TIRES", "address": "", "source": "maintenance_sheet"}, {"name": "Epika - Dr Seat Cushion - Batteries - Coolant Sensor? - CEL", "address": "TIRES", "source": "maintenance_sheet"}, {"name": "Batteries - Psng Toolbox Door - Dr Front Fender Damage - De-ID", "address": "", "source": "maintenance_sheet"}, {"name": "IMAGES/CR/WIPEDOWN/TIRE TREAD DEPTH", "address": "", "source": "maintenance_sheet"}, {"name": "STMP 5/28", "address": "ROOF LIGHT BAR INOP", "source": "maintenance_sheet"}, {"name": "SNIDER 5/29", "address": "Oil Leaks - Air Leaks - DeID - Detail - Tires - CEL - Unit loses power when bed engaged", "source": "maintenance_sheet"}, {"name": "Yard - Images, Wipedown, Tires", "address": "", "source": "maintenance_sheet"}, {"name": "Yard - Images, Wipedown", "address": "", "source": "maintenance_sheet"}, {"name": "Chevron / Sunflower", "address": "Rear Taillights Damaged", "source": "maintenance_sheet"}, {"name": "Epika - Batteries - Brake Line Inspection - CEL Diag if needed", "address": "Yard - Interior Detail", "source": "maintenance_sheet"}, {"name": "Epika - 2 marker lights", "address": "", "source": "maintenance_sheet"}, {"name": "Yard - Detail / De-ID / Tires", "address": "", "source": "maintenance_sheet"}, {"name": "Valley Tire 6/2", "address": "", "source": "maintenance_sheet"}, {"name": "Yard - Final Images", "address": "", "source": "maintenance_sheet"}];
 
+function updateShopPhoneLink(val){
+  var lbl=document.querySelector('#f-shopname')?.closest('.fg')?.querySelector('.fl');
+  if(!lbl)return;
+  var existing=lbl.querySelector('a');if(existing)existing.remove();
+  if(val){
+    var a=document.createElement('a');
+    a.href='tel:'+val.replace(/\D/g,'');
+    a.style.cssText='color:#4ade80;font-size:11px;margin-left:6px;text-decoration:none';
+    a.textContent='📞 Call';
+    lbl.appendChild(a);
+  }
+}
+
+function selectShopResult(name,phone,addr,email){
+  var fn=document.getElementById('f-shopname');
+  var fp=document.getElementById('f-shopphone');
+  var fe=document.getElementById('f-shopemail');
+  var fa=document.getElementById('f-shopaddr');
+  if(fn)fn.value=name||'';
+  if(fp)fp.value=phone||'';
+  if(fe)fe.value=email||'';
+  if(fa)fa.value=addr||'';
+  if(phone)updateShopPhoneLink(phone);
+  // Close modal
+  var m=document.getElementById('find-shop-modal');if(m)m.remove();
+  toast('Shop contact saved — remember to Save the truck','ok');
+}
+
 function calcDist(lat1,lon1,lat2,lon2){
   var dlat=(lat2-lat1)*Math.PI/180;
   var dlon=(lon2-lon1)*Math.PI/180;
@@ -2195,6 +2239,7 @@ function renderShopResults(geo,merged,resultsEl,isPartial){
         '</div>'+
         (v.addr?'<div style="font-size:11px;color:var(--text2);margin-top:4px">📍 '+v.addr+'</div>':'')+
         '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+        '<button onclick="selectShopResult('+JSON.stringify(v.name)+','+JSON.stringify(v.phone||'')+','+JSON.stringify(v.addr||'')+','+JSON.stringify(v.email||'')+')" class="btn btn-primary btn-xs" style="background:#16a34a;border-color:#15803d">✔ Select this Shop</button>'+
         '<a href="'+mapsUrl+'" target="_blank" class="btn btn-secondary btn-xs">🗺 Open in Maps</a>'+
         (v.phone?'<a href="tel:'+v.phone.replace(/\D/g,'')+'" class="btn btn-secondary btn-xs" style="color:#4ade80">📞 '+v.phone+'</a>':'')+
         (v.website?'<a href="'+v.website+'" target="_blank" class="btn btn-secondary btn-xs">🌐 Website</a>':'')+
