@@ -1419,7 +1419,32 @@ async function saveTruck(closeAfter){
     var autoNotes=[];
     if(prevTruck.stage&&prevTruck.stage!==data.stage&&data.stage)autoNotes.push('[STAGE CHANGE] '+prevTruck.stage+' -> '+data.stage);
     if(prevTruck.shop_status!==data.shop_status&&data.shop_status)autoNotes.push('[SHOP STATUS] Changed to: '+data.shop_status);
+    // Track checkbox changes
+    var checkboxFields=[
+      ['pm_done','✅ PM Done'],['photos_taken','📷 Photos Taken'],['batteries_installed','🔋 Batteries Installed'],
+      ['windshield_done','🪟 Windshield Done'],['tires_changed','🚗 Tires Changed'],['electrical_issues','⚡ Electrical Issues noted'],
+      ['check_engine','🔴 Check Engine noted'],['bed_works','📦 Bed Works confirmed'],['deidentified','🏷 De-Identified'],
+      ['supplies_ordered','📦 Supplies Ordered'],['aei_inspection','🔍 AEI Inspection done'],['copart_inspection','🏢 Copart Inspection done'],
+      ['tracker_gs','📡 GS Gold Star tracker set'],['tracker_azuga','📡 Azuga tracker set'],['tracker_samsara','📡 Samsara tracker set']
+    ];
+    var chkChanges=[];
+    checkboxFields.forEach(function(arr){
+      if(data[arr[0]]&&!prevTruck[arr[0]])chkChanges.push(arr[1]);
+      else if(!data[arr[0]]&&prevTruck[arr[0]])chkChanges.push(arr[1]+' (unchecked)');
+    });
+    if(chkChanges.length)autoNotes.push('[UPDATED] '+chkChanges.join(', '));
+    // Track other field changes
+    var fieldChanges=[];
+    if(data.mileage&&data.mileage!==prevTruck.mileage)fieldChanges.push('Mileage: '+data.mileage);
+    if(data.estimate_price&&data.estimate_price!==prevTruck.estimate_price)fieldChanges.push('Estimate: $'+data.estimate_price);
+    if(data.yard&&data.yard!==prevTruck.yard)fieldChanges.push('Yard: '+data.yard);
+    if(data.est_completion_date&&data.est_completion_date!==prevTruck.est_completion_date)fieldChanges.push('Est. Completion: '+data.est_completion_date);
+    if(data.leasing_company&&data.leasing_company!==prevTruck.leasing_company)fieldChanges.push('Leasing Co: '+data.leasing_company);
+    if(data.vendor_short_name&&data.vendor_short_name!==prevTruck.vendor_short_name)fieldChanges.push('Vendor: '+data.vendor_short_name);
+    if(data.body_condition&&data.body_condition!==prevTruck.body_condition)fieldChanges.push('Body: '+data.body_condition);
+    if(fieldChanges.length)autoNotes.push('[FIELD UPDATE] '+fieldChanges.join(' | '));
     if(pendingNote)autoNotes.push(pendingNote);
+
     if(autoNotes.length){
       await db.from('notes').insert(autoNotes.map(function(c){return {truck_id:truckId,user_name:me.name,content:c};}));
       var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
