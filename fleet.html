@@ -1047,6 +1047,8 @@ async function openDetail(id){
   var fresh=await db.from('trucks').select('*').eq('id',id).single();
   var t=fresh.data||trucks.find(function(x){return x.id===id;})||{};
   var idx=trucks.findIndex(function(x){return x.id===id;});if(idx>=0&&fresh.data)trucks[idx]=fresh.data;
+  // Store original state for change detection
+  window._origTruck=JSON.parse(JSON.stringify(t));
   var r1=await db.from('notes').select('*').eq('truck_id',id).order('created_at',{ascending:false});
   var r2=await db.from('expenses').select('*').eq('truck_id',id).order('date',{ascending:false});
   var r3=await db.from('stage_history').select('*').eq('truck_id',id).order('entered_at',{ascending:true});
@@ -1364,7 +1366,7 @@ async function saveTruck(closeAfter){
       return;
     }
   }
-  var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
+  var prevTruck=window._origTruck||trucks.find(function(t){return t.id===truckId;})||{};
   var newStage=getFormVal('f-stage');
   var newShop=getFormVal('f-shopst')||null;
   var estComp=getFormVal('f-estcomp')||null;
@@ -1459,6 +1461,7 @@ async function saveTruck(closeAfter){
       ep2.setAttribute('data-orig-price',res.data.estimate_price);
       ep2.value=parseFloat(res.data.estimate_price).toFixed(2);
     }
+    window._origTruck=JSON.parse(JSON.stringify(res.data));
     document.getElementById('d-vin').textContent=res.data.vin||'-';
     document.getElementById('d-ymm').textContent=res.data.year_make_model||'';
     document.getElementById('d-sbadge').textContent=res.data.stage||'';
