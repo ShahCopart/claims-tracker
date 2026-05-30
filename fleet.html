@@ -830,8 +830,17 @@ function yardSearch(q){
     return;
   }
   q=q.toLowerCase().trim();
+  // Try exact match first, then partial if no results
   var results=trucks.filter(function(t){
-    return (t.yard||'').toLowerCase().includes(q);
+    var yard=(t.yard||'').toLowerCase().trim();
+    // Extract just the number from the search query
+    var num=q.replace(/[^0-9]/g,'');
+    if(num){
+      // Match exact yard number - e.g. "1" should not match "10", "11", "100"
+      var yardNum=(yard.match(/\d+/)||[''])[0];
+      return yardNum===num;
+    }
+    return yard.includes(q);
   });
   // Show results in a dropdown-style panel
   var old=document.getElementById('yard-search-panel');if(old)old.remove();
