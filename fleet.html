@@ -727,7 +727,9 @@ function renderTab(){
   var m=document.getElementById('main');
   if(STAGES.includes(tab))renderList(tab,m);
   else if(tab==='dashboard'){
-    renderDash(m);
+    renderDash(m); // always fresh render on tab switch
+    window._dashStale=false;
+    var cache=document.getElementById('_dash_cache');if(cache)cache.innerHTML='';
     loadRecentApprovals();
     loadRecentWorked();
     loadAvgCycleTime();
@@ -1591,14 +1593,21 @@ async function saveTruck(closeAfter){
     document.getElementById('d-flags').innerHTML=flags(res.data);
     var nn=document.getElementById('nnote');if(nn&&nn.value.trim())nn.value='';
   renderNotes();toast('Saved!','ok');
-  if(tab==='dashboard')loadRecentWorked();
-  if(closeAfter){
-    closeDetail(); // goes back to _returnTab, renders that tab
-  } else {
-    // Still on dashboard - refresh card counts
-    var _dm=document.getElementById('main');
-    if(_dm&&tab==='dashboard')renderDash(_dm);
-  }
+  // Always refresh dashboard card counts on every save using a temp element so visible tab is never disrupted
+  (function(){
+    var m=document.getElementById('main');if(!m)return;
+    if(tab==='dashboard'){renderDash(m);loadRecentWorked();}
+    else{
+      var tmp=document.createElement('div');
+      renderDash(tmp); // renders into temp — updates happen on trucks array, not on screen
+      // Now pull just the card grid HTML and inject into a hidden dash cache
+      var cache=document.getElementById('_dash_cache');
+      if(!cache){cache=document.createElement('div');cache.id='_dash_cache';cache.style.display='none';document.body.appendChild(cache);}
+      cache.innerHTML=tmp.innerHTML;
+    }
+  })();
+  window._dashStale=false;
+  if(closeAfter)closeDetail();
   }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
 
@@ -1639,7 +1648,16 @@ async function delTruck(){
   updateBadges();closeDetail();renderTab();toast('Deleted','ok');
 }
 
-function closeDetail(){document.getElementById('dscreen').classList.remove('open');truckId=null;var returnTab=window._returnTab||window._lastTab||'dashboard';tab=returnTab;window._returnTab=null;doTab(tab,null);}
+function closeDetail(){
+  document.getElementById('dscreen').classList.remove('open');
+  truckId=null;
+  var returnTab=window._returnTab||window._lastTab||'dashboard';
+  tab=returnTab;
+  window._returnTab=null;
+  doTab(tab,null);
+  // Always refresh dashboard card counts when closing a truck
+  if(tab==='dashboard'){var dm=document.getElementById('main');if(dm)renderDash(dm);}
+}
 
 function openNewTruck(){
   truckId=null;notes=[];exps=[];hist=[];
