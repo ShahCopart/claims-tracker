@@ -126,18 +126,20 @@ tbody tr:last-child td{border-bottom:none}
 </div>
 <div class="app" id="app">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="app-title">🚛 Fleet Tracker</div>
-      <span class="truck-count" id="total-count">0 trucks</span>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <div class="app-title">🚛</div>
+      <span class="truck-count" id="total-count">0</span>
       <div class="user-badge" id="ubadge"></div>
       <div class="admin-badge" id="admin-badge" style="display:none;cursor:pointer" onclick="showUserManager()">👑 Admin</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" id="global-search" placeholder="Search VIN, vendor..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--text);font-size:12px;width:180px" oninput="globalSearch(this.value)">
-      <input type="text" id="yard-search" placeholder="Yard #..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--text);font-size:12px;width:90px" oninput="yardSearch(this.value)" list="yard-list">
-      <button class="btn btn-secondary btn-sm" onclick="refreshAll()" style="padding:4px 10px">🔄</button>
-      <span id="last-refresh" style="font-size:10px;color:var(--text3)"></span>
-      <button class="btn btn-primary btn-sm" onclick="openNewTruck()" style="padding:4px 10px">+ Add</button>
+    <div style="display:flex;gap:6px;align-items:center;flex:1;justify-content:center;max-width:600px">
+      <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--text);font-size:12px;flex:1;min-width:0" oninput="globalSearch(this.value)">
+      <input type="text" id="yard-search" placeholder="Yard #" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:4px 10px;color:var(--text);font-size:12px;width:70px" oninput="yardSearch(this.value)" list="yard-list">
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+      <button class="btn btn-secondary btn-sm" onclick="refreshAll()" style="padding:4px 8px" title="Refresh">🔄</button>
+      <span id="last-refresh" style="font-size:10px;color:var(--text3);white-space:nowrap"></span>
+      <button class="btn btn-primary btn-sm" onclick="openNewTruck()" style="padding:4px 10px">+ Add Truck</button>
       <button class="btn btn-secondary btn-sm" onclick="doLogout()" style="padding:4px 10px">Sign Out</button>
     </div>
   </div>
