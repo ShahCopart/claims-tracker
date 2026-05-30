@@ -1129,7 +1129,7 @@ async function approveEstimate(id){
 }
 
 async function openDetail(id){
-  window._lastTab=tab;truckId=id;
+  window._returnTab=tab;window._lastTab=tab;truckId=id;
   var fresh=await db.from('trucks').select('*').eq('id',id).single();
   var t=fresh.data||trucks.find(function(x){return x.id===id;})||{};
   var idx=trucks.findIndex(function(x){return x.id===id;});if(idx>=0&&fresh.data)trucks[idx]=fresh.data;
@@ -1569,7 +1569,7 @@ async function saveTruck(closeAfter){
       notes=nr.data||[];
     }
     var i=trucks.findIndex(function(t){return t.id===truckId;});
-    if(i>=0)trucks[i]=res.data;else trucks.unshift(res.data);
+    if(i>=0){trucks[i]=res.data;trucks[i].shop_status=newShop;}else trucks.unshift(res.data);
     updateBadges();
     // Update estimate price orig value so form stays in sync
     var ep2=document.getElementById('f-estprice');
@@ -1585,10 +1585,14 @@ async function saveTruck(closeAfter){
     document.getElementById('d-flags').innerHTML=flags(res.data);
     var nn=document.getElementById('nnote');if(nn&&nn.value.trim())nn.value='';
   renderNotes();toast('Saved!','ok');
-  // Always refresh dashboard card counts immediately
-  var _dm=document.getElementById('main');if(_dm&&tab==='dashboard')renderDash(_dm);
   if(tab==='dashboard')loadRecentWorked();
-  if(closeAfter){closeDetail();var _dm2=document.getElementById('main');if(_dm2)renderDash(_dm2);}
+  if(closeAfter){
+    closeDetail(); // goes back to _returnTab, renders that tab
+  } else {
+    // Still on dashboard - refresh card counts
+    var _dm=document.getElementById('main');
+    if(_dm&&tab==='dashboard')renderDash(_dm);
+  }
   }else{console.error('Save error:',res.error);toast('Error: '+(res.error?res.error.message:'Save failed'),'err');}
 }
 
@@ -1629,7 +1633,7 @@ async function delTruck(){
   updateBadges();closeDetail();renderTab();toast('Deleted','ok');
 }
 
-function closeDetail(){document.getElementById('dscreen').classList.remove('open');truckId=null;if(window._lastTab)tab=window._lastTab;doTab(tab,null);}
+function closeDetail(){document.getElementById('dscreen').classList.remove('open');truckId=null;var returnTab=window._returnTab||window._lastTab||'dashboard';tab=returnTab;window._returnTab=null;doTab(tab,null);}
 
 function openNewTruck(){
   truckId=null;notes=[];exps=[];hist=[];
