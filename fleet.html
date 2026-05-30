@@ -2242,54 +2242,59 @@ async function searchShops(){
       resultsEl.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text2)"><div class="spin"></div>Searching nearby shops via OpenStreetMap...</div>';
     }
 
-    // Step 3: Overpass OSM query in background (strict 50 mi = 80467m)
-    var radius=80467;
-    var overpassQuery='[out:json][timeout:25];('+
-      'node["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      'node["amenity"="fuel"]["name"~"truck|diesel|peterbilt|kenworth|freightliner|mack|volvo|international",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      'node["name"~"truck repair|peterbilt|kenworth|international|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      'way["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-      ');out body center 20;';
+    // Step 3: Overpass OSM query in background — wrapped so a failure never wipes instant results
+    try{
+      var radius=80467;
+      var overpassQuery='[out:json][timeout:25];('+
+        'node["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'node["amenity"="fuel"]["name"~"truck|diesel|peterbilt|kenworth|freightliner|mack|volvo|international",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'node["name"~"truck repair|peterbilt|kenworth|international|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'way["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        ');out body center 20;';
 
-    var ovRes=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(overpassQuery)});
-    var ovData=await ovRes.json();
-    var osmShops=(ovData.elements||[]).filter(function(e){return e.tags&&e.tags.name;});
-    osmShops.forEach(function(e){
-      var elat=e.lat||(e.center&&e.center.lat);
-      var elon=e.lon||(e.center&&e.center.lon);
-      e._dist=elat&&elon?calcDist(geo.lat,geo.lon,elat,elon):999;
-    });
-    // Strict 50 mile filter on OSM results
-    osmShops=osmShops.filter(function(e){return e._dist<=MAX_DIST;});
-    osmShops.sort(function(a,b){return a._dist-b._dist;});
+      var ovRes=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(overpassQuery)});
+      var ovData=await ovRes.json();
+      var osmShops=(ovData.elements||[]).filter(function(e){return e.tags&&e.tags.name;});
+      osmShops.forEach(function(e){
+        var elat=e.lat||(e.center&&e.center.lat);
+        var elon=e.lon||(e.center&&e.center.lon);
+        e._dist=elat&&elon?calcDist(geo.lat,geo.lon,elat,elon):999;
+      });
+      osmShops=osmShops.filter(function(e){return e._dist<=MAX_DIST;});
+      osmShops.sort(function(a,b){return a._dist-b._dist;});
 
-    var osmResults=osmShops.slice(0,8).map(function(e){
-      var tags=e.tags||{};
-      var name=tags.name||'';
-      return {
-        name:name,
-        phone:tags.phone||tags['contact:phone']||'',
-        website:tags.website||tags['contact:website']||'',
-        addr:[tags['addr:housenumber'],tags['addr:street'],tags['addr:city'],tags['addr:state']].filter(Boolean).join(' '),
-        dist:e._dist,
-        isLeasing:false,
-        isKnown:false,
-        source:'osm'
-      };
-    });
+      var osmResults=osmShops.slice(0,8).map(function(e){
+        var tags=e.tags||{};
+        return {
+          name:tags.name||'',
+          phone:tags.phone||tags['contact:phone']||'',
+          website:tags.website||tags['contact:website']||'',
+          addr:[tags['addr:housenumber'],tags['addr:street'],tags['addr:city'],tags['addr:state']].filter(Boolean).join(' '),
+          dist:e._dist,
+          isLeasing:false,
+          isKnown:false,
+          source:'osm'
+        };
+      });
 
-    // Merge: leasing first (already geocoded & within 50mi), then OSM (also within 50mi)
-    var merged=[];
-    nearbyLeasing.forEach(function(v){merged.push(v);});
-    osmResults.forEach(function(v){
-      if(!merged.some(function(m){return m.name.toUpperCase()===v.name.toUpperCase();}))merged.push(v);
-    });
-    merged=merged.slice(0,10);
-
-    renderShopResults(geo,merged,resultsEl,false);
-
-    if(!merged.length){
-      resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No truck repair shops found within 50 miles.<br><a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Search Google Maps instead →</a></div>';
+      var merged=[];
+      nearbyLeasing.forEach(function(v){merged.push(v);});
+      osmResults.forEach(function(v){
+        if(!merged.some(function(m){return m.name.toUpperCase()===v.name.toUpperCase();}))merged.push(v);
+      });
+      merged=merged.slice(0,10);
+      renderShopResults(geo,merged,resultsEl,false);
+      if(!merged.length){
+        resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3)">No truck repair shops found within 50 miles.<br><a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Search Google Maps instead →</a></div>';
+      }
+    }catch(osmErr){
+      // OSM failed — keep the instant leasing results already shown, just remove the spinner note
+      console.warn('OSM search failed:',osmErr);
+      if(nearbyLeasing.length){
+        renderShopResults(geo,nearbyLeasing,resultsEl,false);
+      } else {
+        resultsEl.innerHTML='<div style="padding:12px;color:var(--text2);font-size:12px">⚠️ Could not load additional shops from OpenStreetMap. <a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Search Google Maps →</a></div>';
+      }
     }
   }catch(err){
     resultsEl.innerHTML='<div style="padding:20px;text-align:center;color:#f87171">Error searching. <a href="https://www.google.com/maps/search/truck+repair+near+'+encodeURIComponent(addr)+'" target="_blank" style="color:var(--accent)">Try Google Maps →</a></div>';
