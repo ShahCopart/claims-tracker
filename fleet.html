@@ -1309,14 +1309,14 @@ function getFormVal(id,def){var el=document.getElementById(id);return el?el.valu
 function getFormCheck(id){var el=document.getElementById(id);return el?el.checked:false;}
 
 async function saveTruck(closeAfter){
-  // Check if estimate price changed without a note
+  // Check if estimate price changed without completing the note prompt
   var estInp=document.getElementById('f-estprice');
   if(estInp){
     var newPrice=parseFloat(estInp.value)||0;
     var origPrice=parseFloat(estInp.getAttribute('data-orig-price'))||0;
-    if(newPrice>0&&newPrice!==origPrice&&!estInp.getAttribute('data-note-added')){
+    if(newPrice>0&&Math.abs(newPrice-origPrice)>0.01){
       showEstimateNotePrompt(newPrice,estInp);
-      toast('Please add an estimate note before saving','err');
+      toast('Please complete the estimate note before saving','err');
       return;
     }
   }
@@ -1886,7 +1886,7 @@ async function saveEstimateNote(){
 
   // Update data-orig-price so prompt doesn't fire again
   var inp=document.getElementById('f-estprice');
-  if(inp){inp.setAttribute('data-orig-price',price);inp.setAttribute('data-note-added','1');}
+  if(inp){inp.setAttribute('data-orig-price',price);}
 
   // Auto-check Approval Needed flag
   var approvalChk=document.getElementById('f-approval');
