@@ -683,7 +683,10 @@ async function loadRecentApprovals(){
 async function loadData(){
   var r1=await db.from('trucks').select('*').order('created_at',{ascending:false});
   var r2=await db.from('claims').select('*').order('created_at',{ascending:false});
-  trucks=r1.data||[];claims=r2.data||[];updateBadges();
+  trucks=r1.data||[];claims=r2.data||[];
+  // Deduplicate by id in case of any duplicates
+  var seen={};trucks=trucks.filter(function(t){if(seen[t.id])return false;seen[t.id]=true;return true;});
+  updateBadges();
   var now=new Date();
   var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   var el=document.getElementById('last-refresh');
@@ -1568,8 +1571,11 @@ async function saveTruck(closeAfter){
       var nr=await db.from('notes').select('*').eq('truck_id',truckId).order('created_at',{ascending:false});
       notes=nr.data||[];
     }
-    var i=trucks.findIndex(function(t){return t.id===truckId;});
-    if(i>=0){trucks[i]=res.data;trucks[i].shop_status=newShop;}else trucks.unshift(res.data);
+    var i=trucks.findIndex(function(t){return String(t.id)===String(truckId);});
+    if(i>=0){trucks[i]=res.data;trucks[i].shop_status=newShop;}
+    else{res.data.shop_status=newShop;trucks.unshift(res.data);}
+    // Remove any accidental duplicates
+    var _seen={};trucks=trucks.filter(function(t){if(_seen[t.id])return false;_seen[t.id]=true;return true;});
     updateBadges();
     // Update estimate price orig value so form stays in sync
     var ep2=document.getElementById('f-estprice');
