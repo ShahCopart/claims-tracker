@@ -1365,6 +1365,7 @@ async function saveTruck(closeAfter){
   var vap=document.getElementById('f-vapayer');if(vap)data.va_payer=vap.value||null;
   var vad=document.getElementById('f-vadesc');if(vad)data.va_description=vad.value.trim()||null;
 
+  console.log('Saving estimate_price:', data.estimate_price, 'from field:', document.getElementById('f-estprice')?document.getElementById('f-estprice').value:'no field');
   var res;
   if(truckId){res=await db.from('trucks').update(data).eq('id',truckId).select().single();}
   else{res=await db.from('trucks').insert(data).select().single();truckId=res.data?res.data.id:null;if(res.data)await db.from('stage_history').insert({truck_id:res.data.id,stage:data.stage||'Intake',user_name:me.name});}
