@@ -133,7 +133,8 @@ tbody tr:last-child td{border-bottom:none}
       <div class="admin-badge" id="admin-badge" style="display:none;cursor:pointer" onclick="showUserManager()">👑 Admin</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:240px" oninput="globalSearch(this.value)">
+      <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:220px" oninput="globalSearch(this.value)">
+      <input type="text" id="yard-search" placeholder="Search by Yard #..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:160px" oninput="yardSearch(this.value)" list="yard-list">
       <button class="btn btn-secondary btn-sm" onclick="refreshAll()">🔄 Refresh</button>
       <span id="last-refresh" style="font-size:11px;color:var(--text3)"></span>
       <button class="btn btn-primary btn-sm" onclick="openNewTruck()">+ Add Truck</button>
@@ -246,6 +247,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(act==='promoteUser')promoteUser(tid,a2.getAttribute('data-user-name'));
       if(act==='demoteUser')demoteUser(tid,a2.getAttribute('data-user-name'));
       if(act==='openFromRecent'){var mr2=document.getElementById('recent-modal');if(mr2)mr2.remove();openDetail(tid);}
+      if(act==='openFromYard'){var yp=document.getElementById('yard-search-panel');if(yp)yp.remove();var ys=document.getElementById('yard-search');if(ys)ys.value='';openDetail(tid);}
       if(act==='viewApproval'){var m2=document.getElementById('approval-screen-modal');if(m2)m2.remove();openDetail(tid);}
       if(act==='approveEst')approveEstimate(tid);
     }
@@ -675,6 +677,10 @@ async function loadData(){
   var r1=await db.from('trucks').select('*').order('created_at',{ascending:false});
   var r2=await db.from('claims').select('*').order('created_at',{ascending:false});
   trucks=r1.data||[];claims=r2.data||[];updateBadges();
+  var now=new Date();
+  var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  var el=document.getElementById('last-refresh');
+  if(el)el.textContent='Updated '+timeStr;
 }
 
 async function refreshAll(){
@@ -816,6 +822,56 @@ function doSearch(){
   if(sh)rows=rows.filter(function(t){return t.shop_status===sh;});
   if(fl)rows=rows.filter(function(t){return t[fl];});
   var b=document.getElementById('tbl-body');if(b)b.innerHTML=mkRows(rows);
+}
+
+function yardSearch(q){
+  if(!q||q.length<1){
+    var el=document.getElementById('yard-search-modal');if(el)el.remove();
+    return;
+  }
+  q=q.toLowerCase().trim();
+  var results=trucks.filter(function(t){
+    return (t.yard||'').toLowerCase().includes(q);
+  });
+  // Show results in a dropdown-style panel
+  var old=document.getElementById('yard-search-panel');if(old)old.remove();
+  if(!results.length)return;
+  var panel=document.createElement('div');
+  panel.id='yard-search-panel';
+  panel.style.cssText='position:fixed;top:52px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:8px;z-index:200;max-height:70vh;overflow-y:auto;width:900px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.5)';
+  var rows=results.map(function(t){
+    var days=Math.floor((new Date()-new Date(t.date_last_worked||t.created_at))/86400000);
+    var when=isNaN(days)?'-':days===0?'Today':days+'d ago';
+    return '<div data-action2="openFromYard" data-truck-id="'+t.id+'" style="display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid #111;cursor:pointer">'+
+      '<div>'+
+      '<span style="font-family:monospace;font-weight:700;font-size:12px;color:var(--text)">'+(t.vin||'—')+'</span>'+
+      '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+      '<span style="font-size:11px;color:var(--accent)">'+(t.yard||'')+'</span>'+
+      '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
+      '<span style="font-size:11px;color:var(--text2)">'+(t.vendor_short_name||'')+'</span>'+
+      '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+  panel.innerHTML=
+    '<div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">'+
+    '<span style="font-size:13px;font-weight:600">🏭 '+results.length+' truck'+(results.length!==1?'s':'')+' in yards matching "'+q+'"</span>'+
+    '<button id="yard-panel-close" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px">✕</button>'+
+    '</div>'+
+    rows;
+  document.body.appendChild(panel);
+  document.getElementById('yard-panel-close').onclick=function(){panel.remove();document.getElementById('yard-search').value='';};
+  // Close on outside click
+  setTimeout(function(){
+    document.addEventListener('click',function handler(e){
+      if(!panel.contains(e.target)&&e.target.id!=='yard-search'){
+        panel.remove();
+        document.removeEventListener('click',handler);
+      }
+    });
+  },100);
 }
 
 function globalSearch(q){
@@ -1596,14 +1652,7 @@ function renderDash(m){
     '<div class="dc" data-action="showMgrReview" style="cursor:pointer;background:rgba(245,158,11,0.08);border-color:#78350f"><div class="dc-lbl" style="display:flex;justify-content:space-between;color:#fcd34d">Mgr Review Needed <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#f59e0b">'+mgrReview+'</div></div>'+
     '<div class="dc" data-action="showClosed" style="cursor:pointer"><div class="dc-lbl" style="display:flex;justify-content:space-between">Closed / Archived <span style="color:var(--accent);font-size:10px;text-decoration:underline">See</span></div><div class="dc-num" style="color:#6b7280">'+closed.length+'</div></div>'+
     '</div>'+
-    '<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">'+
-    '<label style="font-size:12px;color:var(--text2)">🏭 Filter by Yard:</label>'+
-    '<select id="yard-dash-filter" class="fsel" style="width:160px" onchange="filterDashByYard()">'+
-    '<option value="">All Yards</option>'+
-    Array.from(new Set(trucks.map(function(t){return t.yard;}).filter(Boolean))).sort(function(a,b){return (parseInt(a.replace(/\D/g,''))||0)-(parseInt(b.replace(/\D/g,''))||0);}).map(function(y){return '<option>'+y+'</option>';}).join('')+
-    '</select>'+
-    '<span id="yard-filter-count" style="font-size:12px;color:var(--text2)"></span>'+
-    '</div>'+
+
     '<div class="bk-grid">'+
     '<div class="bk-card"><div class="bk-hdr">Trucks by Stage</div>'+
     STAGES.map(function(s){return '<div class="bk-row" onclick="clickStage(\''+s+'\')"><span>'+s+'</span><span class="bk-cnt">'+(sc[s]||0)+'</span></div>';}).join('')+
