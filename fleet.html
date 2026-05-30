@@ -135,6 +135,7 @@ tbody tr:last-child td{border-bottom:none}
     <div style="display:flex;gap:8px;align-items:center">
       <input type="text" id="global-search" placeholder="Search VIN, vendor, yard..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;color:var(--text);font-size:12px;width:240px" oninput="globalSearch(this.value)">
       <button class="btn btn-secondary btn-sm" onclick="refreshAll()">🔄 Refresh</button>
+      <span id="last-refresh" style="font-size:11px;color:var(--text3)"></span>
       <button class="btn btn-primary btn-sm" onclick="openNewTruck()">+ Add Truck</button>
       <button class="btn btn-secondary btn-sm" onclick="doLogout()">Sign Out</button>
     </div>
@@ -299,6 +300,10 @@ async function bootApp(){
   await loadData();
   var lastTab=localStorage.getItem('ft_last_tab')||'dashboard';
   doTab(lastTab,null);
+  // Auto-refresh every 5 minutes
+  setInterval(function(){
+    refreshAll();
+  }, 5 * 60 * 1000);
 }
 
 async function showRecentApprovalsList(){
@@ -672,7 +677,14 @@ async function loadData(){
   trucks=r1.data||[];claims=r2.data||[];updateBadges();
 }
 
-async function refreshAll(){await loadData();renderTab();toast('Refreshed','ok');}
+async function refreshAll(){
+  await loadData();
+  renderTab();
+  var now=new Date();
+  var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  var el=document.getElementById('last-refresh');
+  if(el)el.textContent='Last updated '+timeStr;
+}
 
 function updateBadges(){
   var t=trucks.length;
