@@ -811,12 +811,20 @@ function showApprovalTrucks(){
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
       '<div>'+
       '<div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--text)">'+t.vin+'</div>'+
-      '<div style="font-size:12px;color:var(--text2);margin-top:2px">'+(t.year_make_model||'')+(t.yard?' | '+t.yard:'')+(t.stage?' | <span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+t.stage+'</span>':'')+'</div>'+
+      '<div style="font-size:12px;color:var(--text2);margin-top:2px;display:flex;gap:8px;align-items:center">'+
+      '<span>'+(t.year_make_model||'')+'</span>'+
+      (t.yard?'<span style="background:var(--bg3);padding:1px 6px;border-radius:4px">'+t.yard+'</span>':'')+
+      (t.state?'<span style="color:var(--text3)">'+t.state+'</span>':'')+
+      (t.stage?'<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+t.stage+'</span>':'')+
+      '</div>'+
       '</div>'+
       '<div style="display:flex;gap:8px;align-items:center">'+
       '<span class="sbadge" style="background:rgba(6,182,212,0.2);color:#67e8f9;font-size:11px">⏳ Pending Approval</span>'+
       '</div></div>'+
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;min-height:32px" id="links-'+t.id+'"><span style="color:var(--text3);font-size:12px">Loading links...</span></div>'+
+      '<div style="margin-bottom:14px">'+
+      '<div style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">📁 OneDrive Folders & Documents</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;min-height:32px" id="links-'+t.id+'"><span style="color:var(--text3);font-size:12px">Loading links...</span></div>'+
+      '</div>'+
       // Financials row
       '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">'+
       '<div style="background:rgba(6,182,212,0.1);border:1px solid #06b6d4;border-radius:6px;padding:10px">'+
@@ -851,7 +859,7 @@ function showApprovalTrucks(){
     '<div style="font-size:12px;color:var(--text2);margin-top:2px">Review estimates and approve repairs below</div></div>'+
     '<button class="btn btn-secondary btn-sm" data-action2="closeApproval">✕ Close</button>'+
     '</div>'+
-    '<div class="ov-body" style="max-height:75vh;overflow-y:auto">'+rows+'</div>'+
+    '<div class="ov-body" style="max-height:80vh;overflow-y:auto">'+rows+'</div>'+
     '</div>';
 
   document.body.appendChild(el);
@@ -1001,7 +1009,7 @@ function buildForm(t){
   // Status & Dates
   html+='<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">';
   html+='<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>';
-  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price||'')+'" placeholder="0.00"></div>';
+  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price?parseFloat(t.estimate_price).toFixed(2):'')+'" placeholder="0.00" step="0.01"></div>';
   html+='<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>';
   html+='<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>';
