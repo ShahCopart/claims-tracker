@@ -2106,7 +2106,7 @@ async function findShop(){
     '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:12px">'+
     '<div style="font-size:11px;color:var(--text2);font-weight:600;margin-bottom:8px">🔗 Brand Dealer Locators (opens with your location)</div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-    '<a href="https://www.internationaltrucks.com/dealers?zip='+(zip||'')+'" target="_blank" class="btn btn-secondary btn-xs">International</a>'+
+    '<a href="https://www.internationaltrucks.com/dealers?zip='+encodeURIComponent(yardAddr||state||'')+'" target="_blank" class="btn btn-secondary btn-xs">International</a>'+
     '<a href="https://www.peterbilt.com/dealer-locator" target="_blank" class="btn btn-secondary btn-xs">Peterbilt</a>'+
     '<a href="https://www.kenworth.com/dealer-locations/" target="_blank" class="btn btn-secondary btn-xs">Kenworth</a>'+
     '<a href="https://www.freightliner.com/dealer-locator" target="_blank" class="btn btn-secondary btn-xs">Freightliner</a>'+
