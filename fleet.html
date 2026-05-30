@@ -2196,7 +2196,7 @@ function renderShopResults(geo,merged,resultsEl,isPartial){
         (v.addr?'<div style="font-size:11px;color:var(--text2);margin-top:4px">📍 '+v.addr+'</div>':'')+
         '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
         '<a href="'+mapsUrl+'" target="_blank" class="btn btn-secondary btn-xs">🗺 Open in Maps</a>'+
-        (v.phone?'<a href="tel:'+v.phone+'" class="btn btn-secondary btn-xs">📞 '+v.phone+'</a>':'')+
+        (v.phone?'<a href="tel:'+v.phone.replace(/\D/g,'')+'" class="btn btn-secondary btn-xs" style="color:#4ade80">📞 '+v.phone+'</a>':'')+
         (v.website?'<a href="'+v.website+'" target="_blank" class="btn btn-secondary btn-xs">🌐 Website</a>':'')+
         '</div>'+
         '</div>';
@@ -2210,7 +2210,7 @@ async function searchShops(){
   if(!addr){toast('Enter an address first','err');return;}
   resultsEl.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--text2)"><div class="spin"></div>Finding your location...</div>';
 
-  var MAX_DIST=50; // miles hard cap
+  var MAX_DIST=100; // miles hard cap
 
   try{
     // Step 1: Geocode the yard address
@@ -2224,7 +2224,7 @@ async function searchShops(){
     // Use LEASING_VENDORS which have full addresses - geocode up to 8 in parallel for speed
     var stateAbbr=addr.toUpperCase().split(',').pop().trim().substring(0,2);
     var sameStateVendors=LEASING_VENDORS.filter(function(v){return v.state&&v.state.toUpperCase()===stateAbbr;});
-    var vendorGeos=await Promise.all(sameStateVendors.slice(0,8).map(async function(v){
+    var vendorGeos=await Promise.all(sameStateVendors.slice(0,15).map(async function(v){
       try{
         var g=await geocodeAddr(v.address+', '+v.city+', '+v.state);
         if(!g)return null;
@@ -2233,7 +2233,7 @@ async function searchShops(){
         return {name:v.name,phone:v.phone,website:'',addr:v.address+', '+v.city+', '+v.state,dist:d,isLeasing:true,isKnown:false,source:'leasing'};
       }catch(e){return null;}
     }));
-    var nearbyLeasing=vendorGeos.filter(Boolean).sort(function(a,b){return a.dist-b.dist;}).slice(0,5);
+    var nearbyLeasing=vendorGeos.filter(Boolean).sort(function(a,b){return a.dist-b.dist;}).slice(0,8);
 
     // Show leasing vendors immediately (fast, ~2-3 sec)
     if(nearbyLeasing.length){
@@ -2244,13 +2244,15 @@ async function searchShops(){
 
     // Step 3: Overpass OSM query in background — wrapped so a failure never wipes instant results
     try{
-      var radius=80467;
-      var overpassQuery='[out:json][timeout:25];('+
+      var radius=160934; // 100 miles in meters
+      var overpassQuery='[out:json][timeout:30];('+
         'node["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-        'node["amenity"="fuel"]["name"~"truck|diesel|peterbilt|kenworth|freightliner|mack|volvo|international",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
-        'node["name"~"truck repair|peterbilt|kenworth|international|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'node["shop"="mobile_mechanic"](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'node["amenity"="vehicle_inspection"]["name"~"truck|diesel|commercial",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'node["name"~"truck repair|mobile diesel|diesel mechanic|diesel repair|peterbilt|kenworth|international truck|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco|fleet repair|fleet service|heavy duty|semi repair|18 wheel|big rig",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
         'way["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-        ');out body center 20;';
+        'way["name"~"truck repair|mobile diesel|diesel mechanic|diesel repair|peterbilt|kenworth|freightliner|mack truck|rush truck",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        ');out body center 25;';
 
       var ovRes=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(overpassQuery)});
       var ovData=await ovRes.json();
