@@ -559,6 +559,43 @@ async function loadAvgCycleTime(){
   if(sub)sub.textContent=cycles.length+' trucks tracked';
 }
 
+async function loadRecentlyApprovedList(){
+  var el=document.getElementById('recently-approved-list');
+  if(!el)return;
+  // Get approved notes from last 30 days
+  var since=new Date();since.setDate(since.getDate()-30);
+  var res=await db.from('notes')
+    .select('truck_id,created_at,user_name,trucks(id,vin,year_make_model,stage,needs_approval,updated_at)')
+    .ilike('content','%APPROVED%')
+    .gte('created_at',since.toISOString())
+    .order('created_at',{ascending:false})
+    .limit(20);
+  if(!res.data||!res.data.length){
+    el.innerHTML='<div style="padding:6px 0;color:var(--text3)">No recent approvals</div>';
+    return;
+  }
+  // Deduplicate by truck
+  var seen={};var items=[];
+  res.data.forEach(function(n){
+    if(n.trucks&&!seen[n.truck_id]){seen[n.truck_id]=true;items.push(n);}
+  });
+  el.innerHTML=items.map(function(n){
+    var t=n.trucks||{};
+    var days=Math.floor((new Date()-new Date(n.created_at))/86400000);
+    var when=days===0?'Today':days===1?'Yesterday':days+'d ago';
+    return '<div data-action2="openFromRecent" data-truck-id="'+(t.id||n.truck_id)+'" style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #111;cursor:pointer">'+
+      '<div>'+
+      '<span style="font-family:monospace;font-weight:700;font-size:12px;color:#86efac">'+(t.vin||'—')+'</span>'+
+      '<span style="color:var(--text2);font-size:11px;margin-left:8px">'+(t.year_make_model||'')+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+      '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
+      '<span style="font-size:11px;color:var(--text3)">Approved '+when+' by '+n.user_name+'</span>'+
+      '</div>'+
+      '</div>';
+  }).join('');
+}
+
 async function loadRecentApprovals(){
   // Always update the count card regardless
   var res=await db.from('notes')
@@ -620,6 +657,7 @@ function renderTab(){
   else if(tab==='dashboard'){
     renderDash(m);
     loadRecentApprovals();
+    loadRecentlyApprovedList();
     loadRecentWorked();
     loadAvgCycleTime();
     if(isAdmin)setTimeout(function(){loadProductivity(false);},100);
@@ -1009,7 +1047,7 @@ function buildForm(t){
   // Status & Dates
   html+='<div class="sec"><div class="sec-title"><span>Status & Dates</span></div><div class="g4">';
   html+='<div class="fg"><label class="fl">Shop Status</label><select class="fsel2" id="f-shopst"><option value="">None</option>'+sho+'</select></div>';
-  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price?parseFloat(t.estimate_price).toFixed(2):'')+'" placeholder="0.00" step="0.01" data-orig-price="'+(t.estimate_price||'')+'" onchange="checkEstimatePrice(this)"></div>';
+  html+='<div class="fg"><label class="fl">💰 Estimate Price ($)</label><input class="fi" type="number" id="f-estprice" value="'+(t.estimate_price?parseFloat(t.estimate_price).toFixed(2):'')+'" placeholder="0.00" step="0.01" data-orig-price="'+(t.estimate_price||'')+'" onblur="checkEstimatePrice(this)"></div>';
   html+='<div class="fg"><label class="fl">Repo Agent</label><input class="fi" id="f-repoagent" value="'+(t.repo_agent||'')+'" placeholder="e.g. Transit Pros"></div>';
   html+='<div class="fg"><label class="fl">Terminated Date</label><input class="fi" type="date" id="f-termdate" value="'+(t.terminated_date||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Recovery Date</label><input class="fi" type="date" id="f-recov" value="'+(t.recovery_date||'')+'"></div>';
@@ -1266,6 +1304,17 @@ function getFormVal(id,def){var el=document.getElementById(id);return el?el.valu
 function getFormCheck(id){var el=document.getElementById(id);return el?el.checked:false;}
 
 async function saveTruck(closeAfter){
+  // Check if estimate price changed without a note
+  var estInp=document.getElementById('f-estprice');
+  if(estInp){
+    var newPrice=parseFloat(estInp.value)||0;
+    var origPrice=parseFloat(estInp.getAttribute('data-orig-price'))||0;
+    if(newPrice>0&&newPrice!==origPrice&&!estInp.getAttribute('data-note-added')){
+      showEstimateNotePrompt(newPrice,estInp);
+      toast('Please add an estimate note before saving','err');
+      return;
+    }
+  }
   var prevTruck=trucks.find(function(t){return t.id===truckId;})||{};
   var newStage=getFormVal('f-stage');
   var newShop=getFormVal('f-shopst')||null;
@@ -1453,6 +1502,13 @@ function renderDash(m){
     '<div class="bk-row" onclick="showOverdueTrucks()" style="cursor:pointer"><span>🚨 Critical (7+ days)</span><span class="bk-cnt" style="color:#dc2626">'+critical+'</span></div>'+
     '<div class="bk-row"><span>✅ All Time Closed</span><span class="bk-cnt" style="color:#22c55e">'+(sc['Reassignment Closed']||0)+'</span></div>'+
     '</div></div>'+
+    '<div style="margin-top:12px;background:var(--bg2);border:1px solid #166534;border-radius:8px;overflow:hidden">'+
+    '<div class="bk-hdr" style="background:#0f2a1a;color:#86efac;display:flex;justify-content:space-between;align-items:center">'+
+    '<span>✅ Recently Approved — Pending Next Action</span>'+
+    '<span style="font-size:10px;color:#4ade80;font-weight:400">Trucks stay here until stage or status changes</span>'+
+    '</div>'+
+    '<div id="recently-approved-list" style="padding:10px 14px;min-height:40px;color:var(--text2);font-size:12px">Loading...</div>'+
+    '</div>'+
     (isAdmin?
     '<div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">'+
     '<div class="bk-hdr" style="display:flex;justify-content:space-between;align-items:center">'+
@@ -1751,11 +1807,15 @@ function showEstimateNotePrompt(price,input){
     '<textarea id="est-note-text" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;min-height:100px" placeholder="e.g. Estimate from Epika for $'+parseFloat(price).toFixed(2)+' — includes front suspension repair, windshield replacement, and PM service. Estimate doc attached in OneDrive."></textarea>'+
     '<div id="est-note-err" style="color:#f87171;font-size:12px;margin-top:4px;display:none">Please add a note before continuing.</div>'+
     '</div>'+
-    '<div style="background:rgba(245,158,11,0.1);border:1px solid #d97706;border-radius:8px;padding:12px;margin-bottom:18px">'+
+    '<div style="background:rgba(245,158,11,0.1);border:1px solid #d97706;border-radius:8px;padding:12px;margin-bottom:12px">'+
     '<label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">'+
     '<input type="checkbox" id="est-onedrive-confirm" style="width:16px;height:16px;margin-top:2px;accent-color:#f59e0b;flex-shrink:0">'+
     '<span><strong style="color:#fcd34d">⚠ I confirm</strong> that I have saved or will save the estimate document to the <strong>OneDrive Estimates folder</strong> for this truck before requesting approval.</span>'+
     '</label>'+
+    '</div>'+
+    '<div style="background:rgba(6,182,212,0.1);border:1px solid #06b6d4;border-radius:8px;padding:10px;margin-bottom:18px;display:flex;align-items:center;gap:10px">'+
+    '<span style="font-size:18px">⏳</span>'+
+    '<span style="font-size:13px;color:#67e8f9"><strong>Approval Needed</strong> flag will be automatically checked so the approver is notified.</span>'+
     '</div>'+
     '<div style="display:flex;gap:10px;justify-content:flex-end">'+
     '<button class="btn btn-secondary" id="est-cancel-btn" style="padding:8px 18px">Cancel — Revert Price</button>'+
@@ -1804,10 +1864,18 @@ async function saveEstimateNote(price){
 
   // Update data-orig-price so prompt doesn't fire again
   var inp=document.getElementById('f-estprice');
-  if(inp)inp.setAttribute('data-orig-price',price);
+  if(inp){inp.setAttribute('data-orig-price',price);inp.setAttribute('data-note-added','1');}
+
+  // Auto-check Approval Needed flag
+  var approvalChk=document.getElementById('f-approval');
+  if(approvalChk&&!approvalChk.checked){
+    approvalChk.checked=true;
+    toast('✅ Note added & Approval Needed flag set — click Save','ok');
+  } else {
+    toast('Note added — click Save to save the truck record','ok');
+  }
 
   var m=document.getElementById('est-note-modal');if(m)m.remove();
-  toast('Note added — click Save to save the truck record','ok');
 }
 
 function toast(msg,type){
