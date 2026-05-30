@@ -1017,6 +1017,11 @@ async function openDetail(id){
   document.getElementById('dbody').innerHTML=buildForm(t);
   document.getElementById('dscreen').classList.add('open');
   renderNotes();renderExps();renderHist();
+  // Add Enter key listener to estimate price field
+  setTimeout(function(){
+    var ep=document.getElementById('f-estprice');
+    if(ep){ep.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();checkEstimatePrice(ep);}});}
+  },100);
 }
 
 async function refreshDetail(){if(truckId)await openDetail(truckId);}
@@ -1435,6 +1440,11 @@ function openNewTruck(){
   document.getElementById('dbody').innerHTML=buildForm({stage:'Intake'});
   document.getElementById('dscreen').classList.add('open');
   renderNotes();renderExps();renderHist();
+  // Add Enter key listener to estimate price field
+  setTimeout(function(){
+    var ep=document.getElementById('f-estprice');
+    if(ep){ep.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();checkEstimatePrice(ep);}});}
+  },100);
   var v=document.getElementById('f-vin');if(v){v.readOnly=false;v.style.opacity='1';v.style.cursor='text';}
 }
 
