@@ -263,6 +263,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(action==='showProductivity')showProductivityModal();
       if(action==='showReady'){var rl=trucks.filter(function(t){return t.stage==='Ready to Assign';});showTruckList('Ready to Assign ('+rl.length+')',rl);}
       if(action==='showRecent')showRecentApprovalsList();
+      if(action==='showRecentApprovedModal')showRecentApprovedModal();
       if(action==='showClaims')doTab('claims',null);
     }
     // data-action2 handled by body listener
