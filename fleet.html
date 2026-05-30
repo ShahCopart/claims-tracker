@@ -2247,9 +2247,7 @@ async function searchShops(){
       var radius=160934; // 100 miles in meters
       var overpassQuery='[out:json][timeout:30];('+
         'node["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-        'node["shop"="mobile_mechanic"](around:'+radius+','+geo.lat+','+geo.lon+');'+
-        'node["amenity"="vehicle_inspection"]["name"~"truck|diesel|commercial",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
-        'node["name"~"truck repair|mobile diesel|diesel mechanic|diesel repair|peterbilt|kenworth|international truck|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco|fleet repair|fleet service|heavy duty|semi repair|18 wheel|big rig",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
+        'node["name"~"truck repair|mobile diesel|diesel mechanic|diesel repair|mobile mechanic|peterbilt|kenworth|international truck|freightliner|mack truck|volvo truck|rush truck|loves truck|speedco|heavy duty|semi repair|18 wheel|big rig",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
         'way["shop"="truck_repair"](around:'+radius+','+geo.lat+','+geo.lon+');'+
         'way["name"~"truck repair|mobile diesel|diesel mechanic|diesel repair|peterbilt|kenworth|freightliner|mack truck|rush truck",i](around:'+radius+','+geo.lat+','+geo.lon+');'+
         ');out body center 25;';
