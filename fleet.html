@@ -1442,12 +1442,23 @@ async function saveTruck(closeAfter){
     if(data.mileage&&data.mileage!==prevTruck.mileage)fieldChanges.push('Mileage: '+data.mileage);
     if(data.estimate_price&&data.estimate_price!==prevTruck.estimate_price)fieldChanges.push('Estimate: $'+data.estimate_price);
     if(data.yard&&data.yard!==prevTruck.yard)fieldChanges.push('Yard: '+data.yard);
-    if(data.est_completion_date&&data.est_completion_date!==prevTruck.est_completion_date)fieldChanges.push('Est. Completion: '+data.est_completion_date);
+    if(data.state&&data.state!==prevTruck.state)fieldChanges.push('State: '+data.state);
     if(data.leasing_company&&data.leasing_company!==prevTruck.leasing_company)fieldChanges.push('Leasing Co: '+data.leasing_company);
     if(data.vendor_short_name&&data.vendor_short_name!==prevTruck.vendor_short_name)fieldChanges.push('Vendor: '+data.vendor_short_name);
-    if(data.body_condition&&data.body_condition!==prevTruck.body_condition)fieldChanges.push('Body: '+data.body_condition);
+    if(data.body_condition&&data.body_condition!==prevTruck.body_condition)fieldChanges.push('Body Condition: '+data.body_condition);
+    if(data.repo_agent&&data.repo_agent!==prevTruck.repo_agent)fieldChanges.push('Repo Agent: '+data.repo_agent);
+    // Date fields
+    if(data.terminated_date&&data.terminated_date!==prevTruck.terminated_date)fieldChanges.push('Terminated Date: '+data.terminated_date);
+    if(data.recovery_date&&data.recovery_date!==prevTruck.recovery_date)fieldChanges.push('Recovery Date: '+data.recovery_date);
+    if(data.est_completion_date&&data.est_completion_date!==prevTruck.est_completion_date)fieldChanges.push('Est. Completion: '+data.est_completion_date);
+    if(data.intake_date&&data.intake_date!==prevTruck.intake_date)fieldChanges.push('Intake Date: '+data.intake_date);
+    if(data.ready_date&&data.ready_date!==prevTruck.ready_date)fieldChanges.push('Ready Date: '+data.ready_date);
+    if(data.assigned_date&&data.assigned_date!==prevTruck.assigned_date)fieldChanges.push('Assigned Date: '+data.assigned_date);
+    if(data.pickup_date&&data.pickup_date!==prevTruck.pickup_date)fieldChanges.push('Pickup Date: '+data.pickup_date);
     if(fieldChanges.length)autoNotes.push('[FIELD UPDATE] '+fieldChanges.join(' | '));
     if(pendingNote)autoNotes.push(pendingNote);
+    // Always record the save so truck appears in Recently Worked On
+    if(!autoNotes.length)autoNotes.push('[SAVED] '+me.name+' reviewed this file');
 
     if(autoNotes.length){
       await db.from('notes').insert(autoNotes.map(function(c){return {truck_id:truckId,user_name:me.name,content:c};}));
