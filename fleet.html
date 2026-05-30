@@ -2061,29 +2061,45 @@ async function findShop(){
   var t=trucks.find(function(x){return x.id===truckId;})||{};
   var yard=getFormVal('f-yard')||t.yard||'';
   var state=getFormVal('f-state')||t.state||'';
-  
-  // Auto-lookup Copart yard address from state
-  var yardAddr='';
-  var yardName='';
-  if(state){
-    var stateAbbr=state.toUpperCase().trim().substring(0,2);
-    var stateYards=YARDS_BY_STATE[stateAbbr]||[];
-    if(stateYards.length>0){
-      // Use first yard in state as default address
-      yardAddr=stateYards[0].address;
-      yardName=stateYards[0].name;
-    }
+
+  // Build a flat list of all yards across all states for matching
+  var allYards=[];
+  Object.keys(YARDS_BY_STATE).forEach(function(stKey){
+    YARDS_BY_STATE[stKey].forEach(function(y){allYards.push(y);});
+  });
+
+  // Try to match truck's yard name against known Copart yard names
+  var matchedYard=null;
+  if(yard){
+    var yardUpper=yard.toUpperCase();
+    // Exact match first
+    matchedYard=allYards.find(function(y){return y.name.toUpperCase()===yardUpper;});
+    // Partial match (e.g. "VALLEJO" in yard name)
+    if(!matchedYard)matchedYard=allYards.find(function(y){return y.name.toUpperCase().includes(yardUpper)||yardUpper.includes(y.name.toUpperCase().replace(/^[A-Z]{2}\s*-\s*/,'').trim());});
   }
 
+  // Determine which state's yards to show in the dropdown
+  var dropdownStateKey='';
+  if(matchedYard){
+    dropdownStateKey=matchedYard.state||matchedYard.name.substring(0,2);
+  } else if(state){
+    dropdownStateKey=state.toUpperCase().substring(0,2);
+  }
+  var stYards=YARDS_BY_STATE[dropdownStateKey]||[];
+
+  // If still no matched yard, use the first yard in the state
+  if(!matchedYard&&stYards.length>0)matchedYard=stYards[0];
+
+  var yardAddr=matchedYard?matchedYard.address:'';
+  var yardName=matchedYard?matchedYard.name:'';
+
   // Show modal
-  var stAbbr=state.toUpperCase().substring(0,2);
-  var stYards=YARDS_BY_STATE[stAbbr]||[];
   var old=document.getElementById('find-shop-modal');if(old)old.remove();
   var el=document.createElement('div');el.className='overlay-bg';el.id='find-shop-modal';
   el.innerHTML='<div class="overlay-box" style="max-width:800px">'+
     '<div class="ov-hdr">'+
     '<div><div style="font-size:15px;font-weight:600">🔧 Find Nearby Repair Shop</div>'+
-    '<div style="font-size:12px;color:var(--text2);margin-top:2px">Truck: '+(t.vin||'')+(yard?' | '+yard:'')+(state?' | '+state:'')+'</div></div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-top:2px">Truck: '+(t.vin||'')+(yardName?' | '+yardName:'')+(yardAddr?' | '+yardAddr.split(',').slice(-2).join(',').trim():'')+'</div></div>'+
     '<button class="btn btn-secondary btn-sm" data-action2="closeFindShop">✕</button>'+
     '</div>'+
     '<div class="ov-body">'+
@@ -2091,7 +2107,7 @@ async function findShop(){
     '<div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px">'+
     (stYards.length>1?
     '<select id="shop-yard-sel" class="fsel2">'+
-    stYards.map(function(y,i){return '<option value="'+y.address+'"'+(i===0?' selected':'')+'>'+y.name+'</option>';}).join('')+
+    stYards.map(function(y){return '<option value="'+y.address+'"'+(matchedYard&&y.name===matchedYard.name?' selected':'')+'>'+y.name+'</option>';}).join('')+
     '</select>':'')+ 
     '<input id="shop-addr" class="fi" placeholder="Enter address or city, state..." value="'+(yardAddr||'')+'" style="width:100%">'+
     '</div>'+
@@ -2126,7 +2142,7 @@ async function findShop(){
     var addr=document.getElementById('shop-addr');
     if(addr)addr.value=this.value;
   });
-  // Auto-search if we have an address
+  // Auto-search if we have a matched yard address
   if(yardAddr){setTimeout(searchShops,500);}
 }
 
