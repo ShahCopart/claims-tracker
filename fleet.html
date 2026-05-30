@@ -735,6 +735,7 @@ function isOverdue(t){if(t.est_completion_date&&new Date(t.est_completion_date)>
 
 function flags(t){
   var f='';
+  if(t.sublot)f+='<span style="background:#1e3a5f;color:#60a5fa;font-size:9px;padding:1px 5px;border-radius:3px;margin-right:3px;font-weight:600" title="Sublot">SUB</span>';
   if(t.needs_mgr_review)f+='<span class="flag" style="background:#f59e0b;width:10px;height:10px" title="Manager Review Needed"></span>';
   if(t.needs_approval)f+='<span class="flag" style="background:#06b6d4;width:10px;height:10px" title="Approval Needed"></span>';
   if(t.title_issue)f+='<span class="flag" style="background:#ef4444" title="Title Issue"></span>';
@@ -858,6 +859,7 @@ function yardSearch(q){
       '</div>'+
       '<div style="display:flex;align-items:center;gap:10px">'+
       '<span style="font-size:11px;color:var(--accent)">'+(t.yard||'')+'</span>'+
+      (t.sublot?'<span style="background:#1e3a5f;color:#60a5fa;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:600">SUBLOT</span>':'')+
       '<span class="sbadge '+(SCSS[t.stage]||'s-intake')+'" style="font-size:10px">'+(t.stage||'')+'</span>'+
       '<span style="font-size:11px;color:var(--text2)">'+(t.vendor_short_name||'')+'</span>'+
       '<span style="font-size:11px;color:var(--text3)">'+when+'</span>'+
@@ -1166,6 +1168,7 @@ function buildForm(t){
   html+='<div class="fg"><label class="fl">Bed</label><input class="fi" id="f-bed" value="'+(t.bed||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Mileage</label><input class="fi" id="f-mil" value="'+(t.mileage||'')+'"></div>';
   html+='<div class="fg"><label class="fl">Yard</label><input class="fi" id="f-yard" value="'+(t.yard||'')+'" placeholder="e.g. Yard 63" list="yard-list"></div>';
+  html+='<div class="fg"><label class="fl">Sublot</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:6px"><input type="checkbox" id="f-sublot" '+(t.sublot?'checked':'')+' style="width:16px;height:16px;accent-color:var(--accent)"><span style="font-size:13px;color:'+(t.sublot?'var(--accent)':'var(--text2)')+'">Truck is in a sublot</span></label></div>';
   html+='<div class="fg"><label class="fl">State</label><input class="fi" id="f-state" value="'+(t.state||'')+'" placeholder="e.g. Texas" list="state-list"></div>';
   html+='<div class="fg"><label class="fl">Stage</label><select class="fsel2" id="f-stage"><option value="">Select</option>'+stgo+'</select></div>';
   html+='<div class="fg s2"><label class="fl">Old Vendor Name (Previous Lessee) <button class="btn btn-secondary btn-xs" id="oldvendor-lock" onclick="togLock(&quot;f-oldvendor&quot;,&quot;oldvendor-lock&quot;)">🔒</button></label><input class="fi" id="f-oldvendor" value="'+(t.old_vendor_name||'')+'" readonly placeholder="Previous lessee company name"></div>';
